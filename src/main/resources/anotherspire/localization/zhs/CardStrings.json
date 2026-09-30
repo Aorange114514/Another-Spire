@@ -1,0 +1,262 @@
+{
+  "${modID}:Clash": {
+    "NAME": "交锋",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 你手中每有一张非攻击牌，伤害降低 2 。"
+  },
+  "${modID}:Wild Strike": {
+    "NAME": "狂野打击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 将一张 *伤口 放入你的弃牌堆中。"
+  },
+  "${modID}:Heavy Blade": {
+    "NAME": "重刃",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 力量 在 重刃 上发挥 !M! 倍效果。"
+  },
+  "${modID}:Clothesline": {
+    "NAME": "金刚臂",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 给予 !M! 层 虚弱 。"
+  },
+  "${modID}:Iron Wave": {
+    "NAME": "铁斩波",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 获得等同于造成伤害的 格挡 。"
+  },
+  "${modID}:Flex": {
+    "NAME": "活动肌肉",
+    "DESCRIPTION": "获得 !M! 点 力量 。 NL 你的回合结束时，失去 !M! 点 力量 。"
+  },
+  "${modID}:Thunderclap": {
+    "NAME": "闪电霹雳",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害，给予 !M! 层 易伤 。"
+  },
+  "${modID}:Cleave": {
+    "NAME": "顺劈斩",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 消耗 。"
+  },
+  "${modID}:Sword Boomerang": {
+    "NAME": "飞剑回旋镖",
+    "DESCRIPTION": "随机对敌人造成 !D! 点伤害 !M! 次。"
+  },
+  "${modID}:Uppercut": {
+    "NAME": "上勾拳",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 给予 !M! 层 虚弱 。 NL 给予 !M! 层 易伤 。"
+  },
+  "${modID}:Sentinel": {
+    "NAME": "哨卫",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽一张牌。 NL 如果这张牌被 消耗 ，获得 [R] [R] 。"
+  },
+  "${modID}:Entrench": {
+    "NAME": "巩固",
+    "DESCRIPTION": "在你的下个回合开始时，获得等同于当前 格挡 的 格挡 。"
+  },
+  "${modID}:Bloodletting": {
+    "NAME": "放血",
+    "DESCRIPTION": "获得 [R] [R] 。 NL 失去 1 点生命。",
+    "UPGRADE_DESCRIPTION": "获得 [R] [R] [R] 。 NL 失去 1 点生命。"
+  },
+  "${modID}:Sever Soul": {
+    "NAME": "断魂斩",
+    "DESCRIPTION": "消耗 手牌中所有非攻击牌。 NL 造成 !D! 点伤害。"
+  },
+  "${modID}:Whirlwind": {
+    "NAME": "旋风斩",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害X次。",
+    "UPGRADE_DESCRIPTION": "对所有敌人造成 !D! 点伤害X+1次。"
+  },
+  "${modID}:Rampage": {
+    "NAME": "暴走",
+    "DESCRIPTION": "造成 !D! 点伤害2次。 NL 这张牌每被打出一次，在本场战斗中其伤害增加 !M! 。"
+  },
+  "${modID}:Searing Blow": {
+    "NAME": "灼热攻击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 获得 !B! 点 格挡 。 NL 能被多次 升级 。"
+  },
+  "${modID}:Berserk": {
+    "NAME": "狂暴",
+    "DESCRIPTION": "获得 1 层 易伤 。 NL 在每回合开始时获得 [R] 。",
+    "UPGRADE_DESCRIPTION": "获得 1 层 易伤 。 NL 在每回合开始时获得 [R] [R] 。"
+  },
+  "${modID}:Metallicize": {
+    "NAME": "金属化",
+    "DESCRIPTION": "在你的回合结束时，获得 X*!M! 点 格挡 。"
+  },
+  "${modID}:Dagger Spray": {
+    "NAME": "匕首雨",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害 !M! 次。"
+  },
+  "${modID}:Backflip": {
+    "NAME": "后空翻",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽 !M! 张牌。"
+  },
+  "${modID}:Poisoned Stab": {
+    "NAME": "带毒刺击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 给予 !M! 层 中毒 。"
+  },
+  "${modID}:Quick Slash": {
+    "NAME": "快斩",
+    "DESCRIPTION": "不能被打出 。 NL 如果这张牌从你的手牌中被丢弃，对所有敌人造成 !D! 点伤害。",
+    "EXTENDED_DESCRIPTION": ["不能被打出 。"]
+  },
+  "${modID}:Dagger Throw": {
+    "NAME": "投掷匕首",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 抽 !M! 张牌。 NL 丢弃 !M! 张牌。"
+  },
+  "${modID}:Outmaneuver": {
+    "NAME": "抢占先机",
+    "DESCRIPTION": "下一回合 NL 获得 [G] 。",
+    "UPGRADE_DESCRIPTION": "下一回合 NL 获得 [G] [G] 。"
+  },
+  "${modID}:Choke": {
+    "NAME": "勒脖",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 你在这个回合内每打出一张牌，该名敌人都会失去 !M! 点生命。"
+  },
+  "${modID}:Riddle With Holes": {
+    "NAME": "千穿百刺",
+    "DESCRIPTION": "造成 !D! 点伤害 !M! 次。"
+  },
+  "${modID}:Glass Knife": {
+    "NAME": "玻璃刀刃",
+    "DESCRIPTION": "造成 !D! 点伤害两次。 NL 该敌人受到来自 小刀 的伤害时，你获得 !M! 点 格挡 。 NL 消耗 。"
+  },
+  "${modID}:A Thousand Cuts": {
+    "NAME": "凌迟",
+    "DESCRIPTION": "你每打出一张牌，就对所有敌人造成 !M! 点伤害。"
+  },
+  "${modID}:Dualcast": {
+    "NAME": "四重释放",
+    "DESCRIPTION": "激发 你最右侧的充能球4次。"
+  },
+  "${modID}:Rebound": {
+    "NAME": "弹回",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 生成你本场战斗上一个生成的充能球的复制。"
+  },
+  "${modID}:Barrage": {
+    "NAME": "弹幕齐射",
+    "DESCRIPTION": "你每拥有一个充能球，造成 !D! 点伤害。"
+  },
+  "${modID}:Sweeping Beam": {
+    "NAME": "扫荡射线",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 抽 !M! 张牌。"
+  },
+  "${modID}:Gash": {
+    "NAME": "爪击",
+    "DESCRIPTION": "造成 !D! 点伤害 !M! 次。 NL 在本场战斗中所有 爪击 牌的伤害增加 !M! 。"
+  },
+  "${modID}:Streamline": {
+    "NAME": "精简改良",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 你每抽到这张牌时，它在本场战斗中的耗能减少1。"
+  },
+  "${modID}:Steam": {
+    "NAME": "蒸汽护壁",
+    "DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "生成 !M! 个 冰霜 充能球。"
+  },
+  "${modID}:Leap": {
+    "NAME": "飞跃",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 在本回合获得 !M! 点临时 集中 。"
+  },
+  "${modID}:Hello World": {
+    "NAME": "你好，世界",
+    "DESCRIPTION": "在你的回合开始时，增加一张随机牌到你的手牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 在你的回合开始时，增加一张随机牌到你的手牌。"
+  },
+  "${modID}:Chill": {
+    "NAME": "冰寒",
+    "DESCRIPTION": "当前每有一名敌人，生成一个 冰霜 充能球。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "当前每有一名敌人，生成一个 冰霜 充能球。"
+  },
+  "${modID}:Force Field": {
+    "NAME": "力场",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 你在本场战斗中每打出一张能力牌，获得的 格挡 增加 !M! 。"
+  },
+  "${modID}:Blizzard": {
+    "NAME": "暴雪",
+    "DESCRIPTION": "你每有一个 冰霜 充能球，在本回合获得 !M! 点临时 集中 。"
+  },
+  "${modID}:Rip and Tear": {
+    "NAME": "狂乱撕扯",
+    "DESCRIPTION": "随机对敌人造成 !D! 点伤害 !M! 次。"
+  },
+  "${modID}:Melter": {
+    "NAME": "熔化",
+    "DESCRIPTION": "移除一名敌人的所有 人工制品 和 格挡 。 NL 给予 2 层 虚弱 。 NL 给予 2 层 易伤 。 NL 消耗 。"
+  },
+  "${modID}:Fusion": {
+    "NAME": "聚变",
+    "DESCRIPTION": "生成一个 等离子 充能球。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "生成一个 等离子 充能球。"
+  },
+  "${modID}:Reprogram": {
+    "NAME": "重编程",
+    "DESCRIPTION": "失去一个充能球栏位。 NL 获得 !M! 点 力量 。 NL 获得 !M! 点 敏捷 。 NL 消耗 。"
+  },
+  "${modID}:Multi-Cast": {
+    "NAME": "多重释放",
+    "DESCRIPTION": "激发 你最右侧的充能球X次。",
+    "UPGRADE_DESCRIPTION": "激发 你最右侧的充能球X*2次。"
+  },
+  "${modID}:Hyperbeam": {
+    "NAME": "超能光束",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 在本回合失去 !M! 点 集中 。"
+  },
+  "${modID}:PathToVictory": {
+    "NAME": "点穴",
+    "DESCRIPTION": "给予 !M! 层 *印记 。 NL 所有拥有 *印记 的敌人，在受到攻击时额外失去相当于 *印记 层数的生命。 NL 消耗 。"
+  },
+  "${modID}:Consecrate": {
+    "NAME": "供奉",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 每命中一名敌人，抽 !M! 张牌。"
+  },
+  "${modID}:FollowUp": {
+    "NAME": "追击",
+    "DESCRIPTION": "造成 !D! 点伤害，将一张 *洞见 加入你的手牌。"
+  },
+  "${modID}:Perseverance": {
+    "NAME": "坚韧",
+    "DESCRIPTION": "保留 。 NL 获得 !B! 点 格挡 。 NL 进入 平静 。 NL 每当这张牌被 保留 时，获得 !B! 点 格挡 。"
+  },
+  "${modID}:ThirdEye": {
+    "NAME": "天眼",
+    "DESCRIPTION": "将 !M! 张 *洞见 加入你的手牌。"
+  },
+  "${modID}:BattleHymn": {
+    "NAME": "战歌",
+    "DESCRIPTION": "在每回合开始时，消耗一张手牌，并将一张 *惩恶 加入你的手牌。"
+  },
+  "${modID}:LikeWater": {
+    "NAME": "如水",
+    "DESCRIPTION": "在你的回合结束时，进入 平静 。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 在你的回合结束时，进入 平静 。"
+  },
+  "${modID}:Vengeance": {
+    "NAME": "怒火中烧",
+    "DESCRIPTION": "进入 愤怒 。 NL 将 !M! 张 *洞见 加入你的抽牌堆。"
+  },
+  "${modID}:Swivel": {
+    "NAME": "旋身",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽 !M! 张牌。 NL 你打出的下一张攻击牌耗能变为0。"
+  },
+  "${modID}:WindmillStrike": {
+    "NAME": "旋转打击",
+    "DESCRIPTION": "保留 。 NL 造成 !D! 点伤害 !M! 次。 NL 进入 愤怒 。 NL 每当这张牌被 保留 时，其攻击次数在本场战斗中增加1。"
+  },
+  "${modID}:DeceiveReality": {
+    "NAME": "欺瞒现实",
+    "DESCRIPTION": "将 !M! 张 *洞见 和一张 *奇迹 加入你的手牌。"
+  },
+  "${modID}:Study": {
+    "NAME": "研习",
+    "DESCRIPTION": "在你的回合开始时，在你的手牌中加入一张 *洞见 。"
+  },
+  "${modID}:Weave": {
+    "NAME": "迂回",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 愤怒 ：进入 平静 。 NL 平静 ：进入 愤怒 。"
+  },
+  "${modID}:Devotion": {
+    "NAME": "虔信",
+    "DESCRIPTION": "每当你获得 真言 时，抽1张牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 每当你获得 真言 时，抽1张牌。"
+  },
+  "${modID}:Bite": {
+    "NAME": "噬咬",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 未被 格挡 的伤害将回复你的生命。"
+  }
+}

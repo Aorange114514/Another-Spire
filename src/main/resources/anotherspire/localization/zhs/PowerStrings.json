@@ -1,0 +1,42 @@
+{
+  "${modID}:BattleHymnSmite": {
+    "NAME": "战歌",
+    "DESCRIPTIONS": [
+      "在每回合开始时，消耗一张手牌，并将 #b ",
+      " 张 #y惩恶 加入你的手牌。",
+      " 张 #y惩恶 加入你的手牌。"
+    ]
+  },
+  "${modID}:LikeWaterCalm": {
+    "NAME": "如水",
+    "DESCRIPTIONS": ["在你的回合结束时，进入 #y平静 。"]
+  },
+  "${modID}:StudyInsight": {
+    "NAME": "研习",
+    "DESCRIPTIONS": [
+      "在你的回合开始时，在你的手牌中加入 #b ",
+      " 张 #y洞见 。",
+      " 张 #y洞见 。"
+    ]
+  },
+  "${modID}:DevotionDraw": {
+    "NAME": "虔信",
+    "DESCRIPTIONS": [
+      "每当你获得 #y真言 时，抽 #b ",
+      " 张牌。",
+      " 张牌。"
+    ]
+  },
+  "${modID}:GlassKnifeMark": {
+    "NAME": "玻璃刀刃",
+    "DESCRIPTIONS": ["每当你用 #y小刀 攻击该敌人时，获得 #b ", " 点 #y格挡 。"]
+  },
+  "${modID}:NextTurnFocus": {
+    "NAME": "下回合集中",
+    "DESCRIPTIONS": [
+      "在你的回合结束时，失去 #b ",
+      " 点 #y集中 。",
+      "在你的回合结束时，获得 #b "
+    ]
+  }
+}

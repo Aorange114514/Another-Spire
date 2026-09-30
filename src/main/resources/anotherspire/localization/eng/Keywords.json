@@ -1,0 +1,7 @@
+[
+  {
+    "PROPER_NAME": "Mark",
+    "NAMES": ["mark"],
+    "DESCRIPTION": "Enemies with Mark lose HP equal to their Mark whenever they are attacked."
+  }
+]
