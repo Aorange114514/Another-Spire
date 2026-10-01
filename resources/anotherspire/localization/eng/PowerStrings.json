@@ -1,0 +1,74 @@
+{
+  "${modID}:BattleHymnSmite": {
+    "NAME": "Battle Hymn",
+    "DESCRIPTIONS": [
+      "At the start of each turn, exhaust a card in your hand and add #b ",
+      " #ySmites into your hand.",
+      " #ySmite into your hand."
+    ]
+  },
+  "${modID}:LikeWaterCalm": {
+    "NAME": "Like Water",
+    "DESCRIPTIONS": ["At the end of your turn, enter #yCalm."]
+  },
+  "${modID}:StudyInsight": {
+    "NAME": "Study",
+    "DESCRIPTIONS": [
+      "At the start of your turn, add #b ",
+      " #yInsights into your hand.",
+      " #yInsight into your hand."
+    ]
+  },
+  "${modID}:DevotionDraw": {
+    "NAME": "Devotion",
+    "DESCRIPTIONS": [
+      "Whenever you gain #yMantra, draw #b ",
+      " cards.",
+      " card."
+    ]
+  },
+  "${modID}:GlassKnifeMark": {
+    "NAME": "Glass Knife",
+    "DESCRIPTIONS": ["Whenever you attack this enemy with a #yShiv, gain #b ", " #yBlock."]
+  },
+  "${modID}:NextTurnFocus": {
+    "NAME": "Next Turn Focus",
+    "DESCRIPTIONS": [
+      "At the end of your turn, lose #b ",
+      " #yFocus.",
+      "At the end of your turn, gain #b "
+    ]
+  },
+  "${modID}:HelloWorldAnyCard": {
+    "NAME": "Hello World",
+    "DESCRIPTIONS": [
+      "At the start of your turn, add #b ",
+      " random cards into your hand.",
+      " random card into your hand."
+    ]
+  },
+  "${modID}:Mark": {
+    "NAME": "Mark",
+    "DESCRIPTIONS": ["Loses #b ", " additional HP whenever it is attacked."]
+  },
+  "${modID}:ShivMastery": {
+    "NAME": "Unload",
+    "DESCRIPTIONS": ["#yShivs gain #yRetain, and the first #yShiv you play each turn deals #b ", " additional damage."]
+  },
+  "${modID}:FreeSkill": {
+    "NAME": "Free Skill",
+    "DESCRIPTIONS": [
+      "The next Skill you play costs 0.",
+      "The next #b ",
+      " Skills you play cost 0."
+    ]
+  },
+  "${modID}:CreativeAIUpgraded": {
+    "NAME": "Creative AI",
+    "DESCRIPTIONS": [
+      "At the start of your turn, add #b ",
+      " randomly Upgraded Power cards into your hand.",
+      " randomly Upgraded Power card into your hand."
+    ]
+  }
+}
