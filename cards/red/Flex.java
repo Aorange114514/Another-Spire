@@ -1,6 +1,6 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -12,7 +12,7 @@ import com.megacrit.cardcrawl.powers.StrengthPower;
 public class Flex extends AbstractCard {
     public static final String ID = "Flex";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Flex() {
         super(ID, cardStrings.NAME, "red/skill/flex", 0, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.RED, CardRarity.COMMON, CardTarget.SELF);

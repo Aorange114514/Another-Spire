@@ -1,4 +1,4 @@
-package anotherspire.actions;
+package anotherspirerework.actions;
 
 import com.badlogic.gdx.graphics.Color;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;

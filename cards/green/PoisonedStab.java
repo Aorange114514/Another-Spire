@@ -1,6 +1,6 @@
-package anotherspire.cards.green;
+package anotherspirerework.cards.green;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
@@ -14,7 +14,7 @@ import com.megacrit.cardcrawl.powers.PoisonPower;
 public class PoisonedStab extends AbstractCard {
     public static final String ID = "Poisoned Stab";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public PoisonedStab() {
         super(ID, cardStrings.NAME, "green/attack/poisoned_stab", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.COMMON, CardTarget.ENEMY);

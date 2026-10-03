@@ -1,7 +1,7 @@
-package anotherspire.cards.green;
+package anotherspirerework.cards.green;
 
-import anotherspire.AnotherSpire;
-import anotherspire.actions.PlayShivsFromExhaustAction;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.actions.PlayShivsFromExhaustAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.tempCards.Shiv;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -16,7 +16,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class DieDieDie extends AbstractCard {
     public static final String ID = "Die Die Die";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     /** Whether the description currently carries the live counter line. */
     private boolean showingCounter = false;
@@ -47,11 +47,11 @@ public class DieDieDie extends AbstractCard {
     @Override
     public void update() {
         super.update();
-        boolean combat = AnotherSpire.inCombat();
+        boolean combat = AnotherSpireRework.inCombat();
         if (combat != this.showingCounter) {
             this.showingCounter = combat;
             this.rawDescription = combat
-                    ? cardStrings.DESCRIPTION + AnotherSpire.extendedDescription(cardStrings, 0)
+                    ? cardStrings.DESCRIPTION + AnotherSpireRework.extendedDescription(cardStrings, 0)
                     : cardStrings.DESCRIPTION;
             initializeDescription();
         }

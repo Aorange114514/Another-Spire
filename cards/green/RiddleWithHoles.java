@@ -1,6 +1,6 @@
-package anotherspire.cards.green;
+package anotherspirerework.cards.green;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -12,7 +12,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class RiddleWithHoles extends AbstractCard {
     public static final String ID = "Riddle With Holes";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public RiddleWithHoles() {
         super(ID, cardStrings.NAME, "green/attack/riddle_with_holes", 2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.UNCOMMON, CardTarget.ENEMY);

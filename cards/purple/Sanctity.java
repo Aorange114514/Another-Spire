@@ -1,7 +1,7 @@
-package anotherspire.cards.purple;
+package anotherspirerework.cards.purple;
 
-import anotherspire.AnotherSpire;
-import anotherspire.actions.SanctityEnergyAction;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.actions.SanctityEnergyAction;
 import com.megacrit.cardcrawl.actions.common.GainBlockAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -13,7 +13,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class Sanctity extends AbstractCard {
     public static final String ID = "Sanctity";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Sanctity() {
         super(ID, cardStrings.NAME, "purple/skill/sanctity", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.PURPLE, CardRarity.UNCOMMON, CardTarget.SELF);

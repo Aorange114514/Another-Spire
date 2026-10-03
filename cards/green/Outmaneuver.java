@@ -1,6 +1,6 @@
-package anotherspire.cards.green;
+package anotherspirerework.cards.green;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -11,7 +11,7 @@ import com.megacrit.cardcrawl.powers.EnergizedPower;
 public class Outmaneuver extends AbstractCard {
     public static final String ID = "Outmaneuver";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Outmaneuver() {
         super(ID, cardStrings.NAME, "green/skill/outmaneuver", 0, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.COMMON, CardTarget.NONE);

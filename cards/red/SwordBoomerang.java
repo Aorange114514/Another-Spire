@@ -1,6 +1,6 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.AttackDamageRandomEnemyAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -11,7 +11,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class SwordBoomerang extends AbstractCard {
     public static final String ID = "Sword Boomerang";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public SwordBoomerang() {
         super(ID, cardStrings.NAME, "red/attack/sword_boomerang", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.RED, CardRarity.COMMON, CardTarget.ALL_ENEMY);

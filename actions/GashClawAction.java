@@ -1,6 +1,6 @@
-package anotherspire.actions;
+package anotherspirerework.actions;
 
-import anotherspire.cards.blue.Claw;
+import anotherspirerework.cards.blue.Claw;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;

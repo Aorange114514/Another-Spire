@@ -1,7 +1,7 @@
-package anotherspire.cards.green;
+package anotherspirerework.cards.green;
 
-import anotherspire.AnotherSpire;
-import anotherspire.powers.GlassKnifeMarkPower;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.powers.GlassKnifeMarkPower;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
@@ -14,7 +14,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class GlassKnife extends AbstractCard {
     public static final String ID = "Glass Knife";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public GlassKnife() {
         super(ID, cardStrings.NAME, "green/attack/glass_knife", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.RARE, CardTarget.ENEMY);

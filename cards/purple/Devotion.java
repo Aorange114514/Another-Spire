@@ -1,7 +1,7 @@
-package anotherspire.cards.purple;
+package anotherspirerework.cards.purple;
 
-import anotherspire.AnotherSpire;
-import anotherspire.powers.DevotionDrawPower;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.powers.DevotionDrawPower;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -11,7 +11,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class Devotion extends AbstractCard {
     public static final String ID = "Devotion";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Devotion() {
         super(ID, cardStrings.NAME, "purple/power/devotion", 1, cardStrings.DESCRIPTION, CardType.POWER, CardColor.PURPLE, CardRarity.RARE, CardTarget.NONE);

@@ -1,5 +1,6 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
+import anotherspirerework.util.SaturatingMath;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
@@ -41,21 +42,15 @@ public class NoPowerCapPatch {
 
     /** Saturates into the int range instead of wrapping around. */
     public static int saturate(long value) {
-        if (value > Integer.MAX_VALUE) {
-            return Integer.MAX_VALUE;
-        }
-        if (value < Integer.MIN_VALUE) {
-            return Integer.MIN_VALUE;
-        }
-        return (int) value;
+        return SaturatingMath.fromLong(value);
     }
 
     private static void wantStack(AbstractPower power, int stackAmount) {
-        wanted = saturate((long) power.amount + stackAmount);
+        wanted = SaturatingMath.add(power.amount, stackAmount);
     }
 
     private static void wantReduce(AbstractPower power, int reduceAmount) {
-        wanted = saturate((long) power.amount - reduceAmount);
+        wanted = SaturatingMath.subtract(power.amount, reduceAmount);
     }
 
     private static void wantCreate(int amount) {

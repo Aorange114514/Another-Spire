@@ -1,6 +1,6 @@
-package anotherspire.cards.blue;
+package anotherspirerework.cards.blue;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.actions.defect.DecreaseMaxOrbAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -13,7 +13,7 @@ import com.megacrit.cardcrawl.powers.StrengthPower;
 public class Reprogram extends AbstractCard {
     public static final String ID = "Reprogram";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Reprogram() {
         super(ID, cardStrings.NAME, "blue/skill/reprogram", 2, cardStrings.DESCRIPTION, CardType.POWER, CardColor.BLUE, CardRarity.UNCOMMON, CardTarget.NONE);

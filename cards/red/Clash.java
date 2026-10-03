@@ -1,6 +1,6 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
@@ -15,7 +15,7 @@ import com.megacrit.cardcrawl.vfx.combat.ClashEffect;
 public class Clash extends AbstractCard {
     public static final String ID = "Clash";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Clash() {
         super(ID, cardStrings.NAME, "red/attack/clash", 0, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.RED, CardRarity.COMMON, CardTarget.ENEMY);
@@ -24,6 +24,9 @@ public class Clash extends AbstractCard {
 
     public static int countNonAttacks() {
         int count = 0;
+        if (AbstractDungeon.player == null) {
+            return count;
+        }
         for (AbstractCard c : AbstractDungeon.player.hand.group) {
             if (c.type != CardType.ATTACK) {
                 count++;
@@ -42,16 +45,22 @@ public class Clash extends AbstractCard {
     public void calculateCardDamage(AbstractMonster mo) {
         int realBaseDamage = this.baseDamage;
         this.baseDamage -= 2 * countNonAttacks();
-        super.calculateCardDamage(mo);
-        this.baseDamage = realBaseDamage;
+        try {
+            super.calculateCardDamage(mo);
+        } finally {
+            this.baseDamage = realBaseDamage;
+        }
         this.isDamageModified = this.damage != this.baseDamage;
     }
 
     public void applyPowers() {
         int realBaseDamage = this.baseDamage;
         this.baseDamage -= 2 * countNonAttacks();
-        super.applyPowers();
-        this.baseDamage = realBaseDamage;
+        try {
+            super.applyPowers();
+        } finally {
+            this.baseDamage = realBaseDamage;
+        }
         this.isDamageModified = this.damage != this.baseDamage;
     }
 

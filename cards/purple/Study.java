@@ -1,7 +1,7 @@
-package anotherspire.cards.purple;
+package anotherspirerework.cards.purple;
 
-import anotherspire.AnotherSpire;
-import anotherspire.powers.StudyInsightPower;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.powers.StudyInsightPower;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.tempCards.Insight;
@@ -12,7 +12,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class Study extends AbstractCard {
     public static final String ID = "Study";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Study() {
         super(ID, cardStrings.NAME, "purple/power/study", 2, cardStrings.DESCRIPTION, CardType.POWER, CardColor.PURPLE, CardRarity.UNCOMMON, CardTarget.SELF);

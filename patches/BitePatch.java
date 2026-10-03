@@ -1,6 +1,6 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import basemod.ReflectionHacks;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
@@ -27,9 +27,9 @@ public class BitePatch {
     /** Keeps the patched card's static text in sync with our own strings. */
     public static void applyStrings() {
         try {
-            ReflectionHacks.setPrivateStaticFinal(Bite.class, "cardStrings", AnotherSpire.getCardStrings("Bite"));
+            ReflectionHacks.setPrivateStaticFinal(Bite.class, "cardStrings", AnotherSpireRework.getCardStrings("Bite"));
         } catch (Exception e) {
-            AnotherSpire.logger.error("Failed to override Bite card strings.", e);
+            AnotherSpireRework.logger.error("Failed to override Bite card strings.", e);
         }
     }
 
@@ -41,7 +41,7 @@ public class BitePatch {
     public static class StringPatch {
         @SpirePostfixPatch
         public static void Postfix(Bite __instance) {
-            CardStrings strings = AnotherSpire.getCardStrings("Bite");
+            CardStrings strings = AnotherSpireRework.getCardStrings("Bite");
             if (strings == null) {
                 return;
             }

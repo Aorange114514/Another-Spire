@@ -1,6 +1,6 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
@@ -15,7 +15,7 @@ import com.megacrit.cardcrawl.powers.WeakPower;
 public class Uppercut extends AbstractCard {
     public static final String ID = "Uppercut";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Uppercut() {
         super(ID, cardStrings.NAME, "red/attack/uppercut", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.RED, CardRarity.UNCOMMON, CardTarget.ENEMY);

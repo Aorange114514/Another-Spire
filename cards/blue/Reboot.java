@@ -1,7 +1,7 @@
-package anotherspire.cards.blue;
+package anotherspirerework.cards.blue;
 
-import anotherspire.AnotherSpire;
-import anotherspire.actions.ExhaustAllStatusAction;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.actions.ExhaustAllStatusAction;
 import com.megacrit.cardcrawl.actions.common.DrawCardAction;
 import com.megacrit.cardcrawl.actions.common.ShuffleAction;
 import com.megacrit.cardcrawl.actions.defect.ShuffleAllAction;
@@ -16,7 +16,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class Reboot extends AbstractCard {
     public static final String ID = "Reboot";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Reboot() {
         super(ID, cardStrings.NAME, "blue/skill/reboot", 0, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.BLUE, CardRarity.RARE, CardTarget.SELF);

@@ -1,6 +1,6 @@
-package anotherspire.cards.purple;
+package anotherspirerework.cards.purple;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
@@ -18,7 +18,7 @@ import com.megacrit.cardcrawl.vfx.combat.FlickCoinEffect;
 public class JustLucky extends AbstractCard {
     public static final String ID = "JustLucky";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     private static final int DRAW_ON_UPGRADE = 1;
 

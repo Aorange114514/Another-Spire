@@ -1,6 +1,6 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.evacipated.cardcrawl.modthespire.lib.LineFinder;
 import com.evacipated.cardcrawl.modthespire.lib.Matcher;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInsertLocator;
@@ -99,7 +99,7 @@ public class NoBlockCapPatch {
                         && code.byteAt(previous + 1) == (CAP >>> 8)
                         && code.byteAt(previous + 2) == (CAP & 0xFF);
             } catch (Exception e) {
-                AnotherSpire.logger.error("Could not read AbstractCreature.addBlock; block stays capped at " + CAP + ".", e);
+                AnotherSpireRework.logger.error("Could not read AbstractCreature.addBlock; block stays capped at " + CAP + ".", e);
                 return false;
             }
         }

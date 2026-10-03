@@ -1,7 +1,7 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
-import anotherspire.patches.NoPowerCapPatch;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.util.SaturatingMath;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
@@ -17,7 +17,7 @@ import com.megacrit.cardcrawl.vfx.combat.VerticalImpactEffect;
 public class HeavyBlade extends AbstractCard {
     public static final String ID = "Heavy Blade";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public HeavyBlade() {
         super(ID, cardStrings.NAME, "red/attack/heavy_blade", 2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.RED, CardRarity.UNCOMMON, CardTarget.ENEMY);
@@ -41,11 +41,14 @@ public class HeavyBlade extends AbstractCard {
             // once Strength gets big (uncapped Strength easily passes 400 million, and the divide
             // cannot undo the overflow, leaving the player with negative Strength). Saturate the
             // temporary value instead, and restore the exact original afterwards.
-            strength.amount = NoPowerCapPatch.saturate((long) original * this.magicNumber);
+            strength.amount = SaturatingMath.multiply(original, this.magicNumber);
         }
-        super.applyPowers();
-        if (strength != null) {
-            strength.amount = original;
+        try {
+            super.applyPowers();
+        } finally {
+            if (strength != null) {
+                strength.amount = original;
+            }
         }
     }
 
@@ -53,11 +56,14 @@ public class HeavyBlade extends AbstractCard {
         AbstractPower strength = AbstractDungeon.player.getPower("Strength");
         int original = strength == null ? 0 : strength.amount;
         if (strength != null) {
-            strength.amount = NoPowerCapPatch.saturate((long) original * this.magicNumber);
+            strength.amount = SaturatingMath.multiply(original, this.magicNumber);
         }
-        super.calculateCardDamage(mo);
-        if (strength != null) {
-            strength.amount = original;
+        try {
+            super.calculateCardDamage(mo);
+        } finally {
+            if (strength != null) {
+                strength.amount = original;
+            }
         }
     }
 

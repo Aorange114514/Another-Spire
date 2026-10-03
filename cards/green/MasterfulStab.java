@@ -1,7 +1,7 @@
-package anotherspire.cards.green;
+package anotherspirerework.cards.green;
 
-import anotherspire.AnotherSpire;
-import anotherspire.actions.DiscardForShivsAction;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.actions.DiscardForShivsAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.tempCards.Shiv;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -12,7 +12,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class MasterfulStab extends AbstractCard {
     public static final String ID = "Masterful Stab";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     private static final int MAX_DISCARD = 3;
 

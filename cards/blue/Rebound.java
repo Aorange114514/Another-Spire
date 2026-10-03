@@ -1,7 +1,7 @@
-package anotherspire.cards.blue;
+package anotherspirerework.cards.blue;
 
-import anotherspire.AnotherSpire;
-import anotherspire.patches.OrbTrackerPatch;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.patches.OrbTrackerPatch;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
 import com.megacrit.cardcrawl.actions.defect.ChannelAction;
@@ -15,7 +15,7 @@ import com.megacrit.cardcrawl.orbs.AbstractOrb;
 public class Rebound extends AbstractCard {
     public static final String ID = "Rebound";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Rebound() {
         super(ID, cardStrings.NAME, "blue/attack/rebound", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.BLUE, CardRarity.COMMON, CardTarget.ENEMY);

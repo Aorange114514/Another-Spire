@@ -1,7 +1,7 @@
-package anotherspire.cards.blue;
+package anotherspirerework.cards.blue;
 
-import anotherspire.AnotherSpire;
-import anotherspire.actions.GashClawAction;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.actions.GashClawAction;
 import com.badlogic.gdx.graphics.Color;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
@@ -16,7 +16,7 @@ import com.megacrit.cardcrawl.vfx.combat.ClawEffect;
 public class Claw extends AbstractCard {
     public static final String ID = "Gash";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Claw() {
         super(ID, cardStrings.NAME, "blue/attack/claw", 0, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.BLUE, CardRarity.COMMON, CardTarget.ENEMY);

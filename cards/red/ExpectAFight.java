@@ -1,6 +1,6 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
+import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.common.GainEnergyAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -18,7 +18,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class ExpectAFight extends AbstractCard {
     public static final String ID = "Pummel";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     /** Whether the description currently carries the live counter line. */
     private boolean showingCounter = false;
@@ -49,11 +49,11 @@ public class ExpectAFight extends AbstractCard {
     @Override
     public void update() {
         super.update();
-        boolean combat = AnotherSpire.inCombat();
+        boolean combat = AnotherSpireRework.inCombat();
         if (combat != this.showingCounter) {
             this.showingCounter = combat;
             this.rawDescription = combat
-                    ? cardStrings.DESCRIPTION + AnotherSpire.extendedDescription(cardStrings, 0)
+                    ? cardStrings.DESCRIPTION + AnotherSpireRework.extendedDescription(cardStrings, 0)
                     : cardStrings.DESCRIPTION;
             initializeDescription();
         }

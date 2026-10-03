@@ -1,7 +1,7 @@
-package anotherspire.cards.blue;
+package anotherspirerework.cards.blue;
 
-import anotherspire.AnotherSpire;
-import anotherspire.powers.NextTurnFocusPower;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.powers.NextTurnFocusPower;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
@@ -17,7 +17,7 @@ import com.megacrit.cardcrawl.vfx.combat.MindblastEffect;
 public class Hyperbeam extends AbstractCard {
     public static final String ID = "Hyperbeam";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Hyperbeam() {
         super(ID, cardStrings.NAME, "blue/attack/hyper_beam", 2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.BLUE, CardRarity.RARE, CardTarget.ALL_ENEMY);

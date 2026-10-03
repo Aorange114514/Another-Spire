@@ -1,4 +1,4 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;

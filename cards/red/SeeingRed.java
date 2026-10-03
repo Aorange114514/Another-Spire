@@ -1,7 +1,7 @@
-package anotherspire.cards.red;
+package anotherspirerework.cards.red;
 
-import anotherspire.AnotherSpire;
-import anotherspire.patches.ExhaustTracker;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.patches.ExhaustTracker;
 import com.megacrit.cardcrawl.actions.common.GainEnergyAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -12,7 +12,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 public class SeeingRed extends AbstractCard {
     public static final String ID = "Seeing Red";
 
-    private static final CardStrings cardStrings = AnotherSpire.getCardStrings(ID);
+    private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public SeeingRed() {
         super(ID, cardStrings.NAME, "red/skill/seeing_red", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.RED, CardRarity.UNCOMMON, CardTarget.NONE);

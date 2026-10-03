@@ -1,4 +1,4 @@
-package anotherspire.actions;
+package anotherspirerework.actions;
 
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.GameActionManager;
@@ -34,16 +34,6 @@ public class DiscardForShivsAction extends AbstractGameAction {
     public void update() {
         if (this.duration == DURATION) {
             if (AbstractDungeon.getMonsters().areMonstersBasicallyDead() || AbstractDungeon.player.hand.isEmpty()) {
-                this.isDone = true;
-                return;
-            }
-            if (AbstractDungeon.player.hand.size() <= this.amount) {
-                int tmp = AbstractDungeon.player.hand.size();
-                for (int i = 0; i < tmp; i++) {
-                    discard(AbstractDungeon.player.hand.getTopCard());
-                }
-                AbstractDungeon.player.hand.applyPowers();
-                addShivs(tmp);
                 this.isDone = true;
                 return;
             }
