@@ -1,89 +1,93 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
-import anotherspire.AnotherSpire;
-import anotherspire.cards.blue.Barrage;
-import anotherspire.cards.blue.Blizzard;
-import anotherspire.cards.blue.Chill;
-import anotherspire.cards.blue.Claw;
-import anotherspire.cards.blue.CoreSurge;
-import anotherspire.cards.blue.CreativeAI;
-import anotherspire.cards.blue.Dualcast;
-import anotherspire.cards.blue.ForceField;
-import anotherspire.cards.blue.Fusion;
-import anotherspire.cards.blue.Heatsinks;
-import anotherspire.cards.blue.HelloWorld;
-import anotherspire.cards.blue.Hyperbeam;
-import anotherspire.cards.blue.Leap;
-import anotherspire.cards.blue.Melter;
-import anotherspire.cards.blue.MultiCast;
-import anotherspire.cards.blue.Rainbow;
-import anotherspire.cards.blue.Rebound;
-import anotherspire.cards.blue.Reboot;
-import anotherspire.cards.blue.Reprogram;
-import anotherspire.cards.blue.RipAndTear;
-import anotherspire.cards.blue.SteamBarrier;
-import anotherspire.cards.blue.Streamline;
-import anotherspire.cards.blue.SweepingBeam;
-import anotherspire.cards.colorless.Purity;
-import anotherspire.cards.green.AThousandCuts;
-import anotherspire.cards.green.AfterImage;
-import anotherspire.cards.green.Backflip;
-import anotherspire.cards.green.Choke;
-import anotherspire.cards.green.CripplingPoison;
-import anotherspire.cards.green.DaggerSpray;
-import anotherspire.cards.green.DaggerThrow;
-import anotherspire.cards.green.DieDieDie;
-import anotherspire.cards.green.DodgeAndRoll;
-import anotherspire.cards.green.Expertise;
-import anotherspire.cards.green.GlassKnife;
-import anotherspire.cards.green.MasterfulStab;
-import anotherspire.cards.green.Outmaneuver;
-import anotherspire.cards.green.PoisonedStab;
-import anotherspire.cards.green.QuickSlash;
-import anotherspire.cards.green.RiddleWithHoles;
-import anotherspire.cards.green.Unload;
-import anotherspire.cards.purple.BattleHymn;
-import anotherspire.cards.purple.CarveReality;
-import anotherspire.cards.purple.Consecrate;
-import anotherspire.cards.purple.DeceiveReality;
-import anotherspire.cards.purple.Devotion;
-import anotherspire.cards.purple.FollowUp;
-import anotherspire.cards.purple.JustLucky;
-import anotherspire.cards.purple.LikeWater;
-import anotherspire.cards.purple.PathToVictory;
-import anotherspire.cards.purple.Perseverance;
-import anotherspire.cards.purple.Sanctity;
-import anotherspire.cards.purple.Study;
-import anotherspire.cards.purple.Swivel;
-import anotherspire.cards.purple.ThirdEye;
-import anotherspire.cards.purple.Vengeance;
-import anotherspire.cards.purple.Weave;
-import anotherspire.cards.purple.WheelKick;
-import anotherspire.cards.purple.WindmillStrike;
-import anotherspire.cards.red.Berserk;
-import anotherspire.cards.red.Bloodletting;
-import anotherspire.cards.red.BurningPact;
-import anotherspire.cards.red.Clash;
-import anotherspire.cards.red.Cleave;
-import anotherspire.cards.red.Clothesline;
-import anotherspire.cards.red.Entrench;
-import anotherspire.cards.red.Flex;
-import anotherspire.cards.red.HeavyBlade;
-import anotherspire.cards.red.IronWave;
-import anotherspire.cards.red.Metallicize;
-import anotherspire.cards.red.ExpectAFight;
-import anotherspire.cards.red.Rampage;
-import anotherspire.cards.red.SearingBlow;
-import anotherspire.cards.red.SeeingRed;
-import anotherspire.cards.red.Sentinel;
-import anotherspire.cards.red.SeverSoul;
-import anotherspire.cards.red.SwordBoomerang;
-import anotherspire.cards.red.ThunderClap;
-import anotherspire.cards.red.Uppercut;
-import anotherspire.cards.red.Whirlwind;
-import anotherspire.cards.red.WildStrike;
+import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.cards.blue.Barrage;
+import anotherspirerework.cards.blue.Blizzard;
+import anotherspirerework.cards.blue.Chill;
+import anotherspirerework.cards.blue.Claw;
+import anotherspirerework.cards.blue.CoreSurge;
+import anotherspirerework.cards.blue.CreativeAI;
+import anotherspirerework.cards.blue.Dualcast;
+import anotherspirerework.cards.blue.ForceField;
+import anotherspirerework.cards.blue.Fusion;
+import anotherspirerework.cards.blue.Heatsinks;
+import anotherspirerework.cards.blue.HelloWorld;
+import anotherspirerework.cards.blue.Hyperbeam;
+import anotherspirerework.cards.blue.Leap;
+import anotherspirerework.cards.blue.Melter;
+import anotherspirerework.cards.blue.MultiCast;
+import anotherspirerework.cards.blue.MeteorStrike;
+import anotherspirerework.cards.blue.Rainbow;
+import anotherspirerework.cards.blue.Rebound;
+import anotherspirerework.cards.blue.Reboot;
+import anotherspirerework.cards.blue.Reprogram;
+import anotherspirerework.cards.blue.RipAndTear;
+import anotherspirerework.cards.blue.SteamBarrier;
+import anotherspirerework.cards.blue.Streamline;
+import anotherspirerework.cards.blue.SweepingBeam;
+import anotherspirerework.cards.colorless.Purity;
+import anotherspirerework.cards.green.AThousandCuts;
+import anotherspirerework.cards.green.AfterImage;
+import anotherspirerework.cards.green.Backflip;
+import anotherspirerework.cards.green.Choke;
+import anotherspirerework.cards.green.CripplingPoison;
+import anotherspirerework.cards.green.DaggerSpray;
+import anotherspirerework.cards.green.DaggerThrow;
+import anotherspirerework.cards.green.DieDieDie;
+import anotherspirerework.cards.green.DodgeAndRoll;
+import anotherspirerework.cards.green.Expertise;
+import anotherspirerework.cards.green.GlassKnife;
+import anotherspirerework.cards.green.MasterfulStab;
+import anotherspirerework.cards.green.Outmaneuver;
+import anotherspirerework.cards.green.PoisonedStab;
+import anotherspirerework.cards.green.QuickSlash;
+import anotherspirerework.cards.green.RiddleWithHoles;
+import anotherspirerework.cards.green.Unload;
+import anotherspirerework.cards.purple.BattleHymn;
+import anotherspirerework.cards.purple.CarveReality;
+import anotherspirerework.cards.purple.Consecrate;
+import anotherspirerework.cards.purple.DeceiveReality;
+import anotherspirerework.cards.purple.Devotion;
+import anotherspirerework.cards.purple.FollowUp;
+import anotherspirerework.cards.purple.JustLucky;
+import anotherspirerework.cards.purple.LikeWater;
+import anotherspirerework.cards.purple.PathToVictory;
+import anotherspirerework.cards.purple.Perseverance;
+import anotherspirerework.cards.purple.Sanctity;
+import anotherspirerework.cards.purple.Study;
+import anotherspirerework.cards.purple.Swivel;
+import anotherspirerework.cards.purple.ThirdEye;
+import anotherspirerework.cards.purple.Vengeance;
+import anotherspirerework.cards.purple.Weave;
+import anotherspirerework.cards.purple.WheelKick;
+import anotherspirerework.cards.purple.WindmillStrike;
+import anotherspirerework.cards.red.Berserk;
+import anotherspirerework.cards.red.Bloodletting;
+import anotherspirerework.cards.red.BurningPact;
+import anotherspirerework.cards.red.Clash;
+import anotherspirerework.cards.red.Cleave;
+import anotherspirerework.cards.red.Clothesline;
+import anotherspirerework.cards.red.Entrench;
+import anotherspirerework.cards.red.Flex;
+import anotherspirerework.cards.red.HeavyBlade;
+import anotherspirerework.cards.red.IronWave;
+import anotherspirerework.cards.red.Metallicize;
+import anotherspirerework.cards.red.ExpectAFight;
+import anotherspirerework.cards.red.Rampage;
+import anotherspirerework.cards.red.SearingBlow;
+import anotherspirerework.cards.red.SeeingRed;
+import anotherspirerework.cards.red.Sentinel;
+import anotherspirerework.cards.red.SeverSoul;
+import anotherspirerework.cards.red.SwordBoomerang;
+import anotherspirerework.cards.red.ThunderClap;
+import anotherspirerework.cards.red.Uppercut;
+import anotherspirerework.cards.red.Whirlwind;
+import anotherspirerework.cards.red.WildStrike;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
+
+import java.util.Arrays;
+import java.util.List;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.helpers.CardLibrary;
 
@@ -96,92 +100,31 @@ import com.megacrit.cardcrawl.helpers.CardLibrary;
 public class CardSwapPatch {
     @SpirePostfixPatch
     public static void Postfix() {
-        // Ironclad
-        swap(new Clash());
-        swap(new WildStrike());
-        swap(new HeavyBlade());
-        swap(new Clothesline());
-        swap(new IronWave());
-        swap(new Flex());
-        swap(new ThunderClap());
-        swap(new Cleave());
-        swap(new SwordBoomerang());
-        swap(new Uppercut());
-        swap(new Sentinel());
-        swap(new Entrench());
-        swap(new Bloodletting());
-        swap(new SeverSoul());
-        swap(new Whirlwind());
-        swap(new Rampage());
-        swap(new SearingBlow());
-        swap(new Berserk());
-        swap(new Metallicize());
-        swap(new ExpectAFight());
-        swap(new BurningPact());
-        swap(new SeeingRed());
-        // Silent
-        swap(new DaggerSpray());
-        swap(new Backflip());
-        swap(new PoisonedStab());
-        swap(new QuickSlash());
-        swap(new DaggerThrow());
-        swap(new Outmaneuver());
-        swap(new Choke());
-        swap(new RiddleWithHoles());
-        swap(new GlassKnife());
-        swap(new AThousandCuts());
-        swap(new Unload());
-        swap(new MasterfulStab());
-        swap(new CripplingPoison());
-        swap(new Expertise());
-        swap(new DieDieDie());
-        swap(new AfterImage());
-        swap(new DodgeAndRoll());
-        // Defect
-        swap(new Dualcast());
-        swap(new Rebound());
-        swap(new Barrage());
-        swap(new SweepingBeam());
-        swap(new Claw());
-        swap(new Streamline());
-        swap(new SteamBarrier());
-        swap(new Leap());
-        swap(new HelloWorld());
-        swap(new Chill());
-        swap(new ForceField());
-        swap(new Blizzard());
-        swap(new RipAndTear());
-        swap(new Melter());
-        swap(new Fusion());
-        swap(new Reprogram());
-        swap(new MultiCast());
-        swap(new Hyperbeam());
-        swap(new Rainbow());
-        swap(new Heatsinks());
-        swap(new CoreSurge());
-        swap(new Reboot());
-        swap(new CreativeAI());
-        // Watcher
-        swap(new PathToVictory());
-        swap(new Consecrate());
-        swap(new FollowUp());
-        swap(new Perseverance());
-        swap(new ThirdEye());
-        swap(new BattleHymn());
-        swap(new LikeWater());
-        swap(new Vengeance());
-        swap(new Swivel());
-        swap(new WindmillStrike());
-        swap(new DeceiveReality());
-        swap(new Study());
-        swap(new Weave());
-        swap(new Devotion());
-        swap(new Sanctity());
-        swap(new CarveReality());
-        swap(new WheelKick());
-        swap(new JustLucky());
-        // Colorless
-        swap(new Purity());
+        for (AbstractCard card : replacements()) {
+            swap(card);
+        }
+    }
+
+    /** The order is kept grouped by character so the replacement list is easy to audit. */
+    private static List<AbstractCard> replacements() {
+        return Arrays.<AbstractCard>asList(
+                new Clash(), new WildStrike(), new HeavyBlade(), new Clothesline(), new IronWave(),
+                new Flex(), new ThunderClap(), new Cleave(), new SwordBoomerang(), new Uppercut(),
+                new Sentinel(), new Entrench(), new Bloodletting(), new SeverSoul(), new Whirlwind(),
+                new Rampage(), new SearingBlow(), new Berserk(), new Metallicize(), new ExpectAFight(),
+                new BurningPact(), new SeeingRed(),
+                new DaggerSpray(), new Backflip(), new PoisonedStab(), new QuickSlash(), new DaggerThrow(),
+                new Outmaneuver(), new Choke(), new RiddleWithHoles(), new GlassKnife(), new AThousandCuts(),
+                new Unload(), new MasterfulStab(), new CripplingPoison(), new Expertise(), new DieDieDie(),
+                new AfterImage(), new DodgeAndRoll(),
+                new Dualcast(), new Rebound(), new Barrage(), new SweepingBeam(), new Claw(), new Streamline(),
+                new SteamBarrier(), new Leap(), new HelloWorld(), new Chill(), new ForceField(), new Blizzard(),
+                new RipAndTear(), new Melter(), new Fusion(), new Reprogram(), new MultiCast(), new Hyperbeam(),
+                new Rainbow(), new Heatsinks(), new CoreSurge(), new Reboot(), new CreativeAI(), new MeteorStrike(),
+                new PathToVictory(), new Consecrate(), new FollowUp(), new Perseverance(), new ThirdEye(),
+                new BattleHymn(), new LikeWater(), new Vengeance(), new Swivel(), new WindmillStrike(),
+                new DeceiveReality(), new Study(), new Weave(), new Devotion(), new Sanctity(), new CarveReality(),
+                new WheelKick(), new JustLucky(), new Purity());
     }
 
     private static void swap(AbstractCard card) {
@@ -189,7 +132,7 @@ public class CardSwapPatch {
         if (original != null) {
             card.isSeen = original.isSeen;
         } else {
-            AnotherSpire.logger.error("Could not find vanilla card \"" + card.cardID + "\" to replace.");
+            AnotherSpireRework.logger.error("Could not find vanilla card \"" + card.cardID + "\" to replace.");
         }
         CardLibrary.cards.put(card.cardID, card);
     }

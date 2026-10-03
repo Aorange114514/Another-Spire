@@ -2,8 +2,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <modID>anotherspire</modID>
-        <author>AnotherSpire</author>
+        <modID>anotherspirerework</modID>
+        <author>AnotherSpire Rework</author>
 
         <!-- Change the path for your system to match your Steam installation. -->
         <!-- If you're not sure, go to Slay the Spire in the Steam library, and choose Manage -> Browse local files -->
@@ -20,10 +20,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mod.deploy.skip>true</mod.deploy.skip>
     </properties>
 
     <!-- This information will be displayed in ModTheSpire, the modded launcher. -->
-    <name>AnotherSpire</name>
+    <name>AnotherSpire Rework</name>
     <version>1.0.0</version>
     <description>Reworks a large set of vanilla cards. See requirements.txt for the full list of changes.</description>
 
@@ -31,8 +32,8 @@
     <!--You'll get a warning regarding these when you package your mod, but don't worry, it's just set up like this for convenience.-->
     <!--Technically these should be changed individually, but this allows you to just set it in one place.-->
     <!--Absolutely a no-go for larger projects, but for a personal mod it's fine.-->
-    <groupId>${modID}</groupId>
-    <artifactId>${modID}</artifactId>
+    <groupId>anotherspirerework</groupId>
+    <artifactId>anotherspirerework</artifactId>
 
     <dependencies>
         <dependency>
@@ -57,13 +58,6 @@
             <version>5.44.0</version>
             <scope>system</scope>
             <systemPath>${steam.path}/workshop/content/646570/1605833019/BaseMod.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.evacipated.cardcrawl.mod</groupId>
-            <artifactId>StSLib</artifactId>
-            <version>2.4.0</version>
-            <scope>system</scope>
-            <systemPath>${steam.path}/workshop/content/646570/1609158507/StSLib.jar</systemPath>
         </dependency>
     </dependencies>
 
@@ -124,6 +118,24 @@
                 <version>3.1.0</version>
                 <executions>
                     <execution>
+                        <id>regression-tests</id>
+                        <phase>test</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <java classname="anotherspirerework.util.SaturatingMathTest" fork="true" failonerror="true">
+                                    <classpath>
+                                        <pathelement location="${project.build.outputDirectory}"/>
+                                        <pathelement location="${project.build.testOutputDirectory}"/>
+                                    </classpath>
+                                </java>
+                                <java classname="anotherspirerework.PatchContractTest" fork="true" failonerror="true">
+                                    <classpath refid="maven.test.classpath"/>
+                                </java>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>description</id>
                         <phase>prepare-package</phase>
                         <configuration>
@@ -154,7 +166,7 @@
                         <id>copy</id>
                         <phase>package</phase>
                         <configuration>
-                            <target>
+                            <target unless="mod.deploy.skip">
                                 <!--This puts a copy of your mod's jar file into the SlayTheSpire mods folder so it will be loaded.-->
                                 <!--On mac, it will be copied to another location. See further below.-->
                                 <copy file="target/${project.artifactId}.jar" tofile="${steam.path}/common/SlayTheSpire/mods/${project.artifactId}.jar"/>
@@ -189,6 +201,27 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>local-dependencies</id>
+            <activation><property><name>local.dependencies</name></property></activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.megacrit.cardcrawl</groupId><artifactId>slaythespire</artifactId>
+                    <version>${SlayTheSpire.version}</version><scope>system</scope>
+                    <systemPath>${local.dependencies}/desktop-1.0.jar</systemPath>
+                </dependency>
+                <dependency>
+                    <groupId>com.evacipated.cardcrawl</groupId><artifactId>modthespire</artifactId>
+                    <version>${ModTheSpire.version}</version><scope>system</scope>
+                    <systemPath>${local.dependencies}/ModTheSpire.jar</systemPath>
+                </dependency>
+                <dependency>
+                    <groupId>basemod</groupId><artifactId>basemod</artifactId>
+                    <version>5.44.0</version><scope>system</scope>
+                    <systemPath>${local.dependencies}/BaseMod.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>default</id>
             <activation>
@@ -236,7 +269,7 @@
                             <execution>
                                 <phase>package</phase>
                                 <configuration>
-                                    <target>
+                                    <target unless="mod.deploy.skip">
                                         <!-- This moves your mod into a common folder where all mods you make can go. -->
                                         <copy file="target/${project.artifactId}.jar" tofile="${steam.path}/common/SlayTheSpire/SlayTheSpire.app/Contents/Resources/mods/${project.artifactId}.jar"/>
                                     </target>

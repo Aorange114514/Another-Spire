@@ -1,5 +1,6 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
+import anotherspirerework.util.SaturatingMath;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
@@ -32,9 +33,9 @@ public class NoEnergyCapPatch {
     @SpirePostfixPatch
     public static void Postfix() {
         if (before > 0 && EnergyPanel.totalCount < before) {
-            EnergyPanel.totalCount = NoPowerCapPatch.saturate(uncapped);
+            EnergyPanel.totalCount = SaturatingMath.fromLong(uncapped);
         } else if (EnergyPanel.totalCount == 999 && uncapped > 999) {
-            EnergyPanel.totalCount = NoPowerCapPatch.saturate(uncapped);
+            EnergyPanel.totalCount = SaturatingMath.fromLong(uncapped);
         }
     }
 }

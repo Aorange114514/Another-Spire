@@ -1,4 +1,4 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
 import com.megacrit.cardcrawl.actions.GameActionManager;
 
@@ -11,7 +11,7 @@ public class ExhaustTracker {
 
     private static int lastExhaustTurn = -1;
 
-    /** Called from AnotherSpire.receivePostExhaust. */
+    /** Called from AnotherSpireRework.receivePostExhaust. */
     public static void onCardExhausted() {
         lastExhaustTurn = GameActionManager.turn;
     }
@@ -20,7 +20,7 @@ public class ExhaustTracker {
         return GameActionManager.turn == lastExhaustTurn;
     }
 
-    /** Called from AnotherSpire.receivePostBattle. */
+    /** Called from AnotherSpireRework.receivePostBattle. */
     public static void reset() {
         lastExhaustTurn = -1;
     }

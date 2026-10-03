@@ -1,6 +1,6 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
-import anotherspire.powers.GlassKnifeMarkPower;
+import anotherspirerework.powers.GlassKnifeMarkPower;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.megacrit.cardcrawl.actions.common.GainBlockAction;

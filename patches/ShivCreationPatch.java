@@ -1,6 +1,6 @@
-package anotherspire.patches;
+package anotherspirerework.patches;
 
-import anotherspire.powers.ShivMasteryPower;
+import anotherspirerework.powers.ShivMasteryPower;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.megacrit.cardcrawl.cards.tempCards.Shiv;
