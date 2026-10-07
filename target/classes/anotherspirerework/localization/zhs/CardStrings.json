@@ -151,7 +151,7 @@
   "anotherspirerework:Steam": {
     "NAME": "蒸汽护壁",
     "DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 消耗 。",
-    "UPGRADE_DESCRIPTION": "生成 !M! 个 冰霜 充能球。"
+    "UPGRADE_DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 消耗 。"
   },
   "anotherspirerework:Leap": {
     "NAME": "飞跃",

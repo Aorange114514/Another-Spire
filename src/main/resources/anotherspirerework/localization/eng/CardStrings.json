@@ -151,7 +151,7 @@
   "${modID}:Steam": {
     "NAME": "Steam Barrier",
     "DESCRIPTION": "Channel !M! Frost. NL Exhaust.",
-    "UPGRADE_DESCRIPTION": "Channel !M! Frost."
+    "UPGRADE_DESCRIPTION": "Channel !M! Frost. NL Exhaust."
   },
   "${modID}:Leap": {
     "NAME": "Leap",

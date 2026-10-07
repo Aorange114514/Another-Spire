@@ -26,10 +26,17 @@ public class SteamBarrier extends AbstractCard {
         }
     }
 
+    /**
+     * Upgraded: 2 Frost orbs, and Exhaust stays. The requirements list Exhaust once and never say
+     * to remove it when upgraded, so the upgraded text has to advertise it too - applying
+     * UPGRADE_DESCRIPTION here also refreshes the !M! in the description.
+     */
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
             upgradeMagicNumber(1);
+            this.rawDescription = cardStrings.UPGRADE_DESCRIPTION;
+            initializeDescription();
         }
     }
 

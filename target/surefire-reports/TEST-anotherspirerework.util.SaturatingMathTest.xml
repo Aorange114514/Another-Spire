@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="anotherspirerework.util.SaturatingMathTest" time="0.001" tests="0" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="anotherspirerework.util.SaturatingMathTest" time="0.0" tests="0" errors="0" skipped="0" failures="0">
   <properties>
     <property name="sun.desktop" value="windows"/>
     <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
@@ -7,7 +7,7 @@
     <property name="java.specification.version" value="1.8"/>
     <property name="sun.cpu.isalist" value="amd64"/>
     <property name="sun.jnu.encoding" value="GBK"/>
-    <property name="java.class.path" value="C:\Users\riced\VS Code\STS modding\AnotherSpireRework\target\test-classes;C:\Users\riced\VS Code\STS modding\AnotherSpireRework\target\classes;C:\Program Files (x86)\steam\steamapps\common\SlayTheSpire\desktop-1.0.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605060445\ModTheSpire.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605833019\BaseMod.jar;"/>
+    <property name="java.class.path" value="C:\Users\riced\VS Code\STS modding\Another-Spire\target\test-classes;C:\Users\riced\VS Code\STS modding\Another-Spire\target\classes;C:\Program Files (x86)\steam\steamapps\common\SlayTheSpire\desktop-1.0.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605060445\ModTheSpire.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605833019\BaseMod.jar;"/>
     <property name="java.vm.vendor" value="Azul Systems, Inc."/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="user.variant" value=""/>
@@ -18,21 +18,21 @@
     <property name="user.country" value="CN"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Zulu\zulu-8\jre\bin"/>
-    <property name="sun.java.command" value="C:\Users\riced\AppData\Local\Temp\surefire7367500444994103203\surefirebooter-20261007191951637_3.jar C:\Users\riced\AppData\Local\Temp\surefire7367500444994103203 2026-10-07T19-19-51_035-jvmRun1 surefire-20261007191951637_1tmp surefire_0-20261007191951637_2tmp"/>
-    <property name="surefire.test.class.path" value="C:\Users\riced\VS Code\STS modding\AnotherSpireRework\target\test-classes;C:\Users\riced\VS Code\STS modding\AnotherSpireRework\target\classes;C:\Program Files (x86)\steam\steamapps\common\SlayTheSpire\desktop-1.0.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605060445\ModTheSpire.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605833019\BaseMod.jar;"/>
+    <property name="sun.java.command" value="C:\Users\riced\AppData\Local\Temp\surefire7783017495836933825\surefirebooter-20261007200958569_3.jar C:\Users\riced\AppData\Local\Temp\surefire7783017495836933825 2026-10-07T20-09-58_116-jvmRun1 surefire-20261007200958569_1tmp surefire_0-20261007200958569_2tmp"/>
+    <property name="surefire.test.class.path" value="C:\Users\riced\VS Code\STS modding\Another-Spire\target\test-classes;C:\Users\riced\VS Code\STS modding\Another-Spire\target\classes;C:\Program Files (x86)\steam\steamapps\common\SlayTheSpire\desktop-1.0.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605060445\ModTheSpire.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605833019\BaseMod.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="C:\Users\riced"/>
     <property name="user.language" value="zh"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
     <property name="java.home" value="C:\Program Files\Zulu\zulu-8\jre"/>
-    <property name="basedir" value="C:\Users\riced\VS Code\STS modding\AnotherSpireRework"/>
+    <property name="basedir" value="C:\Users\riced\VS Code\STS modding\Another-Spire"/>
     <property name="file.separator" value="\"/>
     <property name="line.separator" value="&#10;"/>
     <property name="jdk.vendor.version" value="Zulu 8.94.0.17-CA-win64"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment"/>
-    <property name="surefire.real.class.path" value="C:\Users\riced\AppData\Local\Temp\surefire7367500444994103203\surefirebooter-20261007191951637_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\riced\AppData\Local\Temp\surefire7783017495836933825\surefirebooter-20261007200958569_3.jar"/>
     <property name="sun.boot.class.path" value="C:\Program Files\Zulu\zulu-8\jre\lib\resources.jar;C:\Program Files\Zulu\zulu-8\jre\lib\rt.jar;C:\Program Files\Zulu\zulu-8\jre\lib\sunrsasign.jar;C:\Program Files\Zulu\zulu-8\jre\lib\jsse.jar;C:\Program Files\Zulu\zulu-8\jre\lib\jce.jar;C:\Program Files\Zulu\zulu-8\jre\lib\charsets.jar;C:\Program Files\Zulu\zulu-8\jre\lib\jfr.jar;C:\Program Files\Zulu\zulu-8\jre\lib\cat.jar;C:\Program Files\Zulu\zulu-8\jre\classes"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
@@ -48,7 +48,7 @@
     <property name="java.vendor.url.bug" value="http://www.azul.com/support/"/>
     <property name="java.io.tmpdir" value="C:\Users\riced\AppData\Local\Temp\"/>
     <property name="java.version" value="1.8.0_492"/>
-    <property name="user.dir" value="C:\Users\riced\VS Code\STS modding\AnotherSpireRework"/>
+    <property name="user.dir" value="C:\Users\riced\VS Code\STS modding\Another-Spire"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
     <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob"/>

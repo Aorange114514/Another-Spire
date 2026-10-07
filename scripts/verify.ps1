@@ -38,7 +38,9 @@ foreach ($langCards in @($cards, $zhCards)) {
     Assert ($langCards.psobject.Properties['${modID}:ThirdEye'].Value.DESCRIPTION -match '\*(Insight|\u6d1e\u89c1)') 'Missing Insight keyword association'
 }
 # The buffs added with Die Die Die and Envenom keep the card name as their title, and Reprogram is a
-# Power card now, so it must not advertise Exhaust anywhere.
+# Power card now, so it must not advertise Exhaust anywhere. Steam Barrier is the other way round:
+# it Exhausts at both levels (the requirements list Exhaust once, with no "remove it when upgraded"),
+# so its upgrade text has to keep saying so.
 $byLang = @{ eng = $cards; zhs = $zhCards }
 foreach ($lang in @('eng', 'zhs')) {
     $powers = Json (Join-Path $root "$lang\PowerStrings.json")
@@ -50,6 +52,8 @@ foreach ($lang in @('eng', 'zhs')) {
     }
     $reprogram = $langCards.psobject.Properties['${modID}:Reprogram'].Value.DESCRIPTION
     Assert (-not ($reprogram -match 'Exhaust|\u6d88\u8017')) "Reprogram must not advertise Exhaust: $lang"
+    $steam = $langCards.psobject.Properties['${modID}:Steam'].Value
+    Assert ($steam.UPGRADE_DESCRIPTION -match 'Exhaust|\u6d88\u8017') "Steam Barrier+ must advertise Exhaust: $lang"
 }
 # Every power exposes its strings as a static field named powerStrings: the power list screens read
 # that name by reflection, and a power without it shows an unresolved title.
