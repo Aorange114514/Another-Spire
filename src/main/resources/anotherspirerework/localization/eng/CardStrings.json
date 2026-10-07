@@ -1,0 +1,421 @@
+{
+  "${modID}:Meteor Strike": {
+    "NAME": "Meteor Strike",
+    "DESCRIPTION": "Deal !D! damage. NL Channel !M! Plasma."
+  },
+  "${modID}:Clash": {
+    "NAME": "Clash",
+    "DESCRIPTION": "Deal !D! damage. NL Damage is reduced by 2 for each non-Attack card in your hand."
+  },
+  "${modID}:Wild Strike": {
+    "NAME": "Wild Strike",
+    "DESCRIPTION": "Deal !D! damage. NL Put a *Wound into your discard pile."
+  },
+  "${modID}:Heavy Blade": {
+    "NAME": "Heavy Blade",
+    "DESCRIPTION": "Deal !D! damage. NL Strength affects this card !M! times."
+  },
+  "${modID}:Clothesline": {
+    "NAME": "Clothesline",
+    "DESCRIPTION": "Deal !D! damage. NL Apply !M! Weak."
+  },
+  "${modID}:Iron Wave": {
+    "NAME": "Iron Wave",
+    "DESCRIPTION": "Deal !D! damage. NL Gain Block equal to the damage dealt."
+  },
+  "${modID}:Flex": {
+    "NAME": "Flex",
+    "DESCRIPTION": "Gain !M! Strength. NL At the end of this turn, lose !M! Strength."
+  },
+  "${modID}:Thunderclap": {
+    "NAME": "Thunderclap",
+    "DESCRIPTION": "Deal !D! damage and apply !M! Vulnerable to ALL enemies."
+  },
+  "${modID}:Cleave": {
+    "NAME": "Cleave",
+    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Exhaust."
+  },
+  "${modID}:Sword Boomerang": {
+    "NAME": "Sword Boomerang",
+    "DESCRIPTION": "Deal !D! damage to a random enemy !M! times."
+  },
+  "${modID}:Uppercut": {
+    "NAME": "Uppercut",
+    "DESCRIPTION": "Deal !D! damage. NL Apply !M! Weak. NL Apply !M! Vulnerable."
+  },
+  "${modID}:Sentinel": {
+    "NAME": "Sentinel",
+    "DESCRIPTION": "Gain !B! Block. NL Draw 1 card. NL If this card is Exhausted, gain [R] [R]."
+  },
+  "${modID}:Entrench": {
+    "NAME": "Entrench",
+    "DESCRIPTION": "At the start of your next turn, gain Block equal to your current Block."
+  },
+  "${modID}:Bloodletting": {
+    "NAME": "Bloodletting",
+    "DESCRIPTION": "Gain [R] [R]. NL Lose 3 HP.",
+    "UPGRADE_DESCRIPTION": "Gain [R] [R] [R]. NL Lose 2 HP."
+  },
+  "${modID}:Sever Soul": {
+    "NAME": "Sever Soul",
+    "DESCRIPTION": "Exhaust all non-Attack cards in your hand. NL Deal !D! damage."
+  },
+  "${modID}:Whirlwind": {
+    "NAME": "Whirlwind",
+    "DESCRIPTION": "Deal !D! damage to ALL enemies X times.",
+    "UPGRADE_DESCRIPTION": "Deal !D! damage to ALL enemies X+1 times."
+  },
+  "${modID}:Rampage": {
+    "NAME": "Rampage",
+    "DESCRIPTION": "Deal !D! damage 2 times. NL Increase this card's damage by !M! this combat."
+  },
+  "${modID}:Searing Blow": {
+    "NAME": "Searing Blow",
+    "DESCRIPTION": "Deal !D! damage. NL Gain !B! Block. NL Can be Upgraded any number of times."
+  },
+  "${modID}:Berserk": {
+    "NAME": "Berserk",
+    "DESCRIPTION": "At the start of your turn, gain [R].",
+    "UPGRADE_DESCRIPTION": "At the start of your turn, gain [R] [R]."
+  },
+  "${modID}:Metallicize": {
+    "NAME": "Metallicize",
+    "DESCRIPTION": "At the end of your turn, gain X*!M! Block."
+  },
+  "${modID}:Dagger Spray": {
+    "NAME": "Dagger Spray",
+    "DESCRIPTION": "Deal !D! damage to ALL enemies !M! times. NL Exhaust."
+  },
+  "${modID}:Backflip": {
+    "NAME": "Backflip",
+    "DESCRIPTION": "Gain !B! Block. NL Draw !M! cards."
+  },
+  "${modID}:Poisoned Stab": {
+    "NAME": "Poisoned Stab",
+    "DESCRIPTION": "Deal !D! damage. NL Apply !M! Poison."
+  },
+  "${modID}:Quick Slash": {
+    "NAME": "Quick Slash",
+    "DESCRIPTION": "Unplayable. NL If this card is discarded from your hand, deal !D! damage to ALL enemies.",
+    "EXTENDED_DESCRIPTION": ["Unplayable."]
+  },
+  "${modID}:Dagger Throw": {
+    "NAME": "Dagger Throw",
+    "DESCRIPTION": "Deal !D! damage. NL Draw !M! card. NL Discard !M! card."
+  },
+  "${modID}:Outmaneuver": {
+    "NAME": "Outmaneuver",
+    "DESCRIPTION": "Next turn, NL gain [G].",
+    "UPGRADE_DESCRIPTION": "Next turn, NL gain [G] [G]."
+  },
+  "${modID}:Choke": {
+    "NAME": "Choke",
+    "DESCRIPTION": "Deal !D! damage. NL Whenever you play a card this turn, the enemy loses !M! HP."
+  },
+  "${modID}:Riddle With Holes": {
+    "NAME": "Riddle With Holes",
+    "DESCRIPTION": "Deal !D! damage !M! times."
+  },
+  "${modID}:Glass Knife": {
+    "NAME": "Glass Knife",
+    "DESCRIPTION": "Deal !D! damage twice. NL Whenever this enemy takes damage from a *Shiv, gain !M! Block. NL Exhaust."
+  },
+  "${modID}:A Thousand Cuts": {
+    "NAME": "A Thousand Cuts",
+    "DESCRIPTION": "Whenever you play a card, deal !M! damage to ALL enemies."
+  },
+  "${modID}:Dualcast": {
+    "NAME": "Quadcast",
+    "DESCRIPTION": "Evoke your next Orb 4 times."
+  },
+  "${modID}:Rebound": {
+    "NAME": "Rebound",
+    "DESCRIPTION": "Deal !D! damage. NL Channel a copy of the last Orb you Channeled this combat."
+  },
+  "${modID}:Barrage": {
+    "NAME": "Barrage",
+    "DESCRIPTION": "Deal !D! damage for each Channeled Orb."
+  },
+  "${modID}:Sweeping Beam": {
+    "NAME": "Sweeping Beam",
+    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Draw !M! cards."
+  },
+  "${modID}:Gash": {
+    "NAME": "Claw",
+    "DESCRIPTION": "Deal !D! damage !M! times. NL Increase the damage of ALL Claw cards by !M! this combat."
+  },
+  "${modID}:Streamline": {
+    "NAME": "Streamline",
+    "DESCRIPTION": "Deal !D! damage. NL Reduce this card's cost by 1 each time it is drawn this combat."
+  },
+  "${modID}:Steam": {
+    "NAME": "Steam Barrier",
+    "DESCRIPTION": "Channel !M! Frost. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Channel !M! Frost."
+  },
+  "${modID}:Leap": {
+    "NAME": "Leap",
+    "DESCRIPTION": "Gain !B! Block. NL Gain !M! temporary Focus this turn."
+  },
+  "${modID}:Hello World": {
+    "NAME": "Hello World",
+    "DESCRIPTION": "At the start of your turn, add a random card into your hand.",
+    "UPGRADE_DESCRIPTION": "Innate. NL At the start of your turn, add a random card into your hand."
+  },
+  "${modID}:Chill": {
+    "NAME": "Chill",
+    "DESCRIPTION": "Channel 1 Frost for each enemy in combat. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Channel 1 Frost for each enemy in combat."
+  },
+  "${modID}:Force Field": {
+    "NAME": "Force Field",
+    "DESCRIPTION": "Gain !B! Block. NL Gain !M! additional Block for each Power card you have."
+  },
+  "${modID}:Blizzard": {
+    "NAME": "Blizzard",
+    "DESCRIPTION": "Gain !M! temporary Focus this turn for each Frost Orb you have."
+  },
+  "${modID}:Rip and Tear": {
+    "NAME": "Rip and Tear",
+    "DESCRIPTION": "Deal !D! damage to a random enemy !M! times."
+  },
+  "${modID}:Melter": {
+    "NAME": "Melter",
+    "DESCRIPTION": "Remove all Artifact and Block from the enemy. NL Apply 2 Weak. NL Apply 2 Vulnerable. NL Exhaust."
+  },
+  "${modID}:Fusion": {
+    "NAME": "Fusion",
+    "DESCRIPTION": "Channel 1 Plasma. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Channel 1 Plasma."
+  },
+  "${modID}:Reprogram": {
+    "NAME": "Reprogram",
+    "DESCRIPTION": "Lose an Orb slot. NL Gain !M! Strength. NL Gain !M! Dexterity."
+  },
+  "${modID}:Multi-Cast": {
+    "NAME": "Multi-Cast",
+    "DESCRIPTION": "Evoke your next Orb X times.",
+    "UPGRADE_DESCRIPTION": "Evoke your next Orb X*2 times."
+  },
+  "${modID}:Hyperbeam": {
+    "NAME": "Hyperbeam",
+    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Lose !M! Focus this turn."
+  },
+  "${modID}:PathToVictory": {
+    "NAME": "Path to Victory",
+    "DESCRIPTION": "Apply !M! *Mark. NL Enemies with *Mark lose HP equal to their Mark whenever they are attacked. NL Exhaust."
+  },
+  "${modID}:Consecrate": {
+    "NAME": "Consecrate",
+    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Draw !M! card for each enemy hit."
+  },
+  "${modID}:FollowUp": {
+    "NAME": "Follow-Up",
+    "DESCRIPTION": "Deal !D! damage. NL Wrath: this card costs 0."
+  },
+  "${modID}:Perseverance": {
+    "NAME": "Perseverance",
+    "DESCRIPTION": "Retain. NL Enter Calm. NL When Retained, gain !B! Block."
+  },
+  "${modID}:ThirdEye": {
+    "NAME": "Third Eye",
+    "DESCRIPTION": "Add !M! *Insights into your hand."
+  },
+  "${modID}:BattleHymn": {
+    "NAME": "Battle Hymn",
+    "DESCRIPTION": "At the start of each turn, exhaust a card in your hand and add a *Smite into your hand."
+  },
+  "${modID}:LikeWater": {
+    "NAME": "Like Water",
+    "DESCRIPTION": "At the end of your turn, enter Calm.",
+    "UPGRADE_DESCRIPTION": "Innate. NL At the end of your turn, enter Calm."
+  },
+  "${modID}:Vengeance": {
+    "NAME": "Simmering Fury",
+    "DESCRIPTION": "Enter Wrath. NL Add !M! *Insight into your draw pile."
+  },
+  "${modID}:Swivel": {
+    "NAME": "Swivel",
+    "DESCRIPTION": "Gain !B! Block. NL Draw !M! cards. NL The next Attack you play costs 0."
+  },
+  "${modID}:WindmillStrike": {
+    "NAME": "Windmill Strike",
+    "DESCRIPTION": "Retain. NL Deal !D! damage !M! times. NL Enter Wrath. NL When Retained, increase the number of hits by 1 this combat."
+  },
+  "${modID}:DeceiveReality": {
+    "NAME": "Deceive Reality",
+    "DESCRIPTION": "Add an *Insight and a *Miracle into your hand."
+  },
+  "${modID}:Study": {
+    "NAME": "Study",
+    "DESCRIPTION": "At the start of your turn, add an *Insight into your hand."
+  },
+  "${modID}:Weave": {
+    "NAME": "Weave",
+    "DESCRIPTION": "Deal !D! damage. NL Wrath: enter Calm. NL Calm: enter Wrath."
+  },
+  "${modID}:Devotion": {
+    "NAME": "Devotion",
+    "DESCRIPTION": "Whenever you gain Mantra, draw 1 card.",
+    "UPGRADE_DESCRIPTION": "Innate. NL Whenever you gain Mantra, draw 1 card."
+  },
+  "${modID}:Bite": {
+    "NAME": "Bite",
+    "DESCRIPTION": "Deal !D! damage. NL Heal HP equal to the unblocked damage dealt."
+  },
+  "${modID}:Purity": {
+    "NAME": "Purity",
+    "DESCRIPTION": "Retain. NL Exhaust up to !M! cards in your hand. NL Exhaust."
+  },
+  "${modID}:Pummel": {
+    "NAME": "Expect a Fight",
+    "DESCRIPTION": "Gain [R] for each Attack card in your hand.",
+    "EXTENDED_DESCRIPTION": [" NL (Currently !M! [E] )"]
+  },
+  "${modID}:Burning Pact": {
+    "NAME": "Burning Pact",
+    "DESCRIPTION": "Exhaust 1 card. NL Draw !M! cards."
+  },
+  "${modID}:Seeing Red": {
+    "NAME": "Seeing Red",
+    "DESCRIPTION": "If you have exhausted a card this turn, gain [R] [R] [R].",
+    "UPGRADE_DESCRIPTION": "If you have exhausted a card this turn, gain [R] [R] [R]."
+  },
+  "${modID}:Rainbow": {
+    "NAME": "Rainbow",
+    "DESCRIPTION": "Channel 1 Lightning, 1 Frost, 1 Dark and 1 Plasma. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Channel 1 Lightning, 1 Frost, 1 Dark and 1 Plasma."
+  },
+  "${modID}:Heatsinks": {
+    "NAME": "Heatsinks",
+    "DESCRIPTION": "Whenever you play a Power card, draw 2 cards.",
+    "UPGRADE_DESCRIPTION": "Innate. NL Whenever you play a Power card, draw 2 cards."
+  },
+  "${modID}:Core Surge": {
+    "NAME": "Core Surge",
+    "DESCRIPTION": "Gain an Orb slot. NL Draw !M! cards. NL Increase this card's cost by 1 this combat."
+  },
+  "${modID}:Reboot": {
+    "NAME": "Reboot",
+    "DESCRIPTION": "Remove all your debuffs. NL Exhaust all Status cards. NL Shuffle all your non-Exhausted cards into your draw pile. NL Draw !M! cards. NL Exhaust."
+  },
+  "${modID}:Creative AI": {
+    "NAME": "Creative AI",
+    "DESCRIPTION": "At the start of your turn, add a random Power card into your hand.",
+    "UPGRADE_DESCRIPTION": "At the start of your turn, add a randomly Upgraded Power card into your hand."
+  },
+  "${modID}:Unload": {
+    "NAME": "Unload",
+    "DESCRIPTION": "*Shivs gain Retain. NL The first *Shiv you play each turn deals !M! additional damage."
+  },
+  "${modID}:Masterful Stab": {
+    "NAME": "Masterful Stab",
+    "DESCRIPTION": "Discard up to 3 cards. NL Add a *Shiv into your hand for each card discarded.",
+    "UPGRADE_DESCRIPTION": "Discard up to 3 cards. NL Add a *Shiv+ into your hand for each card discarded."
+  },
+  "${modID}:Crippling Poison": {
+    "NAME": "Crippling Cloud",
+    "DESCRIPTION": "Apply !M! Poison and 3 Weak to ALL enemies. NL Exhaust."
+  },
+  "${modID}:Expertise": {
+    "NAME": "Expertise",
+    "DESCRIPTION": "Draw cards until you have !M! cards in your hand. NL Discard 1 card."
+  },
+  "${modID}:Die Die Die": {
+    "NAME": "Die Die Die",
+    "DESCRIPTION": "*Shivs now attack ALL enemies. NL Add 3 *Shivs into your hand."
+  },
+  "${modID}:Storm of Steel": {
+    "NAME": "Storm of Steel",
+    "DESCRIPTION": "Play a copy of every *Shiv in your exhaust pile against an enemy.",
+    "EXTENDED_DESCRIPTION": [" NL (Plays !M! Shivs)"]
+  },
+  "${modID}:After Image": {
+    "NAME": "After Image",
+    "DESCRIPTION": "Whenever you play a card, gain !M! Block."
+  },
+  "${modID}:Dodge and Roll": {
+    "NAME": "Dodge and Roll",
+    "DESCRIPTION": "Unplayable. NL If this card is discarded from your hand, gain !B! Block.",
+    "EXTENDED_DESCRIPTION": ["Unplayable."]
+  },
+  "${modID}:Sanctity": {
+    "NAME": "Sanctity",
+    "DESCRIPTION": "Gain !B! Block. NL If the last card played this combat was a Skill, gain [E].",
+    "UPGRADE_DESCRIPTION": "Gain !B! Block. NL If the last card played this combat was a Skill, gain [E] [E]."
+  },
+  "${modID}:CarveReality": {
+    "NAME": "Carve Reality",
+    "DESCRIPTION": "Add a *Smite and a *Safety into your hand."
+  },
+  "${modID}:WheelKick": {
+    "NAME": "Wheel Kick",
+    "DESCRIPTION": "Deal !D! damage. NL Draw !M! cards. NL The next Skill you play costs 0."
+  },
+  "${modID}:Infernal Blade": {
+    "NAME": "Infernal Blade",
+    "DESCRIPTION": "Choose 1 of 3 random Attack cards to add into your hand. NL It costs 0 this turn. NL Exhaust."
+  },
+  "${modID}:Distraction": {
+    "NAME": "Distraction",
+    "DESCRIPTION": "Choose 1 of 3 random Skill cards to add into your hand. NL It costs 0 this turn. NL Exhaust."
+  },
+  "${modID}:Envenom": {
+    "NAME": "Envenom",
+    "DESCRIPTION": "Your *Shivs apply !M! Poison. NL Add 1 *Shiv into your hand."
+  },
+  "${modID}:Cloak And Dagger": {
+    "NAME": "Cloak and Dagger",
+    "DESCRIPTION": "Gain !B! Block. NL Choose !M! cards in your draw pile and transform them into *Shivs.",
+    "EXTENDED_DESCRIPTION": ["Choose cards to transform into Shivs."]
+  },
+  "${modID}:Concentrate": {
+    "NAME": "Concentrate",
+    "DESCRIPTION": "Discard 3 cards. NL Gain [G] [G].",
+    "UPGRADE_DESCRIPTION": "Discard 3 cards. NL Gain [G] [G] [G]."
+  },
+  "${modID}:Stack": {
+    "NAME": "Stack",
+    "DESCRIPTION": "Gain Block equal to the number of cards in your draw pile.",
+    "UPGRADE_DESCRIPTION": "Gain Block equal to the number of cards in your draw pile plus 3.",
+    "EXTENDED_DESCRIPTION": [" NL (Gain !B! Block.)"]
+  },
+  "${modID}:JustLucky": {
+    "NAME": "Just Lucky",
+    "DESCRIPTION": "Scry !M!. NL Gain !B! Block. NL Deal !D! damage.",
+    "UPGRADE_DESCRIPTION": "Scry !M!. NL Gain !B! Block. NL Deal !D! damage. NL Draw 1 card."
+  },
+  "${modID}:Thunder Strike": {
+    "NAME": "Thunder Strike",
+    "DESCRIPTION": "For each Lightning Channeled this combat, Channel 1 Lightning and deal !D! damage to a random enemy.",
+    "EXTENDED_DESCRIPTION": [" NL (Channeled !M! Lightning.)"]
+  },
+  "${modID}:Mayhem": {
+    "NAME": "Mayhem",
+    "DESCRIPTION": "Every time you draw 10 cards, gain [E] ."
+  },
+  "${modID}:Thinking Ahead": {
+    "NAME": "Thinking Ahead",
+    "DESCRIPTION": "Draw !M! cards. NL Put a card from your hand on top of your draw pile. NL Exhaust."
+  },
+  "${modID}:Secret Technique": {
+    "NAME": "Secret Technique",
+    "DESCRIPTION": "Put a Skill from your draw pile into your hand. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Put up to !M! Skills from your draw pile into your hand. NL Exhaust.",
+    "EXTENDED_DESCRIPTION": ["There are no Skills NL in my draw pile."]
+  },
+  "${modID}:Secret Weapon": {
+    "NAME": "Secret Weapon",
+    "DESCRIPTION": "Put an Attack from your draw pile into your hand. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Put up to !M! Attacks from your draw pile into your hand. NL Exhaust.",
+    "EXTENDED_DESCRIPTION": ["There are no Attacks NL in my draw pile."]
+  },
+  "${modID}:Chrysalis": {
+    "NAME": "Chrysalis",
+    "DESCRIPTION": "Whenever you shuffle your draw pile, gain [E] ."
+  },
+  "${modID}:Metamorphosis": {
+    "NAME": "Metamorphosis",
+    "DESCRIPTION": "Whenever you shuffle your draw pile, put a card from your draw pile into your hand."
+  }
+}

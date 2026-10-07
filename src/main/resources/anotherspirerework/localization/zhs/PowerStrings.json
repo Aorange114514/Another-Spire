@@ -1,0 +1,97 @@
+{
+  "${modID}:ShivAllEnemies": {
+    "NAME": "死吧死吧死吧",
+    "DESCRIPTIONS": ["#y小刀 现在会攻击所有敌人。"]
+  },
+  "${modID}:ShivPoison": {
+    "NAME": "涂毒",
+    "DESCRIPTIONS": ["你的 #y小刀 会给予 #b ", " 层 #y中毒 。"]
+  },
+  "${modID}:BattleHymnSmite": {
+    "NAME": "战歌",
+    "DESCRIPTIONS": [
+      "在每回合开始时，消耗一张手牌，并将 #b ",
+      " 张 #y惩恶 加入你的手牌。",
+      " 张 #y惩恶 加入你的手牌。"
+    ]
+  },
+  "${modID}:LikeWaterCalm": {
+    "NAME": "如水",
+    "DESCRIPTIONS": ["在你的回合结束时，进入 #y平静 。"]
+  },
+  "${modID}:StudyInsight": {
+    "NAME": "研习",
+    "DESCRIPTIONS": [
+      "在你的回合开始时，在你的手牌中加入 #b ",
+      " 张 #y洞见 。",
+      " 张 #y洞见 。"
+    ]
+  },
+  "${modID}:DevotionDraw": {
+    "NAME": "虔信",
+    "DESCRIPTIONS": [
+      "每当你获得 #y真言 时，抽 #b ",
+      " 张牌。",
+      " 张牌。"
+    ]
+  },
+  "${modID}:GlassKnifeMark": {
+    "NAME": "玻璃刀刃",
+    "DESCRIPTIONS": ["每当你用 #y小刀 攻击该敌人时，获得 #b ", " 点 #y格挡 。"]
+  },
+  "${modID}:NextTurnFocus": {
+    "NAME": "下回合集中",
+    "DESCRIPTIONS": [
+      "在你的回合结束时，失去 #b ",
+      " 点 #y集中 。",
+      "在你的回合结束时，获得 #b "
+    ]
+  },
+  "${modID}:HelloWorldAnyCard": {
+    "NAME": "你好，世界",
+    "DESCRIPTIONS": [
+      "在你的回合开始时，增加 #b ",
+      " 张随机牌到你的手牌。",
+      " 张随机牌到你的手牌。"
+    ]
+  },
+  "${modID}:Mark": {
+    "NAME": "印记",
+    "DESCRIPTIONS": ["受到攻击时额外失去 #b ", " 点生命。"]
+  },
+  "${modID}:ShivMastery": {
+    "NAME": "乾坤一掷",
+    "DESCRIPTIONS": ["#y小刀 获得 #y保留 ，且你每回合打出的第一张 #y小刀 额外造成 #b ", " 点伤害。"]
+  },
+  "${modID}:FreeSkill": {
+    "NAME": "下一张技能牌免费",
+    "DESCRIPTIONS": [
+      "你打出的下一张技能牌耗能变为0。",
+      "你打出的下 #b ",
+      " 张技能牌耗能变为0。"
+    ]
+  },
+  "${modID}:CreativeAIUpgraded": {
+    "NAME": "创造性AI",
+    "DESCRIPTIONS": [
+      "在每回合开始时，增加 #b ",
+      " 张升级过的随机 #y能力 牌到你的手牌。",
+      " 张升级过的随机 #y能力 牌到你的手牌。"
+    ]
+  },
+  "${modID}:Scuffle": {
+    "NAME": "乱战",
+    "DESCRIPTIONS": [
+      "你每抽 10 张牌，获得 ",
+      " [E] 。"
+    ]
+  },
+  "${modID}:Chrysalis": {
+    "NAME": "结茧",
+    "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，获得 [E] 。"]
+  },
+  "${modID}:Metamorphosis": {
+    "NAME": "羽化",
+    "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，从抽牌堆中选择一张牌放入你的手牌。"]
+  }
+}

@@ -1,0 +1,421 @@
+{
+  "anotherspirerework:Meteor Strike": {
+    "NAME": "陨石打击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 生成 !M! 个 等离子 充能球。"
+  },
+  "anotherspirerework:Clash": {
+    "NAME": "交锋",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 你手中每有一张非攻击牌，伤害降低 2 。"
+  },
+  "anotherspirerework:Wild Strike": {
+    "NAME": "狂野打击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 将一张 *伤口 放入你的弃牌堆中。"
+  },
+  "anotherspirerework:Heavy Blade": {
+    "NAME": "重刃",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 力量 在 重刃 上发挥 !M! 倍效果。"
+  },
+  "anotherspirerework:Clothesline": {
+    "NAME": "金刚臂",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 给予 !M! 层 虚弱 。"
+  },
+  "anotherspirerework:Iron Wave": {
+    "NAME": "铁斩波",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 获得等同于造成伤害的 格挡 。"
+  },
+  "anotherspirerework:Flex": {
+    "NAME": "活动肌肉",
+    "DESCRIPTION": "获得 !M! 点 力量 。 NL 你的回合结束时，失去 !M! 点 力量 。"
+  },
+  "anotherspirerework:Thunderclap": {
+    "NAME": "闪电霹雳",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害，给予 !M! 层 易伤 。"
+  },
+  "anotherspirerework:Cleave": {
+    "NAME": "顺劈斩",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 消耗 。"
+  },
+  "anotherspirerework:Sword Boomerang": {
+    "NAME": "飞剑回旋镖",
+    "DESCRIPTION": "随机对敌人造成 !D! 点伤害 !M! 次。"
+  },
+  "anotherspirerework:Uppercut": {
+    "NAME": "上勾拳",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 给予 !M! 层 虚弱 。 NL 给予 !M! 层 易伤 。"
+  },
+  "anotherspirerework:Sentinel": {
+    "NAME": "哨卫",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽一张牌。 NL 如果这张牌被 消耗 ，获得 [R] [R] 。"
+  },
+  "anotherspirerework:Entrench": {
+    "NAME": "巩固",
+    "DESCRIPTION": "在你的下个回合开始时，获得等同于当前 格挡 的 格挡 。"
+  },
+  "anotherspirerework:Bloodletting": {
+    "NAME": "放血",
+    "DESCRIPTION": "获得 [R] [R] 。 NL 失去 3 点生命。",
+    "UPGRADE_DESCRIPTION": "获得 [R] [R] [R] 。 NL 失去 2 点生命。"
+  },
+  "anotherspirerework:Sever Soul": {
+    "NAME": "断魂斩",
+    "DESCRIPTION": "消耗 手牌中所有非攻击牌。 NL 造成 !D! 点伤害。"
+  },
+  "anotherspirerework:Whirlwind": {
+    "NAME": "旋风斩",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害X次。",
+    "UPGRADE_DESCRIPTION": "对所有敌人造成 !D! 点伤害X+1次。"
+  },
+  "anotherspirerework:Rampage": {
+    "NAME": "暴走",
+    "DESCRIPTION": "造成 !D! 点伤害2次。 NL 这张牌每被打出一次，在本场战斗中其伤害增加 !M! 。"
+  },
+  "anotherspirerework:Searing Blow": {
+    "NAME": "灼热攻击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 获得 !B! 点 格挡 。 NL 能被多次 升级 。"
+  },
+  "anotherspirerework:Berserk": {
+    "NAME": "狂暴",
+    "DESCRIPTION": "在每回合开始时获得 [R] 。",
+    "UPGRADE_DESCRIPTION": "在每回合开始时获得 [R] [R] 。"
+  },
+  "anotherspirerework:Metallicize": {
+    "NAME": "金属化",
+    "DESCRIPTION": "在你的回合结束时，获得 X*!M! 点 格挡 。"
+  },
+  "anotherspirerework:Dagger Spray": {
+    "NAME": "匕首雨",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害 !M! 次。 NL 消耗 。"
+  },
+  "anotherspirerework:Backflip": {
+    "NAME": "后空翻",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽 !M! 张牌。"
+  },
+  "anotherspirerework:Poisoned Stab": {
+    "NAME": "带毒刺击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 给予 !M! 层 中毒 。"
+  },
+  "anotherspirerework:Quick Slash": {
+    "NAME": "快斩",
+    "DESCRIPTION": "不能被打出 。 NL 如果这张牌从你的手牌中被丢弃，对所有敌人造成 !D! 点伤害。",
+    "EXTENDED_DESCRIPTION": ["不能被打出 。"]
+  },
+  "anotherspirerework:Dagger Throw": {
+    "NAME": "投掷匕首",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 抽 !M! 张牌。 NL 丢弃 !M! 张牌。"
+  },
+  "anotherspirerework:Outmaneuver": {
+    "NAME": "抢占先机",
+    "DESCRIPTION": "下一回合 NL 获得 [G] 。",
+    "UPGRADE_DESCRIPTION": "下一回合 NL 获得 [G] [G] 。"
+  },
+  "anotherspirerework:Choke": {
+    "NAME": "勒脖",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 你在这个回合内每打出一张牌，该名敌人都会失去 !M! 点生命。"
+  },
+  "anotherspirerework:Riddle With Holes": {
+    "NAME": "千穿百刺",
+    "DESCRIPTION": "造成 !D! 点伤害 !M! 次。"
+  },
+  "anotherspirerework:Glass Knife": {
+    "NAME": "玻璃刀刃",
+    "DESCRIPTION": "造成 !D! 点伤害两次。 NL 该敌人受到来自 *小刀 的伤害时，你获得 !M! 点 格挡 。 NL 消耗 。"
+  },
+  "anotherspirerework:A Thousand Cuts": {
+    "NAME": "凌迟",
+    "DESCRIPTION": "你每打出一张牌，就对所有敌人造成 !M! 点伤害。"
+  },
+  "anotherspirerework:Dualcast": {
+    "NAME": "四重释放",
+    "DESCRIPTION": "激发 你最右侧的充能球4次。"
+  },
+  "anotherspirerework:Rebound": {
+    "NAME": "弹回",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 生成你本场战斗上一个生成的充能球的复制。"
+  },
+  "anotherspirerework:Barrage": {
+    "NAME": "弹幕齐射",
+    "DESCRIPTION": "你每拥有一个充能球，造成 !D! 点伤害。"
+  },
+  "anotherspirerework:Sweeping Beam": {
+    "NAME": "扫荡射线",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 抽 !M! 张牌。"
+  },
+  "anotherspirerework:Gash": {
+    "NAME": "爪击",
+    "DESCRIPTION": "造成 !D! 点伤害 !M! 次。 NL 在本场战斗中所有 爪击 牌的伤害增加 !M! 。"
+  },
+  "anotherspirerework:Streamline": {
+    "NAME": "精简改良",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 你每抽到这张牌时，它在本场战斗中的耗能减少1。"
+  },
+  "anotherspirerework:Steam": {
+    "NAME": "蒸汽护壁",
+    "DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "生成 !M! 个 冰霜 充能球。"
+  },
+  "anotherspirerework:Leap": {
+    "NAME": "飞跃",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 在本回合获得 !M! 点临时 集中 。"
+  },
+  "anotherspirerework:Hello World": {
+    "NAME": "你好，世界",
+    "DESCRIPTION": "在你的回合开始时，增加一张随机牌到你的手牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 在你的回合开始时，增加一张随机牌到你的手牌。"
+  },
+  "anotherspirerework:Chill": {
+    "NAME": "冰寒",
+    "DESCRIPTION": "当前每有一名敌人，生成一个 冰霜 充能球。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "当前每有一名敌人，生成一个 冰霜 充能球。"
+  },
+  "anotherspirerework:Force Field": {
+    "NAME": "力场",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 你每有一张能力牌，获得的 格挡 增加 !M! 。"
+  },
+  "anotherspirerework:Blizzard": {
+    "NAME": "暴雪",
+    "DESCRIPTION": "你每有一个 冰霜 充能球，在本回合获得 !M! 点临时 集中 。"
+  },
+  "anotherspirerework:Rip and Tear": {
+    "NAME": "狂乱撕扯",
+    "DESCRIPTION": "随机对敌人造成 !D! 点伤害 !M! 次。"
+  },
+  "anotherspirerework:Melter": {
+    "NAME": "熔化",
+    "DESCRIPTION": "移除一名敌人的所有 人工制品 和 格挡 。 NL 给予 2 层 虚弱 。 NL 给予 2 层 易伤 。 NL 消耗 。"
+  },
+  "anotherspirerework:Fusion": {
+    "NAME": "聚变",
+    "DESCRIPTION": "生成一个 等离子 充能球。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "生成一个 等离子 充能球。"
+  },
+  "anotherspirerework:Reprogram": {
+    "NAME": "重编程",
+    "DESCRIPTION": "失去一个充能球栏位。 NL 获得 !M! 点 力量 。 NL 获得 !M! 点 敏捷 。"
+  },
+  "anotherspirerework:Multi-Cast": {
+    "NAME": "多重释放",
+    "DESCRIPTION": "激发 你最右侧的充能球X次。",
+    "UPGRADE_DESCRIPTION": "激发 你最右侧的充能球X*2次。"
+  },
+  "anotherspirerework:Hyperbeam": {
+    "NAME": "超能光束",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 在本回合失去 !M! 点 集中 。"
+  },
+  "anotherspirerework:PathToVictory": {
+    "NAME": "点穴",
+    "DESCRIPTION": "给予 !M! 层 *印记 。 NL 所有拥有 *印记 的敌人，在受到攻击时额外失去相当于 *印记 层数的生命。 NL 消耗 。"
+  },
+  "anotherspirerework:Consecrate": {
+    "NAME": "供奉",
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 每命中一名敌人，抽 !M! 张牌。"
+  },
+  "anotherspirerework:FollowUp": {
+    "NAME": "追击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 愤怒 ：耗能降为0。"
+  },
+  "anotherspirerework:Perseverance": {
+    "NAME": "坚韧",
+    "DESCRIPTION": "保留 。 NL 进入 平静 。 NL 每当这张牌被 保留 时，获得 !B! 点 格挡 。"
+  },
+  "anotherspirerework:ThirdEye": {
+    "NAME": "天眼",
+    "DESCRIPTION": "将 !M! 张 *洞见 加入你的手牌。"
+  },
+  "anotherspirerework:BattleHymn": {
+    "NAME": "战歌",
+    "DESCRIPTION": "在每回合开始时，消耗一张手牌，并将一张 *惩恶 加入你的手牌。"
+  },
+  "anotherspirerework:LikeWater": {
+    "NAME": "如水",
+    "DESCRIPTION": "在你的回合结束时，进入 平静 。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 在你的回合结束时，进入 平静 。"
+  },
+  "anotherspirerework:Vengeance": {
+    "NAME": "怒火中烧",
+    "DESCRIPTION": "进入 愤怒 。 NL 将 !M! 张 *洞见 加入你的抽牌堆。"
+  },
+  "anotherspirerework:Swivel": {
+    "NAME": "旋身",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽 !M! 张牌。 NL 你打出的下一张攻击牌耗能变为0。"
+  },
+  "anotherspirerework:WindmillStrike": {
+    "NAME": "旋转打击",
+    "DESCRIPTION": "保留 。 NL 造成 !D! 点伤害 !M! 次。 NL 进入 愤怒 。 NL 每当这张牌被 保留 时，其攻击次数在本场战斗中增加1。"
+  },
+  "anotherspirerework:DeceiveReality": {
+    "NAME": "欺瞒现实",
+    "DESCRIPTION": "将一张 *洞见 和一张 *奇迹 加入你的手牌。"
+  },
+  "anotherspirerework:Study": {
+    "NAME": "研习",
+    "DESCRIPTION": "在你的回合开始时，在你的手牌中加入一张 *洞见 。"
+  },
+  "anotherspirerework:Weave": {
+    "NAME": "迂回",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 愤怒 ：进入 平静 。 NL 平静 ：进入 愤怒 。"
+  },
+  "anotherspirerework:Devotion": {
+    "NAME": "虔信",
+    "DESCRIPTION": "每当你获得 真言 时，抽1张牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 每当你获得 真言 时，抽1张牌。"
+  },
+  "anotherspirerework:Bite": {
+    "NAME": "噬咬",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 未被 格挡 的伤害将回复你的生命。"
+  },
+  "anotherspirerework:Purity": {
+    "NAME": "净化",
+    "DESCRIPTION": "保留 。 NL 从手牌中选择最多 !M! 张牌 消耗 。 NL 消耗 。"
+  },
+  "anotherspirerework:Pummel": {
+    "NAME": "跃跃欲试",
+    "DESCRIPTION": "你的手牌中每有一张攻击牌，获得 [R] 。",
+    "EXTENDED_DESCRIPTION": [" NL （当前 !M! [E] ）"]
+  },
+  "anotherspirerework:Burning Pact": {
+    "NAME": "燃烧契约",
+    "DESCRIPTION": "消耗 1 张牌。 NL 抽 !M! 张牌。"
+  },
+  "anotherspirerework:Seeing Red": {
+    "NAME": "盛怒",
+    "DESCRIPTION": "如果你本回合消耗过牌，获得 [R] [R] [R] 。",
+    "UPGRADE_DESCRIPTION": "如果你本回合消耗过牌，获得 [R] [R] [R] 。"
+  },
+  "anotherspirerework:Rainbow": {
+    "NAME": "彩虹",
+    "DESCRIPTION": "生成 闪电 、 冰霜 、 黑暗 、 等离子 充能球各一个。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "生成 闪电 、 冰霜 、 黑暗 、 等离子 充能球各一个。"
+  },
+  "anotherspirerework:Heatsinks": {
+    "NAME": "散热片",
+    "DESCRIPTION": "你每打出一张能力牌，抽 2 张牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 你每打出一张能力牌，抽 2 张牌。"
+  },
+  "anotherspirerework:Core Surge": {
+    "NAME": "核心电涌",
+    "DESCRIPTION": "获得一个充能球栏位。 NL 抽 !M! 张牌。 NL 将这张牌在本场战斗中的耗能增加1。"
+  },
+  "anotherspirerework:Reboot": {
+    "NAME": "重启",
+    "DESCRIPTION": "移除你身上的所有负面效果。 NL 消耗 你所有的状态牌。 NL 将你所有未 消耗 的牌重新洗入抽牌堆。 NL 抽 !M! 张牌。 NL 消耗 。"
+  },
+  "anotherspirerework:Creative AI": {
+    "NAME": "创造性AI",
+    "DESCRIPTION": "在每回合开始时，增加一张随机 能力 牌到你的手牌。",
+    "UPGRADE_DESCRIPTION": "在每回合开始时，增加一张升级过的随机 能力 牌到你的手牌。"
+  },
+  "anotherspirerework:Unload": {
+    "NAME": "乾坤一掷",
+    "DESCRIPTION": "*小刀 获得 保留 。 NL 你每回合打出的第一张 *小刀 伤害增加 !M! 。"
+  },
+  "anotherspirerework:Masterful Stab": {
+    "NAME": "精巧刺击",
+    "DESCRIPTION": "丢弃最多 3 张牌。 NL 每丢弃一张牌，在你的手牌中增加一张 *小刀 。",
+    "UPGRADE_DESCRIPTION": "丢弃最多 3 张牌。 NL 每丢弃一张牌，在你的手牌中增加一张 *小刀+ 。"
+  },
+  "anotherspirerework:Crippling Poison": {
+    "NAME": "致残毒云",
+    "DESCRIPTION": "给予所有敌人 !M! 层 中毒 和 3 层 虚弱 。 NL 消耗 。"
+  },
+  "anotherspirerework:Expertise": {
+    "NAME": "独门技术",
+    "DESCRIPTION": "抽牌直到你的手牌有 !M! 张牌。 NL 丢弃 1 张牌。"
+  },
+  "anotherspirerework:Die Die Die": {
+    "NAME": "死吧死吧死吧",
+    "DESCRIPTION": "*小刀 现在会攻击所有敌人。 NL 将 3 张 *小刀 加入你的手牌。"
+  },
+  "anotherspirerework:Storm of Steel": {
+    "NAME": "钢铁风暴",
+    "DESCRIPTION": "将你消耗堆中所有 *小刀 的复制对一名敌人打出。",
+    "EXTENDED_DESCRIPTION": [" NL （打出 !M! 张小刀）"]
+  },
+  "anotherspirerework:After Image": {
+    "NAME": "余像",
+    "DESCRIPTION": "你每打出一张牌，获得 !M! 点 格挡 。"
+  },
+  "anotherspirerework:Dodge and Roll": {
+    "NAME": "闪躲翻滚",
+    "DESCRIPTION": "不能被打出 。 NL 如果这张牌从你的手牌中被丢弃，获得 !B! 点 格挡 。",
+    "EXTENDED_DESCRIPTION": ["不能被打出 。"]
+  },
+  "anotherspirerework:Sanctity": {
+    "NAME": "圣洁",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 如果本场战斗中打出的上一张牌是技能牌，获得 [E] 。",
+    "UPGRADE_DESCRIPTION": "获得 !B! 点 格挡 。 NL 如果本场战斗中打出的上一张牌是技能牌，获得 [E] [E] 。"
+  },
+  "anotherspirerework:CarveReality": {
+    "NAME": "改造现实",
+    "DESCRIPTION": "将一张 *惩恶 和一张 *平安 加入你的手牌。"
+  },
+  "anotherspirerework:WheelKick": {
+    "NAME": "回环踢",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 抽 !M! 张牌。 NL 你打出的下一张技能牌耗能变为0。"
+  },
+  "anotherspirerework:Infernal Blade": {
+    "NAME": "地狱之刃",
+    "DESCRIPTION": "从 3 张随机攻击牌中选择一张加入你的手牌。 NL 这张牌在本回合耗能变为 0 。 NL 消耗 。"
+  },
+  "anotherspirerework:Distraction": {
+    "NAME": "声东击西",
+    "DESCRIPTION": "从 3 张随机技能牌中选择一张加入你的手牌。 NL 这张牌在本回合耗能变为 0 。 NL 消耗 。"
+  },
+  "anotherspirerework:Envenom": {
+    "NAME": "涂毒",
+    "DESCRIPTION": "你的 *小刀 会给予 !M! 层 中毒 。 NL 将 1 张 *小刀 加入你的手牌。"
+  },
+  "anotherspirerework:Cloak And Dagger": {
+    "NAME": "斗篷与匕首",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 选择你抽牌堆中的 !M! 张牌，将其变化为 *小刀 。",
+    "EXTENDED_DESCRIPTION": ["选择变化为小刀的牌。"]
+  },
+  "anotherspirerework:Concentrate": {
+    "NAME": "全神贯注",
+    "DESCRIPTION": "丢弃 3 张牌。 NL 获得 [G] [G] 。",
+    "UPGRADE_DESCRIPTION": "丢弃 3 张牌。 NL 获得 [G] [G] [G] 。"
+  },
+  "anotherspirerework:Stack": {
+    "NAME": "堆栈",
+    "DESCRIPTION": "获得相当于你当前抽牌堆中牌数的 格挡 。",
+    "UPGRADE_DESCRIPTION": "获得相当于你当前抽牌堆中牌数 +3 的 格挡 。",
+    "EXTENDED_DESCRIPTION": [" NL （获得 !B! 点 格挡 。）"]
+  },
+  "anotherspirerework:JustLucky": {
+    "NAME": "幸运一击",
+    "DESCRIPTION": "预见 !M! 。 NL 获得 !B! 点 格挡 。 NL 造成 !D! 点伤害。",
+    "UPGRADE_DESCRIPTION": "预见 !M! 。 NL 获得 !B! 点 格挡 。 NL 造成 !D! 点伤害。 NL 抽 1 张牌。"
+  },
+  "anotherspirerework:Thunder Strike": {
+    "NAME": "雷霆打击",
+    "DESCRIPTION": "你在本场战斗中每 生成 过一个 闪电 充能球，生成一个 闪电 充能球并随机造成一次 !D! 点伤害。",
+    "EXTENDED_DESCRIPTION": [" NL （共 !M! 次。）"]
+  },
+  "anotherspirerework:Mayhem": {
+    "NAME": "乱战",
+    "DESCRIPTION": "你每抽 10 张牌，获得 [E] 。"
+  },
+  "anotherspirerework:Thinking Ahead": {
+    "NAME": "深谋远虑",
+    "DESCRIPTION": "抽 !M! 张牌，然后将手牌中的一张牌放到你抽牌堆的顶端。 NL 消耗 。"
+  },
+  "anotherspirerework:Secret Technique": {
+    "NAME": "秘密技法",
+    "DESCRIPTION": "从抽牌堆中选择一张技能牌放入你的手牌。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "从抽牌堆中选择最多 !M! 张技能牌放入你的手牌。 NL 消耗 。",
+    "EXTENDED_DESCRIPTION": ["我的抽牌堆中 NL 没有技能牌。"]
+  },
+  "anotherspirerework:Secret Weapon": {
+    "NAME": "秘密武器",
+    "DESCRIPTION": "从抽牌堆中选择一张攻击牌放入你的手牌。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "从抽牌堆中选择最多 !M! 张攻击牌放入你的手牌。 NL 消耗 。",
+    "EXTENDED_DESCRIPTION": ["我的抽牌堆中 NL 没有攻击牌。"]
+  },
+  "anotherspirerework:Chrysalis": {
+    "NAME": "结茧",
+    "DESCRIPTION": "你每次将抽牌堆洗牌时，获得 [E] 。"
+  },
+  "anotherspirerework:Metamorphosis": {
+    "NAME": "羽化",
+    "DESCRIPTION": "你每次将抽牌堆洗牌时，从抽牌堆中选择一张牌放入你的手牌。"
+  }
+}

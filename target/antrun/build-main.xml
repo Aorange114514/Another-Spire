@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target unless="mod.deploy.skip" name="main">
+    <copy file="target/anotherspirerework.jar" tofile="C:/Program Files (x86)/steam/steamapps/common/SlayTheSpire/mods/anotherspirerework.jar" />
+  </target>
+</project>
