@@ -463,8 +463,8 @@
   },
   "anotherspirerework:Nirvana": {
     "NAME": "涅槃",
-    "DESCRIPTION": "在你的回合中打出第 5 张牌时，在下回合开始时抽 2 张牌。",
-    "UPGRADE_DESCRIPTION": "固有 。 NL 在你的回合中打出第 5 张牌时，在下回合开始时抽 2 张牌。"
+    "DESCRIPTION": "若你在本回合打出至少 5 张牌，在下回合开始时抽 2 张牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 若你在本回合打出至少 5 张牌，在下回合开始时抽 2 张牌。"
   },
   "anotherspirerework:SpiritShield": {
     "NAME": "精神护盾",

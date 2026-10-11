@@ -388,6 +388,7 @@ Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域
 ```powershell
 # 默认（走 pom 里的 Steam 路径，Windows profile）
 mvn clean package
+$env:JAVA_HOME='C:/Program Files/Zulu/zulu-8'; mvn -B "-Dmod.deploy.skip=false" package 2>&1 | Select-String -Pattern 'BUILD|ERROR|copy|PASS: relic|192 patch' | ForEach-Object { $_.Line }
 
 # 本机依赖不在 Steam 目录时
 mvn -f pom.xml '-Dlocal.dependencies=C:/Users/riced/Games/OtherGames/sts mod/dependencies' clean package

@@ -101,7 +101,7 @@
   "anotherspirerework:Nirvana": {
     "NAME": "涅槃",
     "DESCRIPTIONS": [
-      "在你的回合中打出第 #b5 张牌时，在下回合开始时抽 #b ",
+      "若你在本回合打出至少 #b5 张牌，在下回合开始时抽 #b ",
       " 张牌。"
     ]
   },
