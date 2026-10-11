@@ -93,5 +93,28 @@
   "anotherspirerework:Metamorphosis": {
     "NAME": "Metamorphosis",
     "DESCRIPTIONS": ["Whenever you shuffle your draw pile, put a card from your draw pile into your hand."]
+  },
+  "anotherspirerework:DemonFormExhaust": {
+    "NAME": "Demon Form",
+    "DESCRIPTIONS": ["Deal #b ", " additional damage to enemies for each card in your #yexhaust pile."]
+  },
+  "anotherspirerework:Nirvana": {
+    "NAME": "Nirvana",
+    "DESCRIPTIONS": [
+      "When you play your fifth card in a turn, draw #b ",
+      " cards at the start of your next turn."
+    ]
+  },
+  "anotherspirerework:SpiritShield": {
+    "NAME": "Spirit Shield",
+    "DESCRIPTIONS": ["While in #yCalm, attack damage you take is halved #b ", " times."]
+  },
+  "anotherspirerework:EmptyBody": {
+    "NAME": "Empty Body",
+    "DESCRIPTIONS": ["At the end of your turn, leave your #yStance and gain #b ", " #yBlock."]
+  },
+  "anotherspirerework:JackOfAllTrades": {
+    "NAME": "Jack Of All Trades",
+    "DESCRIPTIONS": ["Every time you spend #b4 [E] , gain [E] ."]
   }
 }

@@ -1,6 +1,6 @@
 {
   "${modID}:PrismaticShard": {"NAME":"Prismatic Shard","DESCRIPTIONS":["Combat rewards can contain colorless cards and cards of other colors. NL At the start of your turn, gain [E] and draw a card."],"FLAVOR":""},
-  "${modID}:Sling": {"NAME":"Sling of Courage","DESCRIPTIONS":["At the start of each combat, gain #b2 #yStrength and #b2 #yDexterity."],"FLAVOR":""},
+  "${modID}:Sling": {"NAME":"Sling of Courage","DESCRIPTIONS":["At the start of each combat, gain #b1 #yStrength and #b1 #yDexterity."],"FLAVOR":""},
   "${modID}:HandDrill": {"NAME":"Hand Drill","DESCRIPTIONS":["Your attack damage ignores enemy #yBlock."],"FLAVOR":""},
   "${modID}:Cauldron": {"NAME":"Cauldron","DESCRIPTIONS":["Upon pickup, gain #b1 potion slot and brew #b5 potions."],"FLAVOR":""},
   "${modID}:Fusion Hammer": {"NAME":"Fusion Hammer","DESCRIPTIONS":["Upon pickup, randomly downgrade #b4 cards. NL Gain [E] at the start of each turn."],"FLAVOR":""},
@@ -23,6 +23,18 @@
   "${modID}:Strange Spoon": {"NAME":"Strange Spoon","DESCRIPTIONS":["Upon pickup, choose up to #b2 cards in your deck and remove their #yExhaust.","Choose up to 2 cards to remove Exhaust from."],"FLAVOR":""},
   "${modID}:Orrery": {"NAME":"Orrery","DESCRIPTIONS":["Upon pickup, choose any number of cards out of #b10 Commons, #b10 Uncommons and #b10 Rares to add to your deck.","Choose any number of cards to add to your deck."],"FLAVOR":""},
   "${modID}:Frozen Eye": {"NAME":"Frozen Eye","DESCRIPTIONS":["Your #yStrikes and #yDefends gain #yEthereal."],"FLAVOR":""},
-  "${modID}:Inserter": {"NAME":"Inserter","DESCRIPTIONS":["At the start of each turn, gain #b1 Orb slot."],"FLAVOR":""},
-  "${modID}:Matryoshka": {"NAME":"Matryoshka","DESCRIPTIONS":["Whenever you shuffle your draw pile, draw a card."],"FLAVOR":""}
+  "${modID}:Inserter": {"NAME":"Inserter","DESCRIPTIONS":["Every #b2 turns, gain #b1 Orb slot and Channel a random Orb."],"FLAVOR":""},
+  "${modID}:Matryoshka": {"NAME":"Matryoshka","DESCRIPTIONS":["Whenever you shuffle your draw pile, draw a card."],"FLAVOR":""},
+  "${modID}:Astrolabe": {"NAME":"Astrolabe","DESCRIPTIONS":["Upon pickup, choose any number of cards out of #b40 cards of any color to add to your deck.","Choose any number of cards to add to your deck."],"FLAVOR":""},
+  "${modID}:Tiny House": {"NAME":"Tiny House","DESCRIPTIONS":["Upon pickup, upgrade #b1 card and gain #b3 colorless card rewards.","Tiny House!","Choose a card to upgrade."],"FLAVOR":""},
+  "${modID}:VioletLotus": {"NAME":"Violet Lotus","DESCRIPTIONS":["Whenever you leave #yCalm, gain an extra [E] and draw #b1 card."],"FLAVOR":""},
+  "${modID}:FaceOfCleric": {"NAME":"Face of Cleric","DESCRIPTIONS":["After each combat, gain #b2 Max HP."],"FLAVOR":""},
+  "${modID}:Snecko Eye": {"NAME":"Snecko Eye","DESCRIPTIONS":["Draw #b3 additional cards each turn. NL At the start of each combat, gain #yConfusion."],"FLAVOR":""},
+  "${modID}:TwistedFunnel": {"NAME":"Twisted Funnel","DESCRIPTIONS":[" #yPoison triggers #b2 additional times."],"FLAVOR":""},
+  "${modID}:Melange": {"NAME":"Melange","DESCRIPTIONS":["Whenever you play a Colorless card, gain #b3 #yBlock."],"FLAVOR":""},
+  "${modID}:The Specimen": {"NAME":"The Specimen","DESCRIPTIONS":["Whenever an enemy loses HP from #yPoison, ALL other enemies lose the same amount of HP."],"FLAVOR":""},
+  "${modID}:Prayer Wheel": {"NAME":"Prayer Wheel","DESCRIPTIONS":["ALL enemies drop an additional card reward."],"FLAVOR":""},
+  "${modID}:GoldenEye": {"NAME":"Golden Eye","DESCRIPTIONS":["At the start of each turn, #yScry #b3."],"FLAVOR":""},
+  "${modID}:Thread and Needle": {"NAME":"Thread and Needle","DESCRIPTIONS":["At the start of each turn, gain #b2 #yPlated #yArmor."],"FLAVOR":""},
+  "${modID}:Nloth's Gift": {"NAME":"Nloth's Gift","DESCRIPTIONS":["Elite enemies drop an additional Rare card reward."],"FLAVOR":""}
 }

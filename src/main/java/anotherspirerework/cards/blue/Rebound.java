@@ -24,9 +24,9 @@ public class Rebound extends AbstractCard {
 
     public void use(AbstractPlayer p, AbstractMonster m) {
         addToBot(new DamageAction(m, new DamageInfo(p, this.damage, this.damageTypeForTurn), AbstractGameAction.AttackEffect.BLUNT_HEAVY));
-        AbstractOrb lastOrb = OrbTrackerPatch.lastOrb;
+        AbstractOrb lastOrb = OrbTrackerPatch.copyLast();
         if (lastOrb != null) {
-            addToBot(new ChannelAction(lastOrb.makeCopy()));
+            addToBot(new ChannelAction(lastOrb));
         }
     }
 

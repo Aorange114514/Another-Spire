@@ -27,6 +27,17 @@ public class ShopRelicPatch {
         return true;
     }
 
+    /**
+     * A shop slot may only offer a relic whose own tier is SHOP. A pool saved before the tier change
+     * still lists Prismatic Shard, and selling it from the shop rug would show the boss price of
+     * #b999 gold; {@code RareRelicFixes} moves it out of the pool as well, this is the second guard.
+     */
+    private static boolean sellable(String id) {
+        AbstractRelic relic = com.megacrit.cardcrawl.helpers.RelicLibrary.getRelic(id);
+        return relic != null && RareRelicFixes.allowedInShop(id, relic.tier)
+                && eligible(id) && relic.canSpawn();
+    }
+
     // Leave ineligible entries in the saved vanilla pool, so retry survives save/load.
     private static SpireReturn<String> select(AbstractRelic.RelicTier tier, boolean end) {
         if (tier != AbstractRelic.RelicTier.SHOP) return SpireReturn.Continue();
@@ -34,7 +45,7 @@ public class ShopRelicPatch {
         for (int n = 0; n < pool.size(); n++) {
             int i = end ? pool.size() - 1 - n : n;
             String id = pool.get(i);
-            if (eligible(id) && com.megacrit.cardcrawl.helpers.RelicLibrary.getRelic(id).canSpawn()) {
+            if (sellable(id)) {
                 pool.remove(i);
                 return SpireReturn.Return(id);
             }

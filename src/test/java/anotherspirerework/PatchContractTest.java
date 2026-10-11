@@ -21,7 +21,24 @@ public class PatchContractTest {
                 "anotherspirerework.patches.ShuffleTriggerPatch",
                 "anotherspirerework.patches.ColorlessSkipPatch",
                 "anotherspirerework.patches.CardArtLoaderPatch",
-                "anotherspirerework.patches.StrangeSpoonExhaust"}) {
+                "anotherspirerework.patches.StrangeSpoonExhaust",
+                "anotherspirerework.patches.EnergySpentPatch",
+                "anotherspirerework.patches.RareRelicFixes",
+                "anotherspirerework.patches.PowerArtLoaderPatch",
+                "anotherspirerework.patches.BitePatch",
+                "anotherspirerework.patches.CardSwapPatch",
+                "anotherspirerework.patches.ExhaustTracker",
+                "anotherspirerework.patches.FreeSkillCardPatch",
+                "anotherspirerework.patches.MarkAttackPatch",
+                "anotherspirerework.patches.NoBlockCapPatch",
+                "anotherspirerework.patches.NoEnergyCapPatch",
+                "anotherspirerework.patches.NoPowerCapPatch",
+                "anotherspirerework.patches.OrbTrackerPatch",
+                "anotherspirerework.patches.RetainedCardFadeInPatch",
+                "anotherspirerework.patches.ShivCreationPatch",
+                "anotherspirerework.patches.ShivMasteryPatch",
+                "anotherspirerework.patches.TriplePoisonSaturatePatch",
+                "anotherspirerework.effects.ChooseDeckCardsEffect"}) {
             Class<?> outer = Class.forName(name, false, PatchContractTest.class.getClassLoader());
             java.util.List<Class<?>> patches = new java.util.ArrayList<>();
             patches.add(outer);
@@ -38,6 +55,21 @@ public class PatchContractTest {
                             if (!Modifier.isStatic(method.getModifiers()) && hookTypes.length > 0) {
                                 require(hookTypes[0].isAssignableFrom(annotation.clz()),
                                         "Prefix is missing the target instance: " + patch.getName());
+                            }
+                        }
+                        // A postfix is bound the same way: the receiver comes first, and a value
+                        // returning one has the original result named __result ahead of it. A hook
+                        // that skips the instance is handed the receiver where it expected the
+                        // first argument, which only fails once ModTheSpire builds the call.
+                        if (hook.isAnnotationPresent(SpirePostfixPatch.class)
+                                && !hook.isAnnotationPresent(SpireInstrumentPatch.class)
+                                && !Modifier.isStatic(method.getModifiers())) {
+                            Class<?>[] hookTypes = hook.getParameterTypes();
+                            int instanceAt = hook.getReturnType() == void.class ? 0 : 1;
+                            if (hookTypes.length > instanceAt) {
+                                require(hookTypes[instanceAt].isAssignableFrom(annotation.clz()),
+                                        "Postfix is missing the target instance: " + patch.getName()
+                                                + "." + hook.getName());
                             }
                         }
                         if (hook.isAnnotationPresent(SpireInstrumentPatch.class)) {
@@ -67,6 +99,8 @@ public class PatchContractTest {
         turnRelicRegression(pool);
         cardContentRegression(pool);
         newContentRegression(pool);
+        secondRoundRegression(pool);
+        relicPoolRegression();
         powerTitleAndReprogramRegression(pool);
         postfixBindingRegression();
         System.out.println("PASS: " + count + " patch targets, instrumented bytecode, insertion locators and injected fields");
@@ -77,6 +111,13 @@ public class PatchContractTest {
         // The annotation uses a sentinel to represent an unspecified parameter list.
         boolean specified = types.length == 0 || types[0] != void.class;
         if (SpirePatch.CONSTRUCTOR.equals(patch.method())) {
+            if (!specified) {
+                // An unspecified constructor means "the class' own constructor"; anything with
+                // overloads has to name its parameters so the target stays unambiguous.
+                CtConstructor[] constructors = target.getDeclaredConstructors();
+                require(constructors.length == 1, "Ambiguous constructor patch: " + target.getName());
+                return constructors[0];
+            }
             CtClass[] parameters = new CtClass[types.length];
             for (int i = 0; i < types.length; i++) parameters[i] = target.getClassPool().get(types[i].getName());
             return target.getDeclaredConstructor(parameters);
@@ -174,7 +215,8 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "onCardDrawn", "add");
         requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "processPendingDraws", "contains");
         requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "inserterTurn",
-                "com.megacrit.cardcrawl.actions.defect.IncreaseMaxOrbAction");
+                "com.megacrit.cardcrawl.actions.defect.IncreaseMaxOrbAction",
+                "com.megacrit.cardcrawl.actions.defect.ChannelAction", "getRandomOrb");
         requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "ninjaScrollTurn",
                 "com.megacrit.cardcrawl.cards.tempCards.Shiv");
         requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "enchiridionStart",
@@ -352,6 +394,218 @@ public class PatchContractTest {
                         && !Modifier.isStatic(copyHook.getModifiers()) == false,
                 "Copy hook must return the card it was given");
         System.out.println("PASS: postfix binding (result first, instance second) and copy hook shape");
+    }
+
+    /** Relics, cards and powers added in the second round of reworks. */
+    private static void secondRoundRegression(ClassPool pool) throws Exception {
+        requireConstant(pool, "anotherspirerework.patches.NewRelicFixes", "INSERTER_TURNS", 2);
+        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "EXTRA_POISON_TICKS", 2);
+        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "SNECKO_HAND_SIZE", 3);
+        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "GOLDEN_EYE_SCRY", 3);
+        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "THREAD_AND_NEEDLE_ARMOR", 2);
+        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "MELANGE_BLOCK", 3);
+        requireConstant(pool, "anotherspirerework.powers.NirvanaCounterPower", "CARDS_PER_TURN", 5);
+        requireConstant(pool, "anotherspirerework.powers.JackOfAllTradesPower", "ENERGY_PER_PAYOUT", 4);
+        // Twisted Funnel: the example in the requirements, 7 layers dealing 7 + 6 + 5.
+        require(anotherspirerework.util.SaturatingMath.poisonPreview(7, 2) == 18,
+                "A 7 stack of Poison with two extra ticks must deal 18");
+        require(anotherspirerework.util.SaturatingMath.poisonPreview(1, 2) == 1,
+                "A single Poison layer must not be inflated");
+        require(anotherspirerework.util.SaturatingMath.poisonPreview(2, 2) == 3,
+                "Two layers with two extra ticks must deal 2 + 1");
+        // Prismatic Shard and Tiny House changed tier; every other relic keeps its own.
+        require(anotherspirerework.patches.RareRelicFixes.tierFor("PrismaticShard",
+                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP)
+                        == com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.BOSS,
+                "Prismatic Shard must be a boss relic");
+        require(anotherspirerework.patches.RareRelicFixes.tierFor("Tiny House",
+                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.BOSS)
+                        == com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP,
+                "Tiny House must be a shop relic");
+        require(anotherspirerework.patches.RareRelicFixes.tierFor("Anchor",
+                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON)
+                        == com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON,
+                "A relic without a tier change must keep its own tier");
+        // The shop may only sell ids whose own tier is SHOP; without this a pool saved before the
+        // tier change would put Prismatic Shard on the rug at its 999 gold boss price.
+        require(!anotherspirerework.patches.RareRelicFixes.allowedInShop("PrismaticShard",
+                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP),
+                "A boss relic must not be sellable from a shop slot");
+        require(anotherspirerework.patches.RareRelicFixes.allowedInShop("Tiny House",
+                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP),
+                "Tiny House is a shop relic and may be sold");
+        require(!anotherspirerework.patches.RareRelicFixes.allowedInShop("Anchor",
+                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON),
+                "A common relic must not be sellable from a shop slot");
+        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "select", "sellable",
+                "returnRandomRelicKey");
+        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "sellable", "allowedInShop",
+                "canSpawn");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$LoadedPools", "after",
+                "normalizeRelicPools");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$FunnelTicks", "after",
+                "anotherspirerework.patches.RareRelicFixes$PoisonExtraTickAction", "addToBottom");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$PoisonExtraTickAction", "update",
+                "com.megacrit.cardcrawl.actions.unique.PoisonLoseHpAction");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "poisonForBar", "previewPoison");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "previewPoison", "poisonPreview");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "spreadPoison",
+                "com.megacrit.cardcrawl.actions.common.LoseHPAction");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$MelangeUse", "after",
+                "com.megacrit.cardcrawl.actions.common.GainBlockAction");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "goldenEyeScry",
+                "com.megacrit.cardcrawl.actions.utility.ScryAction",
+                "com.megacrit.cardcrawl.actions.common.EmptyDeckShuffleAction");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$GoldenEyeTurn", "after", "goldenEyeScry");
+        // The opening hand is scried before it is drawn, and the turn start right after skips once.
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$GoldenEyeOpeningScry", "before", "goldenEyeScry");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$NeedleTurn", "after",
+                "com.megacrit.cardcrawl.powers.PlatedArmorPower");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ClericVictory", "before", "increaseMaxHp");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$LotusStance", "after",
+                "com.megacrit.cardcrawl.actions.common.DrawCardAction");
+        // PART B HERE
+        // Both out of combat pickers run as effects, and the extra rewards are positioned.
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$AstrolabeEquip", "before", "start");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$TinyHouseEquip", "before", "start");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "anyColorChoices",
+                "getAnyColorCard", "makeCopy", "isPickable");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "isPickable", "contains");
+        requireCalls(pool, "anotherspirerework.effects.TinyHouseEffect", "openRewards",
+                "com.megacrit.cardcrawl.rewards.RewardItem", "open");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ExtraCardRewards", "after",
+                "rareCardReward", "addCardReward");
+        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ExtraCardRewards", "addCardReward",
+                "positionRewards", "add");
+        // Energy spent on cards pays out once per four; the random card handout keeps both modifiers.
+        requireCalls(pool, "anotherspirerework.patches.EnergySpentPatch$Spend", "before", "onEnergySpent");
+        requireCalls(pool, "anotherspirerework.powers.JackOfAllTradesPower", "countSpent",
+                "com.megacrit.cardcrawl.actions.common.GainEnergyAction");
+        requireCalls(pool, "anotherspirerework.powers.NirvanaCounterPower", "onUseCard",
+                "com.megacrit.cardcrawl.powers.DrawCardNextTurnPower");
+        requireCalls(pool, "anotherspirerework.util.TempRandomCard", "addEtherealExhaust",
+                "addModifier", "returnTrulyRandomCardInCombat", "makeCopy",
+                "com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction");
+        // The power icons are the artist's own files: the mod prefix is dropped from the file name,
+        // and a vanilla power must keep the base game's icon whatever the files are called.
+        requireCalls(pool, "anotherspirerework.patches.PowerArtLoaderPatch", "apply", "load", "region");
+        requireCalls(pool, "anotherspirerework.patches.PowerArtLoaderPatch$LoadRegion", "before", "apply");
+        require(anotherspirerework.patches.PowerArtLoaderPatch.fileId("anotherspirerework:Nirvana")
+                        .equals("Nirvana"),
+                "Power icon file names drop the mod prefix");
+        require(anotherspirerework.patches.PowerArtLoaderPatch.owns("anotherspirerework.powers.NirvanaCounterPower"),
+                "Own powers may be reskinned");
+        require(!anotherspirerework.patches.PowerArtLoaderPatch.owns("com.megacrit.cardcrawl.powers.StrengthPower"),
+                "A vanilla power must keep its own icon");
+        requireNewCardIds(pool);
+        System.out.println("PASS: second round relics, cards and powers (Inserter, relic tiers, Twisted Funnel,"
+                + " The Specimen, Melange, Golden Eye, Thread and Needle, Snecko Eye, Violet Lotus,"
+                + " Astrolabe, Tiny House, Prayer Wheel, Nloth's Gift, Jack Of All Trades)");
+    }
+
+    /**
+     * A run saved before the tier change still carries the pre-change pools: Prismatic Shard sits in
+     * the shop pool, where its rewritten BOSS tier would price it at 999 gold, and Tiny House sits in
+     * the boss pool, where no shop can reach it. Both have to move, exactly once.
+     */
+    private static void relicPoolRegression() {
+        java.util.ArrayList<String> shop = new java.util.ArrayList<>(
+                java.util.Arrays.asList("Lee's Waffle", "PrismaticShard"));
+        java.util.ArrayList<String> boss = new java.util.ArrayList<>(
+                java.util.Arrays.asList("FrozenCore", "Tiny House"));
+        java.util.ArrayList<String> owned = new java.util.ArrayList<>();
+        anotherspirerework.patches.RareRelicFixes.normalizePools(shop, boss, owned, false,
+                new java.util.Random(1L));
+        require(!shop.contains("PrismaticShard"), "Prismatic Shard must leave the shop pool");
+        require(boss.contains("PrismaticShard"), "Prismatic Shard must join the boss pool");
+        require(shop.contains("Tiny House"), "Tiny House must join the shop pool");
+        require(!boss.contains("Tiny House"), "Tiny House must leave the boss pool");
+        require(shop.size() == 2 && boss.size() == 2, "A moved relic must not be duplicated");
+        // The same save read back a second time has to give the same pools, otherwise saving in
+        // front of a boss chest and reloading would reroll it.
+        java.util.ArrayList<String> reloadShop = new java.util.ArrayList<>(
+                java.util.Arrays.asList("Lee's Waffle", "PrismaticShard"));
+        java.util.ArrayList<String> reloadBoss = new java.util.ArrayList<>(
+                java.util.Arrays.asList("FrozenCore", "Tiny House"));
+        anotherspirerework.patches.RareRelicFixes.normalizePools(reloadShop, reloadBoss, owned,
+                false, new java.util.Random(1L));
+        require(reloadShop.equals(shop) && reloadBoss.equals(boss),
+                "Reloading a save must not reroll the relic pools");
+        // Pool order is what the base game pops from, so a repaired pool must stay untouched.
+        anotherspirerework.patches.RareRelicFixes.normalizePools(shop, boss, owned, false,
+                new java.util.Random(1L));
+        require(shop.equals(reloadShop) && boss.equals(reloadBoss),
+                "Repairing an already repaired pool must change nothing");
+        // An owned relic is dropped instead of being offered a second time.
+        owned.add("PrismaticShard");
+        owned.add("Tiny House");
+        java.util.ArrayList<String> ownedShop = new java.util.ArrayList<>(
+                java.util.Arrays.asList("PrismaticShard"));
+        java.util.ArrayList<String> ownedBoss = new java.util.ArrayList<>(
+                java.util.Arrays.asList("Tiny House"));
+        anotherspirerework.patches.RareRelicFixes.normalizePools(ownedShop, ownedBoss, owned,
+                false, new java.util.Random(1L));
+        require(ownedShop.isEmpty() && ownedBoss.isEmpty(),
+                "A relic the player already owns must not return to a pool");
+        // Diverse hands out Prismatic Shard itself, and the base game keeps it out of the pools.
+        java.util.ArrayList<String> diverseShop = new java.util.ArrayList<>(
+                java.util.Arrays.asList("PrismaticShard"));
+        java.util.ArrayList<String> diverseBoss = new java.util.ArrayList<>(
+                java.util.Arrays.asList("Tiny House"));
+        anotherspirerework.patches.RareRelicFixes.normalizePools(diverseShop, diverseBoss,
+                new java.util.ArrayList<String>(), true, new java.util.Random(1L));
+        require(!diverseShop.contains("PrismaticShard") && !diverseBoss.contains("PrismaticShard"),
+                "Diverse must not put Prismatic Shard back into a pool");
+        require(diverseShop.contains("Tiny House"), "Tiny House must still reach the shop pool");
+        // A relic whose tier never changed is left exactly where it was.
+        java.util.ArrayList<String> anchorShop = new java.util.ArrayList<>(
+                java.util.Arrays.asList("Anchor", "Circlet"));
+        anotherspirerework.patches.RareRelicFixes.normalizePools(anchorShop,
+                new java.util.ArrayList<String>(), new java.util.ArrayList<String>(), false,
+                new java.util.Random(1L));
+        require(anchorShop.equals(java.util.Arrays.asList("Anchor", "Circlet")),
+                "Relics without a tier change must stay where they are");
+        System.out.println("PASS: relic pool tier repair (Prismatic Shard out of the shop,"
+                + " Tiny House into it, stable across reloads, owned relics dropped)");
+    }
+
+    /** Every new card must claim the vanilla card id it replaces. */
+    private static void requireNewCardIds(ClassPool pool) throws Exception {
+        String[][] newCards = {
+                {"anotherspirerework.cards.red.DemonForm", "Demon Form"},
+                {"anotherspirerework.cards.green.DeadlyPoison", "Deadly Poison"},
+                {"anotherspirerework.cards.green.Bane", "Bane"},
+                {"anotherspirerework.cards.green.FlyingKnee", "Flying Knee"},
+                {"anotherspirerework.cards.green.Catalyst", "Catalyst"},
+                {"anotherspirerework.cards.blue.Tempest", "Tempest"},
+                {"anotherspirerework.cards.blue.Overclock", "Steam Power"},
+                {"anotherspirerework.cards.purple.FlyingSleeves", "FlyingSleeves"},
+                {"anotherspirerework.cards.purple.SashWhip", "SashWhip"},
+                {"anotherspirerework.cards.purple.Evaluate", "Evaluate"},
+                {"anotherspirerework.cards.purple.Nirvana", "Nirvana"},
+                {"anotherspirerework.cards.purple.SpiritShield", "SpiritShield"},
+                {"anotherspirerework.cards.purple.EmptyBody", "EmptyBody"},
+                {"anotherspirerework.cards.purple.EmptyMind", "EmptyMind"},
+                {"anotherspirerework.cards.colorless.JackOfAllTrades", "Jack Of All Trades"}
+        };
+        for (String[] pair : newCards) {
+            Object id = pool.get(pair[0]).getDeclaredField("ID").getConstantValue();
+            require(pair[1].equals(id), "New card id mismatch: " + pair[0] + " must replace " + pair[1]);
+        }
+        String[] colourless = {"FlashOfSteel", "Finesse", "SwiftStrike", "GoodInstincts", "MindBlast", "DramaticEntrance"};
+        String[] colourlessIds = {"Flash of Steel", "Finesse", "Swift Strike", "Good Instincts", "Mind Blast", "Dramatic Entrance"};
+        for (int i = 0; i < colourless.length; i++) {
+            Object id = pool.get("anotherspirerework.cards.colorless." + colourless[i])
+                    .getDeclaredField("ID").getConstantValue();
+            require(colourlessIds[i].equals(id),
+                    "New colourless card id mismatch: " + colourless[i] + " must replace " + colourlessIds[i]);
+        }
+    }
+
+    /** A compile time constant, read straight out of the bytecode so no class initializer runs. */
+    private static void requireConstant(ClassPool pool, String name, String field, Object expected) throws Exception {
+        Object value = pool.get(name).getDeclaredField(field).getConstantValue();
+        require(expected.equals(value), "Constant mismatch: " + name + "." + field + " = " + value);
     }
 
     private static void requireCalls(ClassPool pool, String name, String method, String... expected) throws Exception {

@@ -93,5 +93,28 @@
   "anotherspirerework:Metamorphosis": {
     "NAME": "羽化",
     "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，从抽牌堆中选择一张牌放入你的手牌。"]
+  },
+  "anotherspirerework:DemonFormExhaust": {
+    "NAME": "恶魔形态",
+    "DESCRIPTIONS": ["你的 #y消耗堆 中每有一张牌，你对敌人造成的伤害增加 #b ", " 点。"]
+  },
+  "anotherspirerework:Nirvana": {
+    "NAME": "涅槃",
+    "DESCRIPTIONS": [
+      "在你的回合中打出第 #b5 张牌时，在下回合开始时抽 #b ",
+      " 张牌。"
+    ]
+  },
+  "anotherspirerework:SpiritShield": {
+    "NAME": "精神护盾",
+    "DESCRIPTIONS": ["当你处于 #y平静 时，你受到的攻击伤害减半 #b ", " 次。"]
+  },
+  "anotherspirerework:EmptyBody": {
+    "NAME": "化体为空",
+    "DESCRIPTIONS": ["在你的回合结束时，退出当前 #y姿态 并获得 #b ", " 点 #y格挡 。"]
+  },
+  "anotherspirerework:JackOfAllTrades": {
+    "NAME": "花样百出",
+    "DESCRIPTIONS": ["你每花费 #b4 点 [E] ，获得 [E] 。"]
   }
 }

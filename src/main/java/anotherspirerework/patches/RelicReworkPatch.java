@@ -22,6 +22,11 @@ public class RelicReworkPatch {
             paramtypez = {String.class, String.class, AbstractRelic.RelicTier.class, AbstractRelic.LandingSound.class})
     public static class VanillaTooltips {
         @SpirePostfixPatch public static void after(AbstractRelic __instance) {
+            AbstractRelic.RelicTier tier = RareRelicFixes.tierFor(__instance.relicId, __instance.tier);
+            if (tier != __instance.tier) {
+                // Read by the relic pools, the chests and the compendium, so the change sticks.
+                __instance.tier = tier;
+            }
             if (ReworkedRelic.supports(__instance.relicId) && !__instance.relicId.equals("CultistMask")) {
                 __instance.description = com.megacrit.cardcrawl.core.CardCrawlGame.languagePack.getRelicStrings(
                         anotherspirerework.AnotherSpireRework.makeID(__instance.relicId)).DESCRIPTIONS[0];
@@ -51,9 +56,9 @@ public class RelicReworkPatch {
     public static class DirectSling {
         @SpirePrefixPatch public static SpireReturn<Void> before() {
             AbstractDungeon.actionManager.addToBottom(new com.megacrit.cardcrawl.actions.common.ApplyPowerAction(
-                    AbstractDungeon.player, AbstractDungeon.player, new com.megacrit.cardcrawl.powers.StrengthPower(AbstractDungeon.player, 2), 2));
+                    AbstractDungeon.player, AbstractDungeon.player, new com.megacrit.cardcrawl.powers.StrengthPower(AbstractDungeon.player, 1), 1));
             AbstractDungeon.actionManager.addToBottom(new com.megacrit.cardcrawl.actions.common.ApplyPowerAction(
-                    AbstractDungeon.player, AbstractDungeon.player, new com.megacrit.cardcrawl.powers.DexterityPower(AbstractDungeon.player, 2), 2));
+                    AbstractDungeon.player, AbstractDungeon.player, new com.megacrit.cardcrawl.powers.DexterityPower(AbstractDungeon.player, 1), 1));
             return SpireReturn.Return(null);
         }
     }

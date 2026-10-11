@@ -138,7 +138,7 @@
   },
   "anotherspirerework:Sweeping Beam": {
     "NAME": "Sweeping Beam",
-    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Draw !M! cards."
+    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Draw !M! cards. NL Add a *Slimed into your discard pile."
   },
   "anotherspirerework:Gash": {
     "NAME": "Claw",
@@ -150,8 +150,7 @@
   },
   "anotherspirerework:Steam": {
     "NAME": "Steam Barrier",
-    "DESCRIPTION": "Channel !M! Frost. NL Exhaust.",
-    "UPGRADE_DESCRIPTION": "Channel !M! Frost. NL Exhaust."
+    "DESCRIPTION": "Channel !M! Frost. NL Add a *Dazed into your draw pile."
   },
   "anotherspirerework:Leap": {
     "NAME": "Leap",
@@ -177,7 +176,7 @@
   },
   "anotherspirerework:Rip and Tear": {
     "NAME": "Rip and Tear",
-    "DESCRIPTION": "Deal !D! damage to a random enemy !M! times."
+    "DESCRIPTION": "Exhaust all Status cards in your hand and piles. NL Deal !D! damage to a random enemy for each card Exhausted."
   },
   "anotherspirerework:Melter": {
     "NAME": "Melter",
@@ -194,8 +193,8 @@
   },
   "anotherspirerework:Multi-Cast": {
     "NAME": "Multi-Cast",
-    "DESCRIPTION": "Evoke your next Orb X times.",
-    "UPGRADE_DESCRIPTION": "Evoke your next Orb X*2 times."
+    "DESCRIPTION": "Evoke ALL your Orbs X times.",
+    "UPGRADE_DESCRIPTION": "Evoke ALL your Orbs X*2 times."
   },
   "anotherspirerework:Hyperbeam": {
     "NAME": "Hyperbeam",
@@ -387,7 +386,8 @@
   },
   "anotherspirerework:Thunder Strike": {
     "NAME": "Thunder Strike",
-    "DESCRIPTION": "For each Lightning Channeled this combat, Channel 1 Lightning and deal !D! damage to a random enemy.",
+    "DESCRIPTION": "For each Lightning Channeled this combat, Channel 1 Lightning and deal !D! damage to a random enemy. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "For each Lightning Channeled this combat, Channel 1 Lightning and deal !D! damage to a random enemy.",
     "EXTENDED_DESCRIPTION": [" NL (Channeled !M! Lightning.)"]
   },
   "anotherspirerework:Mayhem": {
@@ -417,5 +417,94 @@
   "anotherspirerework:Metamorphosis": {
     "NAME": "Metamorphosis",
     "DESCRIPTION": "Whenever you shuffle your draw pile, put a card from your draw pile into your hand."
+  },
+  "anotherspirerework:Demon Form": {
+    "NAME": "Demon Form",
+    "DESCRIPTION": "Ethereal. NL Deal 1 additional damage to enemies for each card in your exhaust pile.",
+    "UPGRADE_DESCRIPTION": "Deal 1 additional damage to enemies for each card in your exhaust pile."
+  },
+  "anotherspirerework:Deadly Poison": {
+    "NAME": "Deadly Poison",
+    "DESCRIPTION": "Apply !M! Poison. NL Exhaust."
+  },
+  "anotherspirerework:Bane": {
+    "NAME": "Bane",
+    "DESCRIPTION": "Deal !D! damage. NL If the enemy is Poisoned, convert the unblocked damage into Poison."
+  },
+  "anotherspirerework:Flying Knee": {
+    "NAME": "Flying Knee",
+    "DESCRIPTION": "Deal !D! damage. NL Deal double damage if the enemy is Weakened."
+  },
+  "anotherspirerework:Catalyst": {
+    "NAME": "Catalyst",
+    "DESCRIPTION": "Double an enemy's Poison. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Triple an enemy's Poison. NL Exhaust."
+  },
+  "anotherspirerework:Tempest": {
+    "NAME": "Tempest",
+    "DESCRIPTION": "Channel X Lightning.",
+    "UPGRADE_DESCRIPTION": "Channel X+1 Lightning."
+  },
+  "anotherspirerework:Steam Power": {
+    "NAME": "Overclock",
+    "DESCRIPTION": "Draw !M! cards. NL Add a *Burn into your discard pile."
+  },
+  "anotherspirerework:FlyingSleeves": {
+    "NAME": "Flying Sleeves",
+    "DESCRIPTION": "Retain. NL Deal !D! damage !M! times."
+  },
+  "anotherspirerework:SashWhip": {
+    "NAME": "Sash Whip",
+    "DESCRIPTION": "Deal !D! damage. NL Calm: Apply !M! Weak."
+  },
+  "anotherspirerework:Evaluate": {
+    "NAME": "Evaluate",
+    "DESCRIPTION": "Gain !B! Block. NL Add an *Insight into your draw pile."
+  },
+  "anotherspirerework:Nirvana": {
+    "NAME": "Nirvana",
+    "DESCRIPTION": "When you play your 5th card in a turn, draw 2 cards at the start of your next turn.",
+    "UPGRADE_DESCRIPTION": "Innate. NL When you play your 5th card in a turn, draw 2 cards at the start of your next turn."
+  },
+  "anotherspirerework:SpiritShield": {
+    "NAME": "Spirit Shield",
+    "DESCRIPTION": "While in Calm, attack damage you take from enemies is halved."
+  },
+  "anotherspirerework:EmptyBody": {
+    "NAME": "Empty Body",
+    "DESCRIPTION": "At the end of your turn, leave your Stance and gain !M! Block."
+  },
+  "anotherspirerework:EmptyMind": {
+    "NAME": "Empty Mind",
+    "DESCRIPTION": "Draw !M! cards. NL Exit your Stance."
+  },
+  "anotherspirerework:Jack Of All Trades": {
+    "NAME": "Jack Of All Trades",
+    "DESCRIPTION": "Every time you spend 4 [E] , gain [E] ."
+  },
+  "anotherspirerework:Flash of Steel": {
+    "NAME": "Flash of Steel",
+    "DESCRIPTION": "Deal !D! damage. NL Draw 1 card."
+  },
+  "anotherspirerework:Finesse": {
+    "NAME": "Finesse",
+    "DESCRIPTION": "Gain !B! Block. NL Draw 1 card."
+  },
+  "anotherspirerework:Swift Strike": {
+    "NAME": "Swift Strike",
+    "DESCRIPTION": "Deal !D! damage. NL Add a random Attack into your hand. It gains Ethereal and Exhaust."
+  },
+  "anotherspirerework:Good Instincts": {
+    "NAME": "Good Instincts",
+    "DESCRIPTION": "Gain !B! Block. NL Add a random Skill into your hand. It gains Ethereal and Exhaust."
+  },
+  "anotherspirerework:Mind Blast": {
+    "NAME": "Mind Blast",
+    "DESCRIPTION": "Innate. NL Deal damage equal to the number of cards in your deck.",
+    "EXTENDED_DESCRIPTION": [" NL (Deal !D! damage.)"]
+  },
+  "anotherspirerework:Dramatic Entrance": {
+    "NAME": "Dramatic Entrance",
+    "DESCRIPTION": "Innate. NL Deal !D! damage to ALL enemies. NL Exhaust."
   }
 }

@@ -138,7 +138,7 @@
   },
   "${modID}:Sweeping Beam": {
     "NAME": "扫荡射线",
-    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 抽 !M! 张牌。"
+    "DESCRIPTION": "对所有敌人造成 !D! 点伤害。 NL 抽 !M! 张牌。 NL 将一张 *黏液 放入你的弃牌堆。"
   },
   "${modID}:Gash": {
     "NAME": "爪击",
@@ -150,8 +150,7 @@
   },
   "${modID}:Steam": {
     "NAME": "蒸汽护壁",
-    "DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 消耗 。",
-    "UPGRADE_DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 消耗 。"
+    "DESCRIPTION": "生成 !M! 个 冰霜 充能球。 NL 将一张 *晕眩 放入你的抽牌堆。"
   },
   "${modID}:Leap": {
     "NAME": "飞跃",
@@ -177,7 +176,7 @@
   },
   "${modID}:Rip and Tear": {
     "NAME": "狂乱撕扯",
-    "DESCRIPTION": "随机对敌人造成 !D! 点伤害 !M! 次。"
+    "DESCRIPTION": "消耗 你所有的状态牌。 NL 每消耗一张牌，随机造成一次 !D! 点伤害。"
   },
   "${modID}:Melter": {
     "NAME": "熔化",
@@ -194,8 +193,8 @@
   },
   "${modID}:Multi-Cast": {
     "NAME": "多重释放",
-    "DESCRIPTION": "激发 你最右侧的充能球X次。",
-    "UPGRADE_DESCRIPTION": "激发 你最右侧的充能球X*2次。"
+    "DESCRIPTION": "激发 你所有的充能球X次。",
+    "UPGRADE_DESCRIPTION": "激发 你所有的充能球X*2次。"
   },
   "${modID}:Hyperbeam": {
     "NAME": "超能光束",
@@ -387,7 +386,8 @@
   },
   "${modID}:Thunder Strike": {
     "NAME": "雷霆打击",
-    "DESCRIPTION": "你在本场战斗中每 生成 过一个 闪电 充能球，生成一个 闪电 充能球并随机造成一次 !D! 点伤害。",
+    "DESCRIPTION": "你在本场战斗中每 生成 过一个 闪电 充能球，生成一个 闪电 充能球并随机造成一次 !D! 点伤害。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "你在本场战斗中每 生成 过一个 闪电 充能球，生成一个 闪电 充能球并随机造成一次 !D! 点伤害。",
     "EXTENDED_DESCRIPTION": [" NL （共 !M! 次。）"]
   },
   "${modID}:Mayhem": {
@@ -417,5 +417,94 @@
   "${modID}:Metamorphosis": {
     "NAME": "羽化",
     "DESCRIPTION": "你每次将抽牌堆洗牌时，从抽牌堆中选择一张牌放入你的手牌。"
+  },
+  "${modID}:Demon Form": {
+    "NAME": "恶魔形态",
+    "DESCRIPTION": "虚无 。 NL 你的 消耗堆 中每有一张牌，你对敌人造成的伤害增加 1 点。",
+    "UPGRADE_DESCRIPTION": "你的 消耗堆 中每有一张牌，你对敌人造成的伤害增加 1 点。"
+  },
+  "${modID}:Deadly Poison": {
+    "NAME": "致命毒药",
+    "DESCRIPTION": "给予 !M! 层 中毒 。 NL 消耗 。"
+  },
+  "${modID}:Bane": {
+    "NAME": "灾祸",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 如果敌人有 中毒 状态 ，则将其受到的未被 格挡 的伤害转化为等量 中毒 。"
+  },
+  "${modID}:Flying Knee": {
+    "NAME": "飞膝",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 如果敌人有 虚弱 状态 ，本牌造成的伤害翻倍。"
+  },
+  "${modID}:Catalyst": {
+    "NAME": "催化剂",
+    "DESCRIPTION": "将一名敌人的 中毒 层数翻倍。 NL 消耗 。",
+    "UPGRADE_DESCRIPTION": "将一名敌人的 中毒 层数变为三倍。 NL 消耗 。"
+  },
+  "${modID}:Tempest": {
+    "NAME": "暴风雨",
+    "DESCRIPTION": "生成 X 个 闪电 充能球。",
+    "UPGRADE_DESCRIPTION": "生成 X+1 个 闪电 充能球。"
+  },
+  "${modID}:Steam Power": {
+    "NAME": "超频",
+    "DESCRIPTION": "抽 !M! 张牌。 NL 将一张 *灼伤 放入你的弃牌堆。"
+  },
+  "${modID}:FlyingSleeves": {
+    "NAME": "流云飞袖",
+    "DESCRIPTION": "保留 。 NL 造成 !D! 点伤害 !M! 次。"
+  },
+  "${modID}:SashWhip": {
+    "NAME": "腰带抽打",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 平静 ：给予 !M! 层 虚弱 。"
+  },
+  "${modID}:Evaluate": {
+    "NAME": "评估",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 在你的抽牌堆中加入一张 *洞见 。"
+  },
+  "${modID}:Nirvana": {
+    "NAME": "涅槃",
+    "DESCRIPTION": "若你在本回合打出至少 5 张牌，在下回合开始时抽 2 张牌。",
+    "UPGRADE_DESCRIPTION": "固有 。 NL 若你在本回合打出至少 5 张牌，在下回合开始时抽 2 张牌。"
+  },
+  "${modID}:SpiritShield": {
+    "NAME": "精神护盾",
+    "DESCRIPTION": "当你处于 平静 时，你受到来自敌人的攻击伤害减半。"
+  },
+  "${modID}:EmptyBody": {
+    "NAME": "化体为空",
+    "DESCRIPTION": "在你的回合结束时，退出当前 姿态 并获得 !M! 点 格挡 。"
+  },
+  "${modID}:EmptyMind": {
+    "NAME": "化智为空",
+    "DESCRIPTION": "抽 !M! 张牌。 NL 退出当前 姿态 。"
+  },
+  "${modID}:Jack Of All Trades": {
+    "NAME": "花样百出",
+    "DESCRIPTION": "你每花费 4 点 [E] ，获得 [E] 。"
+  },
+  "${modID}:Flash of Steel": {
+    "NAME": "亮剑",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 抽 1 张牌。"
+  },
+  "${modID}:Finesse": {
+    "NAME": "妙计",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 抽 1 张牌。"
+  },
+  "${modID}:Swift Strike": {
+    "NAME": "迅捷打击",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 将一张随机攻击牌加入你的手牌，其获得 虚无 和 消耗 。"
+  },
+  "${modID}:Good Instincts": {
+    "NAME": "优秀直觉",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 将一张随机技能牌加入你的手牌，其获得 虚无 和 消耗 。"
+  },
+  "${modID}:Mind Blast": {
+    "NAME": "心灵震慑",
+    "DESCRIPTION": "固有 。 NL 造成你牌组中牌数的伤害。",
+    "EXTENDED_DESCRIPTION": [" NL （造成 !D! 点伤害。）"]
+  },
+  "${modID}:Dramatic Entrance": {
+    "NAME": "闪亮登场",
+    "DESCRIPTION": "固有 。 NL 对所有敌人造成 !D! 点伤害。 NL 消耗 。"
   }
 }

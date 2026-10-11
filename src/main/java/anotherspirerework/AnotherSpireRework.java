@@ -82,6 +82,7 @@ public class AnotherSpireRework implements
         BaseMod.addSaveField(makeID("EliteKills"), new anotherspirerework.patches.TurnRelicFixes());
         BaseMod.addSaveField(makeID("TurnRelicStatsV1"), new anotherspirerework.patches.TurnRelicFixes.StatMigration());
         BaseMod.addSaveField(makeID("SpoonNoExhaust"), new anotherspirerework.patches.StrangeSpoonExhaust());
+        BaseMod.addSaveField(makeID("SneckoHandV1"), new anotherspirerework.patches.RareRelicFixes.SneckoMigration());
         logger.info(modID + " subscribed to BaseMod.");
     }
 

@@ -83,8 +83,8 @@ public class ReworkedRelic extends AbstractRelic {
         bloodUsed = false;
         if (relicId.equals("Velvet Choker")) counter = 0;
         if (relicId.equals("Sling")) {
-            apply(new StrengthPower(AbstractDungeon.player, 2));
-            apply(new DexterityPower(AbstractDungeon.player, 2));
+            apply(new StrengthPower(AbstractDungeon.player, 1));
+            apply(new DexterityPower(AbstractDungeon.player, 1));
         } else if (relicId.equals("CultistMask")) {
             original.atBattleStart();
         } else if (relicId.equals("Mark of Pain")) {

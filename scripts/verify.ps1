@@ -20,8 +20,8 @@ foreach ($type in @('CardStrings', 'PowerStrings', 'RelicStrings')) {
 }
 $patch = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\CardSwapPatch.java') -Raw
 $list = @([regex]::Matches($patch, 'new (\w+)\(\)') | ForEach-Object {$_.Groups[1].Value})
-Assert ($list.Count -eq 96) 'Expected 96 replacements'
-Assert (@($list | Select-Object -Unique).Count -eq 96) 'Duplicate replacement'
+Assert ($list.Count -eq 117) 'Expected 117 replacements'
+Assert (@($list | Select-Object -Unique).Count -eq 117) 'Duplicate replacement'
 $cards = Json (Join-Path $root 'eng\CardStrings.json')
 $zhCards = Json (Join-Path $root 'zhs\CardStrings.json')
 foreach ($langCards in @($cards, $zhCards)) {
@@ -38,9 +38,8 @@ foreach ($langCards in @($cards, $zhCards)) {
     Assert ($langCards.psobject.Properties['${modID}:ThirdEye'].Value.DESCRIPTION -match '\*(Insight|\u6d1e\u89c1)') 'Missing Insight keyword association'
 }
 # The buffs added with Die Die Die and Envenom keep the card name as their title, and Reprogram is a
-# Power card now, so it must not advertise Exhaust anywhere. Steam Barrier is the other way round:
-# it Exhausts at both levels (the requirements list Exhaust once, with no "remove it when upgraded"),
-# so its upgrade text has to keep saying so.
+# Power card now, so it must not advertise Exhaust anywhere. Steam Barrier took its Exhaust away, so
+# neither level may mention it either.
 $byLang = @{ eng = $cards; zhs = $zhCards }
 foreach ($lang in @('eng', 'zhs')) {
     $powers = Json (Join-Path $root "$lang\PowerStrings.json")
@@ -53,7 +52,7 @@ foreach ($lang in @('eng', 'zhs')) {
     $reprogram = $langCards.psobject.Properties['${modID}:Reprogram'].Value.DESCRIPTION
     Assert (-not ($reprogram -match 'Exhaust|\u6d88\u8017')) "Reprogram must not advertise Exhaust: $lang"
     $steam = $langCards.psobject.Properties['${modID}:Steam'].Value
-    Assert ($steam.UPGRADE_DESCRIPTION -match 'Exhaust|\u6d88\u8017') "Steam Barrier+ must advertise Exhaust: $lang"
+    Assert (-not ($steam.DESCRIPTION -match 'Exhaust|\u6d88\u8017')) "Steam Barrier must not Exhaust: $lang"
 }
 # Every power exposes its strings as a static field named powerStrings: the power list screens read
 # that name by reflection, and a power without it shows an unresolved title.
@@ -80,6 +79,19 @@ foreach ($file in $sources) {
     $required += $relative.Replace('.java', '.class')
 }
 Get-ChildItem (Join-Path $project 'src\main\resources') -Recurse -Filter '*.json' | ForEach-Object {$null = Json $_.FullName}
+# A card that swaps in its upgraded text must actually have that text, in both languages:
+# a missing UPGRADE_DESCRIPTION would blank the card the moment it is upgraded. Comments are stripped
+# first so a card that merely talks about the field is not mistaken for one that reads it.
+foreach ($cardSource in Get-ChildItem (Join-Path $project 'src\main\java\anotherspirerework\cards') -Recurse -Filter '*.java') {
+    $cardText = (Get-Content $cardSource.FullName -Raw) -replace '(?s)/\*.*?\*/', '' -replace '(?m)//.*$', ''
+    if ($cardText -notmatch 'UPGRADE_DESCRIPTION') { continue }
+    $upgradeId = [regex]::Match($cardText, 'String ID = "([^"]+)"').Groups[1].Value
+    if (-not $upgradeId) { continue }
+    foreach ($langCards in @($cards, $zhCards)) {
+        $upgradeEntry = $langCards.psobject.Properties['${modID}:' + $upgradeId].Value
+        Assert ($null -ne $upgradeEntry -and $null -ne $upgradeEntry.UPGRADE_DESCRIPTION) "Missing UPGRADE_DESCRIPTION: $upgradeId"
+    }
+}
 # A postfix that returns a value is handed the original result as its FIRST parameter, by position
 # rather than by name. Declaring the instance first makes the hook return the source object instead
 # of the copy, which makes combat cards share their object with the master deck.
@@ -108,6 +120,8 @@ foreach ($cardSource in Get-ChildItem (Join-Path $project 'src\main\java\another
 }
 foreach ($image in Get-ChildItem $artRoot -Recurse -Filter '*.png') {
     if ($image.BaseName -in @('badge', 'missing')) { continue }
+    # Power icons live in their own sub folder and have their own size rules below.
+    if ($image.DirectoryName -like '*\powers') { continue }
     $bitmap = [System.Drawing.Image]::FromFile($image.FullName)
     try {
         $size = "$($bitmap.Width)x$($bitmap.Height)"
@@ -118,6 +132,34 @@ foreach ($image in Get-ChildItem $artRoot -Recurse -Filter '*.png') {
         Write-Warning "Card art is ignored, no card in this mod looks for '$alias': $($image.Name)"
     } elseif ($knownArtNames.Count -gt 0) {
         Write-Output "Card art '$($image.Name)' -> $($knownArtNames[$alias])"
+    }
+}
+# Power icons: dropped into images/powers as <power>_48.png and <power>_128.png. The prefix has to
+# name one of this mod's own powers, and the file size has to match the suffix, because the game
+# draws each of the two icons at a fixed scale.
+$powerNames = @{}
+foreach ($powerSource in Get-ChildItem (Join-Path $project 'src\main\java\anotherspirerework\powers') -Filter '*.java') {
+    $powerText = Get-Content $powerSource.FullName -Raw
+    foreach ($match in [regex]::Matches($powerText, 'makeID\("([^"]+)"\)')) { $powerNames[$match.Groups[1].Value] = $powerSource.BaseName }
+    if ($powerText -match 'POWER_ID') { $powerNames[$powerSource.BaseName] = $powerSource.BaseName }
+}
+$powerArtRoot = Join-Path $artRoot 'powers'
+if (Test-Path $powerArtRoot) {
+    foreach ($image in Get-ChildItem $powerArtRoot -Filter '*.png') {
+        $bitmap = [System.Drawing.Image]::FromFile($image.FullName)
+        try {
+            Assert ($bitmap.Width -eq $bitmap.Height) "Power art must be square: $($image.Name)"
+            if ($image.BaseName -notmatch '^(?<name>.+)_(?<size>48|128)$') {
+                Write-Warning "Power art is ignored, the name must end in _48 or _128: $($image.Name)"
+                continue
+            }
+            Assert ($bitmap.Width -eq [int]$Matches['size']) "Power art size must match its name: $($image.Name)"
+            if (-not $powerNames.ContainsKey($Matches['name'])) {
+                Write-Warning "Power art is ignored, no power in this mod is called '$($Matches['name'])': $($image.Name)"
+            } else {
+                Write-Output "Power art '$($image.Name)' -> $($powerNames[$Matches['name']])"
+            }
+        } finally { $bitmap.Dispose() }
     }
 }
 if ($CheckJar) {
@@ -136,4 +178,4 @@ if ($CheckJar) {
         }
     } finally { $jar.Dispose() }
 }
-Write-Output 'PASS: JSON, bilingual fields/tokens, 96 unique replacements, localization coverage, source references and requested JAR checks.'
+Write-Output 'PASS: JSON, bilingual fields/tokens, 117 unique replacements, localization coverage, source references and requested JAR checks.'

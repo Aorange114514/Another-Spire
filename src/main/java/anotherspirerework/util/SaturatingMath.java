@@ -31,4 +31,18 @@ public final class SaturatingMath {
     public static int multiply(int left, int right) {
         return fromLong((long) left * right);
     }
+
+    /**
+     * The total damage a Poison stack deals when its tick is repeated {@code extraTicks} more times.
+     *
+     * <p>Every tick removes one layer, so a stack of 7 with two extra ticks deals 7 + 6 + 5 and ends
+     * at 4. Layers that have already run out contribute nothing.
+     */
+    public static int poisonPreview(int amount, int extraTicks) {
+        int total = amount;
+        for (int i = 1; i <= extraTicks; i++) {
+            total += Math.max(0, amount - i);
+        }
+        return total;
+    }
 }

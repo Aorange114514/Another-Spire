@@ -16,7 +16,7 @@ public class Leap extends AbstractCard {
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Leap() {
-        super(ID, cardStrings.NAME, "blue/skill/leap", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.BLUE, CardRarity.COMMON, CardTarget.SELF);
+        super(ID, cardStrings.NAME, "blue/skill/leap", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.BLUE, CardRarity.UNCOMMON, CardTarget.SELF);
         this.baseBlock = 9;
         this.baseMagicNumber = 2;
         this.magicNumber = this.baseMagicNumber;

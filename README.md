@@ -13,20 +13,20 @@
 
 ### 替换机制
 
-`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 96 个条目换成
+`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 117 个条目换成
 `anotherspirerework.cards.<color>.<Name>`，**保留原版 cardID 与原版图片路径**，并带过 `isSeen`。
 游戏所有取卡路径（`CardLibrary.getCardList`、`AbstractDungeon.getCardFromPool`、`initializeStarterDeck`…）
 都读这张表，所以替换一处即全局生效。事件里 `new Bite()` 这类**绕过卡库的直接构造**由 `patches.BitePatch` 单独补丁。
 
-### 清单（96 张）
+### 清单（117 张）
 
 | 颜色 | 数量 | 目录 |
 |---|---|---|
-| 铁甲战士 | 23 | `cards/red` |
-| 静默猎手 | 22 | `cards/green` |
-| 故障机器人 | 26 | `cards/blue` |
-| 观者 | 18 | `cards/purple` |
-| 无色 | 7 | `cards/colorless` |
+| 铁甲战士 | 24 | `cards/red` |
+| 静默猎手 | 26 | `cards/green` |
+| 故障机器人 | 28 | `cards/blue` |
+| 观者 | 25 | `cards/purple` |
+| 无色 | 14 | `cards/colorless` |
 
 每张牌的数值以 `../requirements.txt` 为准（下表即其完整清单）；**结构性**改动（不只是改数字）先看这里：
 
@@ -35,15 +35,18 @@
 | 重刃、铁斩波 | 稀有度 普通→罕见 |
 | 燃烧契约 | 稀有度 罕见→普通 |
 | 乾坤一掷、致残毒云 | 稀有度 稀有→罕见 / 罕见→稀有 |
-| 跃跃欲试（替换连续拳）、暴雪、熔化、核心电涌 | 攻击牌 → 技能牌 |
+| 跃跃欲试（替换连续拳）、暴雪、熔化、核心电涌、精巧刺击、改造现实 | 攻击牌 → 技能牌 |
 | 死吧死吧死吧、乾坤一掷、重编程、结茧、羽化 | 改为能力牌（重编程同时移除 Exhaust） |
+| 精神护盾、化体为空、花样百出 | 改为能力牌 |
 | 双重释放 → 四重释放 | 重做为“激发最右侧充能球 4 次” |
-| 雷霆打击、乱战、深谋远虑、秘密技法、秘密武器、结茧、羽化 | 本次新增的改动条目（沿用原版 ID） |
+| 雷霆打击、乱战、深谋远虑、秘密技法、秘密武器、结茧、羽化 | 第二次新增的改动条目（沿用原版 ID） |
+| 恶魔形态、致命毒药、灾祸、飞膝、催化剂、暴风雨、超频、流云飞袖、腰带抽打、评估、涅槃、精神护盾、化体为空、化智为空、花样百出、亮剑、妙计、迅捷打击、优秀直觉、心灵震慑、闪亮登场 | 本次新增的 21 张（沿用原版 ID） |
 
 ### 完整改动清单
 
-96 张替换卡按角色列出；格式为 **费用（基础 → 升级后）**，"效果" 括号内为升级后的数值。
-⚠ = 类型/稀有度等结构性变化。噬咬（`Bite`）不在 96 张内，由 `BitePatch` 单独处理。
+117 张替换卡按角色列出；格式为 **费用（基础 → 升级后）**，"效果" 括号内为升级后的数值。
+⚠ = 类型/稀有度等结构性变化。噬咬（`Bite`）不在 117 张内，由 `BitePatch` 单独处理。
+第二批新增的 21 张与遗物见 [CHANGELOG.md](CHANGELOG.md) 的「第二批」一节（下表为本轮之前的部分）。
 全部沿用**原版 cardID**，因此没有注册任何新卡池。
 
 #### 铁甲战士（23）
@@ -111,7 +114,7 @@
 | 扫荡射线 | `Sweeping Beam` | 1 | 对所有敌人造成 6（7）点伤害；抽 2（3）张牌 |
 | 爪击 | `Gash` | 0 | 造成 1 点伤害 2（3）次；在本场战斗中所有爪击牌的伤害 +2（3） |
 | 精简改良 | `Streamline` | 3 | 造成 18（22）点伤害；你每抽到这张牌时，它在本场战斗中的耗能 −1 |
-| 蒸汽护壁 ⚠两档都消耗 | `Steam` | 0 | 生成 1（2）个冰霜充能球；消耗（升级后仍然消耗，中英升级文本已同步标注） |
+| 蒸汽护壁 | `Steam` | 0 | 生成 1（2）个冰霜充能球；将一张晕眩放入你的抽牌堆（无消耗） |
 | 飞跃 | `Leap` | 1 | 获得 9（10）点格挡；在本回合获得 2（4）点临时集中 |
 | 你好，世界 | `Hello World` | 1 | 在你的回合开始时，增加一张随机牌到你的手牌（升级后固有） |
 | 冰寒 | `Chill` | 0 | 当前每有一名敌人，生成一个冰霜充能球；消耗（升级后取消消耗） |
@@ -183,7 +186,7 @@
 | 幸运一击 | 追加“抽 1 张牌”；格挡与伤害保持 2 / 3 |
 | 彩虹 | 保持原版结构：基础牌消耗，升级取消消耗 |
 | 死吧死吧死吧 | 耗能 2→1 |
-| 蒸汽护壁 | 两档都保留消耗（需求只列了一次“消耗”，没说升级取消） |
+| 蒸汽护壁 | 去掉消耗；升级只加一个冰霜球与一张晕眩 |
 | 坚韧 | 需求未给“打出时”的格挡值，因此只在被保留时结算 |
 
 ### 卡图
@@ -194,6 +197,16 @@
 - 尺寸：卡面 **250×190**、放大界面 **500×380**，给其中一个即可（另一个按整图缩放使用）。
 - 文件名：卡 ID 去空格（`DieDieDie.png`）或原版图片名（`die_die_die.png`），两种都识别；`_p` 后缀表示放大图。
 - 改图后重新 `mvn package` 并重启游戏。
+
+### 能力图标
+
+`patches.PowerArtLoaderPatch` 只覆盖**本模组自己新增的能力**（原版能力保持原版图标），有图就换、没图保持现状：
+
+- 位置：`src/main/resources/anotherspirerework/images/powers/`。
+- 尺寸：`<名字>_48.png`（48×48，buff 栏小图标）、`<名字>_128.png`（128×128，获得/触发时的放大闪光）；
+  两者互不影响，可只给一个。尺寸必须与后缀一致（游戏按固定倍率绘制）。
+- 文件名：能力 ID 去掉 `anotherspirerework:` 前缀（如 `Nirvana_48.png`），或能力类名（`NirvanaCounterPower_48.png`）。
+- 具体名字清单见 [CHANGELOG.md](CHANGELOG.md) 的「能力图标」一节。
 
 ## 2. 对原版遗物的改动
 
@@ -318,6 +331,11 @@
 
 `candidateNames(String cardID, String assetUrl)`：按“卡 ID 去空格 → 图片路径转下划线 → 图片文件名”返回候选名。
 
+### 能力图标 `patches.PowerArtLoaderPatch`
+
+`fileId(String powerId)`（去掉 `anotherspirerework:` 前缀）、`candidateNames(String powerId, String className)`、
+`owns(String className)`（只认 `anotherspirerework.powers.*`）、`load(String name, int size)`：按 `<名字>_48` / `_128` 找图。
+
 ### 供其它补丁复用的静态助手
 
 | 类 | 方法 |
@@ -355,6 +373,12 @@ Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域
 | `TurnRelicStatsV1` | 一次性迁移：给已持有的棱镜碎片补基础能量/抽牌量，迁完打标记不再重复 |
 | `SpoonNoExhaust` | 勺子“已去掉消耗”的牌，按“卡牌 ID + 升级次数 + misc”记张数，读档后按张数重新应用 |
 
+另有一项**不走自定义字段**的存档兼容处理：遗物池（`shop_relics` / `boss_relics`）随存档保存，读档时不会按品级重建，
+因此在品级改动之前开局的存档会把棱镜碎片留在商店池（实例已是 BOSS 品级，`getPrice()` 返回 999 金币）、
+把小屋子留在 BOSS 池。`RareRelicFixes.normalizePools`（`AbstractDungeon.loadSave` 的后缀补丁）读档后把这两件
+挪回各自品级的池子，插入位置由该局种子决定（存档/读档不会重置遗物池），已持有的遗物丢弃不放回；
+`ShopRelicPatch` 另有品级守卫，商店位置只接受自身品级为商店遗物的 id。新开局本来就按品级建池，不受影响。
+
 原则：**不猜测存档没有保存的信息**（例如旧长蛇戒指是原版还是包装版，存档只有 ID）；不承诺“先升级、再退回旧版本、再升级”的混用存档。
 
 ## 6. 维护须知
@@ -384,7 +408,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 |---|---|---|
 | 纯逻辑回归 | `src/test/java/anotherspirerework/util/SaturatingMathTest.java` | 饱和算术与随机边界，不初始化图形环境 |
 | 补丁契约 | `src/test/java/anotherspirerework/PatchContractTest.java`（随 `mvn package` 运行） | 用真实依赖 JAR 校验目标方法、locator、字段与 Instrument 后的字节码 |
-| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、96 张唯一替换、卡图尺寸、JAR 条目 |
+| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、117 张唯一替换、卡图尺寸、JAR 条目 |
 | 真实运行 | ModTheSpire + 游戏内场景 | 补丁组合、动作/UI 时序、卡面观感、存档迁移；**前三层都不能替代它** |
 
 ### 改代码的硬性规则
@@ -396,8 +420,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 2. **每个 `AbstractPower` 子类必须声明 `powerStrings` 字段**：能力列表按该字段名反射取标题，缺了就取不到本地化文本。
 3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
    中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
-4. **替换表必须仍是 96 个唯一实例**（`CardSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
-5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；拼错目录/文件名会被 `verify.ps1` 警告。
+4. **替换表必须仍是 117 个唯一实例**（`CardSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
+5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
+   必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。
 6. **包装遗物必须转发它取代的原版钩子**（见 §2 的警告）；新增遗物行为时先确认原版钩子是取消还是保留。
 7. **条件生成遗物**不满足条件时要留在池中，不能消耗掉本局的一次生成机会。
 8. **补丁优先 Prefix/Postfix/语义 Locator**，`Replace`/`Insert` 只在上面的手段都不行时用；
@@ -406,8 +431,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 10. **新内容用命名空间 ID**；刻意替换原版内容可以保留原版 ID，但要在本文档说明冲突范围。
 11. 新增延迟工作（需要等动画/界面结束的）沿用现有落点：每帧工作放 `receivePostDungeonUpdate`，
     战斗开始/结束的状态清理放 `receiveStartGame` / `receivePostBattle`。
-12. **「消耗」标志必须与中英文本一致**：升级后仍消耗的牌，升级文本也要写「消耗 / Exhaust」（蒸汽护壁就是
-    这种情况，`verify.ps1` 已加断言）；反过来改为能力牌的牌（重编程）不得再出现消耗文本（也有断言）。
+12. **「消耗」标志必须与中英文本一致**：带消耗的牌两种语言都要写「消耗 / Exhaust」，
+    不消耗的牌（如蒸汽护壁、重编程）一处都不能出现（`verify.ps1` 都有断言）。
     带 `UPGRADE_DESCRIPTION` 的卡在 `upgrade()` 里要显式 `rawDescription = cardStrings.UPGRADE_DESCRIPTION;
     initializeDescription();`——引擎不会自动应用它，不写就是一段死数据（同时也会漏掉 `!M!` 刷新）。
 
@@ -420,5 +445,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 - 数值上限放宽只到 int 上限：这些值存在 `int` 字段里（`AbstractCreature.currentBlock`、`AbstractPower.amount`、
   `EnergyPanel.totalCount`），改成 `long` 意味着替换字段、所有读取公式和存档格式。
 
-（其余 14 张带消耗的牌已逐张核对过：文本与标志一致。）
+（其余 13 张带消耗的牌已逐张核对过：文本与标志一致；蒸汽护壁本轮已改为不消耗。）
 

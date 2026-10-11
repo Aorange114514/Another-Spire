@@ -17,7 +17,7 @@ public class Streamline extends AbstractCard {
 
     public Streamline() {
         super(ID, cardStrings.NAME, "blue/attack/streamline", 3, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.BLUE, CardRarity.COMMON, CardTarget.ENEMY);
-        this.baseDamage = 18;
+        this.baseDamage = 22;
         this.baseMagicNumber = 1;
         this.magicNumber = this.baseMagicNumber;
     }
@@ -33,7 +33,7 @@ public class Streamline extends AbstractCard {
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeDamage(4);
+            upgradeDamage(6);
         }
     }
 

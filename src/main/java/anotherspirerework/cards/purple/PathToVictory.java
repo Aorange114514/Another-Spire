@@ -17,7 +17,7 @@ public class PathToVictory extends AbstractCard {
 
     public PathToVictory() {
         super(ID, cardStrings.NAME, "purple/skill/pressure_points", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.PURPLE, CardRarity.COMMON, CardTarget.ENEMY);
-        this.baseMagicNumber = 8;
+        this.baseMagicNumber = 4;
         this.magicNumber = this.baseMagicNumber;
         this.exhaust = true;
     }
@@ -32,7 +32,7 @@ public class PathToVictory extends AbstractCard {
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeMagicNumber(3);
+            upgradeMagicNumber(2);
         }
     }
 

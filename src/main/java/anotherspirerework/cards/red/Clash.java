@@ -19,7 +19,7 @@ public class Clash extends AbstractCard {
 
     public Clash() {
         super(ID, cardStrings.NAME, "red/attack/clash", 0, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.RED, CardRarity.COMMON, CardTarget.ENEMY);
-        this.baseDamage = 14;
+        this.baseDamage = 10;
     }
 
     public static int countNonAttacks() {

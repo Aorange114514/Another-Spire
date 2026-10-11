@@ -16,7 +16,7 @@ public class QuickSlash extends AbstractCard {
 
     public QuickSlash() {
         super(ID, cardStrings.NAME, "green/attack/quick_slash", -2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.COMMON, CardTarget.ALL_ENEMY);
-        this.baseDamage = 8;
+        this.baseDamage = 10;
         this.isMultiDamage = true;
     }
 

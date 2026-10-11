@@ -17,7 +17,7 @@ public class SeverSoul extends AbstractCard {
 
     public SeverSoul() {
         super(ID, cardStrings.NAME, "red/attack/sever_soul", 2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.RED, CardRarity.UNCOMMON, CardTarget.ENEMY);
-        this.baseDamage = 16;
+        this.baseDamage = 10;
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {

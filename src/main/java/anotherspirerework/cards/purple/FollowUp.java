@@ -19,7 +19,7 @@ public class FollowUp extends AbstractCard {
 
     public FollowUp() {
         super(ID, cardStrings.NAME, "purple/attack/follow_up", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.PURPLE, CardRarity.COMMON, CardTarget.ENEMY);
-        this.baseDamage = 7;
+        this.baseDamage = 9;
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {

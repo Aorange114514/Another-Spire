@@ -1,5 +1,6 @@
 package anotherspirerework.effects;
 
+import anotherspirerework.patches.RareRelicFixes;
 import anotherspirerework.patches.StrangeSpoonExhaust;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -28,10 +29,15 @@ import java.util.Set;
  */
 public class ChooseDeckCardsEffect extends AbstractGameEffect {
 
-    public enum Choice { REMOVE_EXHAUST, ADD_TO_DECK }
+    public enum Choice { REMOVE_EXHAUST, ADD_TO_DECK, ADD_ANY_COLOR }
 
     /** Ten distinct cards of each rarity for Orrery. */
     private static final int PER_RARITY = 10;
+
+    /** Rarities Astrolabe may offer: Basic, Special and the special-only pools are left out. */
+    private static final AbstractCard.CardRarity[] ANY_COLOR_RARITIES = {
+            AbstractCard.CardRarity.COMMON, AbstractCard.CardRarity.UNCOMMON, AbstractCard.CardRarity.RARE
+    };
 
     private static final float OPEN_DELAY = 0.4F;
 
@@ -70,8 +76,7 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
             if (this.delay > 0.0F) {
                 return;
             }
-            CardGroup group = this.choice == Choice.REMOVE_EXHAUST
-                    ? AbstractDungeon.player.masterDeck : orreryChoices();
+            CardGroup group = this.group();
             if (group == null || group.size() == 0) {
                 this.isDone = true;
                 return;
@@ -120,6 +125,18 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
         }
     }
 
+    /** The cards this instance offers: the deck itself, Orrery's 10/10/10, or any colour at all. */
+    private CardGroup group() {
+        switch (this.choice) {
+            case REMOVE_EXHAUST:
+                return AbstractDungeon.player.masterDeck;
+            case ADD_ANY_COLOR:
+                return anyColorChoices();
+            default:
+                return orreryChoices();
+        }
+    }
+
     private void apply(AbstractCard card) {
         // Selected cards are left glowing by the grid select - one of the base game's own branches
         // stops it, the "any number" one this picker uses does not - and a card that keeps that
@@ -127,7 +144,7 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
         card.unhover();
         card.untip();
         card.stopGlowing();
-        if (this.choice == Choice.ADD_TO_DECK) {
+        if (this.choice != Choice.REMOVE_EXHAUST) {
             UnlockTracker.markCardAsSeen(card.cardID);
             AbstractDungeon.effectsQueue.add(new ShowCardAndObtainEffect(
                     card, Settings.WIDTH / 2.0F, Settings.HEIGHT / 2.0F));
@@ -150,6 +167,34 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
             }
         }
         return group;
+    }
+
+    /**
+     * Distinct cards of any colour for Astrolabe: the rarity is rolled first so every rarity is as
+     * likely to show up, and Basic, Special, Status, Curse and healing cards never are.
+     */
+    private static CardGroup anyColorChoices() {
+        CardGroup group = new CardGroup(CardGroup.CardGroupType.UNSPECIFIED);
+        Set<String> seen = new HashSet<>();
+        int wanted = RareRelicFixes.ASTROLABE_CHOICES;
+        for (int guard = 0; seen.size() < wanted && guard < wanted * 40; guard++) {
+            AbstractCard.CardRarity rarity = ANY_COLOR_RARITIES[AbstractDungeon.cardRandomRng.random(ANY_COLOR_RARITIES.length - 1)];
+            AbstractCard card = com.megacrit.cardcrawl.helpers.CardLibrary.getAnyColorCard(rarity);
+            if (card != null && isPickable(card) && seen.add(card.cardID)) {
+                group.addToTop(card.makeCopy());
+            }
+        }
+        return group;
+    }
+
+    private static boolean isPickable(AbstractCard card) {
+        if (card.rarity == AbstractCard.CardRarity.BASIC || card.rarity == AbstractCard.CardRarity.SPECIAL) {
+            return false;
+        }
+        if (card.type == AbstractCard.CardType.STATUS || card.type == AbstractCard.CardType.CURSE) {
+            return false;
+        }
+        return !card.tags.contains(AbstractCard.CardTags.HEALING);
     }
 
     @Override

@@ -29,6 +29,7 @@ public class ThunderStrike extends AbstractCard {
         this.baseMagicNumber = 0;
         this.magicNumber = 0;
         this.tags.add(CardTags.STRIKE);
+        this.exhaust = true;
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
@@ -68,22 +69,29 @@ public class ThunderStrike extends AbstractCard {
         this.baseMagicNumber = count;
         this.magicNumber = count;
         if (count > 0) {
-            this.rawDescription = cardStrings.DESCRIPTION + AnotherSpireRework.extendedDescription(cardStrings, 0);
+            this.rawDescription = description() + AnotherSpireRework.extendedDescription(cardStrings, 0);
             initializeDescription();
         }
     }
 
     @Override
     public void onMoveToDiscard() {
-        this.rawDescription = cardStrings.DESCRIPTION;
+        this.rawDescription = description();
         initializeDescription();
     }
 
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeBaseCost(2);
+            this.exhaust = false;
+            this.rawDescription = description();
+            initializeDescription();
         }
+    }
+
+    /** Exhaust is listed once and removed by the upgrade, so the upgraded text has its own line. */
+    private String description() {
+        return this.upgraded ? cardStrings.UPGRADE_DESCRIPTION : cardStrings.DESCRIPTION;
     }
 
     public AbstractCard makeCopy() {

@@ -39,6 +39,7 @@ public class Hyperbeam extends AbstractCard {
         if (!this.upgraded) {
             upgradeName();
             upgradeDamage(8);
+            upgradeMagicNumber(1);
         }
     }
 

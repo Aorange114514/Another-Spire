@@ -15,8 +15,8 @@ public class Flex extends AbstractCard {
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Flex() {
-        super(ID, cardStrings.NAME, "red/skill/flex", 0, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.RED, CardRarity.COMMON, CardTarget.SELF);
-        this.baseMagicNumber = 4;
+        super(ID, cardStrings.NAME, "red/skill/flex", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.RED, CardRarity.COMMON, CardTarget.SELF);
+        this.baseMagicNumber = 5;
         this.magicNumber = this.baseMagicNumber;
     }
 
@@ -28,7 +28,7 @@ public class Flex extends AbstractCard {
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeMagicNumber(4);
+            upgradeBaseCost(0);
         }
     }
 

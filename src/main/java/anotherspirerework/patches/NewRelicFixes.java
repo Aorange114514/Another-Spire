@@ -9,7 +9,9 @@ import com.megacrit.cardcrawl.actions.common.DrawCardAction;
 import com.megacrit.cardcrawl.actions.common.ExhaustSpecificCardAction;
 import com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction;
 import com.megacrit.cardcrawl.actions.common.RelicAboveCreatureAction;
+import com.megacrit.cardcrawl.actions.defect.ChannelAction;
 import com.megacrit.cardcrawl.actions.defect.IncreaseMaxOrbAction;
+import com.megacrit.cardcrawl.orbs.AbstractOrb;
 import com.megacrit.cardcrawl.actions.unique.DiscoveryAction;
 import com.megacrit.cardcrawl.actions.utility.UseCardAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -328,15 +330,26 @@ public class NewRelicFixes {
         }
     }
 
-    /*----------30. Inserter: one orb slot every turn.----------*/
+    /*----------30. Inserter: a slot with a random orb in it, every second turn.----------*/
+
+    public static final int INSERTER_TURNS = 2;
 
     public static void inserterTurn(AbstractRelic relic) {
+        if (relic.counter < 0) {
+            relic.counter = 0;
+        }
+        relic.counter++;
+        if (relic.counter < INSERTER_TURNS) {
+            return;
+        }
+        relic.counter = 0;
         relic.flash();
         toBot(new RelicAboveCreatureAction(AbstractDungeon.player, relic));
         toBot(new IncreaseMaxOrbAction(1));
+        toBot(new ChannelAction(AbstractOrb.getRandomOrb(true)));
     }
 
-    /** Vanilla gained a slot every second turn; the requirement wants one every turn. */
+    /** Vanilla counted turns but granted only the slot; the random orb comes on top of that. */
     @SpirePatch(clz = Inserter.class, method = "atTurnStart")
     public static class InserterTurn {
         @SpirePrefixPatch
@@ -420,10 +433,10 @@ public class NewRelicFixes {
     }
 
     @SpirePatch(clz = Inserter.class, method = "onEquip")
-    public static class InserterNoCounter {
+    public static class InserterEquip {
         @SpirePrefixPatch
         public static SpireReturn<Void> before(Inserter __instance) {
-            __instance.counter = -1;
+            __instance.counter = 0;
             return SpireReturn.Return(null);
         }
     }

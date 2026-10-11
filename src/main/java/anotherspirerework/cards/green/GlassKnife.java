@@ -18,7 +18,7 @@ public class GlassKnife extends AbstractCard {
 
     public GlassKnife() {
         super(ID, cardStrings.NAME, "green/attack/glass_knife", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.RARE, CardTarget.ENEMY);
-        this.baseDamage = 8;
+        this.baseDamage = 4;
         this.baseMagicNumber = 3;
         this.magicNumber = this.baseMagicNumber;
         this.exhaust = true;

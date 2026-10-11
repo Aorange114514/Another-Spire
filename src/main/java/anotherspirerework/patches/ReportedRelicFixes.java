@@ -22,7 +22,9 @@ public class ReportedRelicFixes {
     public static void loseEnergy() {
         AbstractDungeon.actionManager.addToBottom(new AbstractGameAction() {
             public void update() {
-                AbstractDungeon.player.energy.use(1);
+                // loseEnergy goes straight to the energy panel, so the Velvet Choker and Sacred
+                // Bark penalties are not mistaken for energy spent on a card by Jack Of All Trades.
+                AbstractDungeon.player.loseEnergy(1);
                 isDone = true;
             }
         });
