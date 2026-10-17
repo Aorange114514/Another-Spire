@@ -88,11 +88,11 @@
   },
   "anotherspirerework:Chrysalis": {
     "NAME": "Chrysalis",
-    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, gain [E] ."]
+    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, gain #b", " [E] ."]
   },
   "anotherspirerework:Metamorphosis": {
     "NAME": "Metamorphosis",
-    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, put a card from your draw pile into your hand."]
+    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, put up to #b", " card from your draw pile into your hand.", " cards from your draw pile into your hand."]
   },
   "anotherspirerework:DemonFormExhaust": {
     "NAME": "Demon Form",
@@ -116,5 +116,17 @@
   "anotherspirerework:JackOfAllTrades": {
     "NAME": "Jack Of All Trades",
     "DESCRIPTIONS": ["Every time you spend #b4 [E] , gain [E] ."]
+  },
+  "anotherspirerework:Blur": {
+    "NAME": "Blur",
+    "DESCRIPTIONS": ["Whenever you draw a card this turn, gain ", " #yBlock."]
+  },
+  "anotherspirerework:Sadistic Nature": {
+    "NAME": "Sadistic Nature",
+    "DESCRIPTIONS": ["#yWeak and #yVulnerable on enemies are twice as strong."]
+  },
+  "anotherspirerework:WaveOfTheHandPower": {
+    "NAME": "Wave of the Hand",
+    "DESCRIPTIONS": ["Whenever you change #yStances this turn, apply #b", " #yWeak to ALL enemies."]
   }
 }

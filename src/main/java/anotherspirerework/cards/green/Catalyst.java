@@ -2,13 +2,15 @@ package anotherspirerework.cards.green;
 
 import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.unique.DoublePoisonAction;
-import com.megacrit.cardcrawl.actions.unique.TriplePoisonAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 
-/** Catalyst: the vanilla doubling, promoted to a Common card. */
+/**
+ * Catalyst: the vanilla doubling, promoted to a Common card. Upgrading buys Retain instead of a
+ * bigger multiplier, so the copy can be kept until the poison is worth doubling.
+ */
 public class Catalyst extends AbstractCard {
     public static final String ID = "Catalyst";
 
@@ -20,16 +22,13 @@ public class Catalyst extends AbstractCard {
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
-        if (!this.upgraded) {
-            addToBot(new DoublePoisonAction(m, p));
-        } else {
-            addToBot(new TriplePoisonAction(m, p));
-        }
+        addToBot(new DoublePoisonAction(m, p));
     }
 
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
+            this.selfRetain = true;
             this.rawDescription = cardStrings.UPGRADE_DESCRIPTION;
             initializeDescription();
         }

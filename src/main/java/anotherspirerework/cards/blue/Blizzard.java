@@ -41,7 +41,6 @@ public class Blizzard extends AbstractCard {
         if (!this.upgraded) {
             upgradeName();
             upgradeBaseCost(0);
-            upgradeMagicNumber(1);
         }
     }
 

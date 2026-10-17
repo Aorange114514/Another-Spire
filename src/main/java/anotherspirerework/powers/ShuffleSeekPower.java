@@ -1,13 +1,15 @@
 package anotherspirerework.powers;
 
 import anotherspirerework.AnotherSpireRework;
-import com.megacrit.cardcrawl.actions.defect.SeekAction;
+import anotherspirerework.actions.ShuffleSeekAction;
+import anotherspirerework.patches.ShuffleTriggerPatch;
 import com.megacrit.cardcrawl.core.AbstractCreature;
+import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 
 /**
- * Metamorphosis: search the draw pile for cards every time it is shuffled. The search action is
+ * Metamorphosis: pick up to {@code amount} cards from the draw pile every time it is shuffled. The search action is
  * pushed right after the shuffle finished and before the draws that caused it finish resolving,
  * which is what the requirement asks for.
  */
@@ -27,12 +29,17 @@ public class ShuffleSeekPower extends AbstractPower implements DrawPileShuffleLi
 
     @Override
     public void onDrawPileShuffled() {
+        // The draw that follows the shuffle takes the whole pile anyway, so there is nothing to choose.
+        if (AbstractDungeon.player.drawPile.size() <= ShuffleTriggerPatch.drawsAfterShuffle()) {
+            return;
+        }
         flash();
-        addToTop(new SeekAction(this.amount));
+        addToTop(new ShuffleSeekAction(this.amount));
     }
 
     @Override
     public void updateDescription() {
-        this.description = powerStrings.DESCRIPTIONS[0];
+        this.description = powerStrings.DESCRIPTIONS[0] + this.amount
+                + (this.amount == 1 ? powerStrings.DESCRIPTIONS[1] : powerStrings.DESCRIPTIONS[2]);
     }
 }

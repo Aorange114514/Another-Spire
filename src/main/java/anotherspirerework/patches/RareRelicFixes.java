@@ -1,7 +1,6 @@
 package anotherspirerework.patches;
 
 import anotherspirerework.effects.ChooseDeckCardsEffect;
-import anotherspirerework.effects.TinyHouseEffect;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
@@ -171,14 +170,15 @@ public class RareRelicFixes {
         }
     }
 
-    /*----------33. Tiny House: upgrade a card, then three colourless card rewards.----------*/
+    /*----------33. Tiny House: fighting is over, the campfire stays open (see TinyHouseCampfirePatch).----------*/
 
     @SpirePatch(clz = TinyHouse.class, method = "onEquip")
     public static class TinyHouseEquip {
         @SpirePrefixPatch
         public static SpireReturn<Void> before(TinyHouse __instance) {
-            __instance.flash();
-            TinyHouseEffect.start(__instance);
+            // The free campfire comes from TinyHouseCampfirePatch and the Rest Site pulse from its
+            // RestRoomPulse hook, so the vanilla reward handout is skipped. The relic keeps the one
+            // flash the base game gives every relic on pickup, and nothing flashes twice.
             return SpireReturn.Return(null);
         }
     }

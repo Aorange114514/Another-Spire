@@ -22,8 +22,8 @@ public class Bane extends AbstractCard {
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Bane() {
-        super(ID, cardStrings.NAME, "green/attack/bane", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.COMMON, CardTarget.ENEMY);
-        this.baseDamage = 7;
+        super(ID, cardStrings.NAME, "green/attack/bane", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.UNCOMMON, CardTarget.ENEMY);
+        this.baseDamage = 9;
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {

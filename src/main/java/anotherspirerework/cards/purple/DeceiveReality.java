@@ -1,7 +1,7 @@
 package anotherspirerework.cards.purple;
 
 import anotherspirerework.AnotherSpireRework;
-import com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction;
+import com.megacrit.cardcrawl.actions.common.MakeTempCardInDrawPileAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.tempCards.Insight;
 import com.megacrit.cardcrawl.cards.tempCards.Miracle;
@@ -22,8 +22,8 @@ public class DeceiveReality extends AbstractCard {
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
-        addToBot(new MakeTempCardInHandAction(this.cardsToPreview.makeStatEquivalentCopy(), this.magicNumber));
-        addToBot(new MakeTempCardInHandAction(new Miracle(), 1));
+        addToBot(new MakeTempCardInDrawPileAction(this.cardsToPreview.makeStatEquivalentCopy(), this.magicNumber, true, true));
+        addToBot(new MakeTempCardInDrawPileAction(new Miracle(), 1, true, true));
     }
 
     public void upgrade() {

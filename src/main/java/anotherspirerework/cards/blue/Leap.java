@@ -17,7 +17,7 @@ public class Leap extends AbstractCard {
 
     public Leap() {
         super(ID, cardStrings.NAME, "blue/skill/leap", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.BLUE, CardRarity.UNCOMMON, CardTarget.SELF);
-        this.baseBlock = 9;
+        this.baseBlock = 5;
         this.baseMagicNumber = 2;
         this.magicNumber = this.baseMagicNumber;
     }

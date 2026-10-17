@@ -88,11 +88,11 @@
   },
   "${modID}:Chrysalis": {
     "NAME": "Chrysalis",
-    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, gain [E] ."]
+    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, gain #b", " [E] ."]
   },
   "${modID}:Metamorphosis": {
     "NAME": "Metamorphosis",
-    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, put a card from your draw pile into your hand."]
+    "DESCRIPTIONS": ["Whenever you shuffle your draw pile, put up to #b", " card from your draw pile into your hand.", " cards from your draw pile into your hand."]
   },
   "${modID}:DemonFormExhaust": {
     "NAME": "Demon Form",
@@ -116,5 +116,17 @@
   "${modID}:JackOfAllTrades": {
     "NAME": "Jack Of All Trades",
     "DESCRIPTIONS": ["Every time you spend #b4 [E] , gain [E] ."]
+  },
+  "${modID}:Blur": {
+    "NAME": "Blur",
+    "DESCRIPTIONS": ["Whenever you draw a card this turn, gain ", " #yBlock."]
+  },
+  "${modID}:Sadistic Nature": {
+    "NAME": "Sadistic Nature",
+    "DESCRIPTIONS": ["#yWeak and #yVulnerable on enemies are twice as strong."]
+  },
+  "${modID}:WaveOfTheHandPower": {
+    "NAME": "Wave of the Hand",
+    "DESCRIPTIONS": ["Whenever you change #yStances this turn, apply #b", " #yWeak to ALL enemies."]
   }
 }

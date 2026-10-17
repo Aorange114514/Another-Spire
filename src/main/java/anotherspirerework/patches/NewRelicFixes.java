@@ -529,4 +529,17 @@ public class NewRelicFixes {
         }
     }
 
+    /** The Lift button's tooltip: +1 Strength and +1 Dexterity, up to five times. */
+    @SpirePatch(clz = com.megacrit.cardcrawl.ui.campfire.LiftOption.class, method = SpirePatch.CONSTRUCTOR)
+    public static class GiryaLiftText {
+        @SpirePostfixPatch
+        public static void after(com.megacrit.cardcrawl.ui.campfire.LiftOption __instance, boolean active) {
+            if (active) {
+                basemod.ReflectionHacks.setPrivate(__instance, com.megacrit.cardcrawl.ui.campfire.AbstractCampfireOption.class,
+                        "description", com.megacrit.cardcrawl.core.CardCrawlGame.languagePack
+                                .getUIString(anotherspirerework.AnotherSpireRework.makeID("Lift Option")).TEXT[0]);
+            }
+        }
+    }
+
 }

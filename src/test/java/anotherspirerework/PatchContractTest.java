@@ -38,6 +38,11 @@ public class PatchContractTest {
                 "anotherspirerework.patches.ShivCreationPatch",
                 "anotherspirerework.patches.ShivMasteryPatch",
                 "anotherspirerework.patches.TriplePoisonSaturatePatch",
+                "anotherspirerework.patches.TinyHouseCampfirePatch",
+                "anotherspirerework.patches.SadisticNaturePatch",
+                "anotherspirerework.patches.FlurryOfBlowsPatch",
+                "anotherspirerework.patches.ShopPricePatch",
+                "anotherspirerework.patches.IndignationStancePatch",
                 "anotherspirerework.effects.ChooseDeckCardsEffect"}) {
             Class<?> outer = Class.forName(name, false, PatchContractTest.class.getClassLoader());
             java.util.List<Class<?>> patches = new java.util.ArrayList<>();
@@ -100,6 +105,9 @@ public class PatchContractTest {
         cardContentRegression(pool);
         newContentRegression(pool);
         secondRoundRegression(pool);
+        thirdRoundRegression(pool);
+        fourthRoundRegression(pool);
+        fifthRoundRegression(pool);
         relicPoolRegression();
         powerTitleAndReprogramRegression(pool);
         postfixBindingRegression();
@@ -194,7 +202,11 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.powers.ScuffleDrawPower", "renderAmount",
                 "renderFontRightTopAligned");
         requireCalls(pool, "anotherspirerework.powers.ShuffleSeekPower", "onDrawPileShuffled",
-                "com.megacrit.cardcrawl.actions.defect.SeekAction");
+                "anotherspirerework.actions.ShuffleSeekAction");
+        // No picker when the draw that follows the shuffle takes the whole pile anyway.
+        requireCalls(pool, "anotherspirerework.powers.ShuffleSeekPower", "onDrawPileShuffled", "drawsAfterShuffle");
+        // "Up to" N: the grid opens in its any-number mode.
+        requireCalls(pool, "anotherspirerework.actions.ShuffleSeekAction", "update", "open", "extendedDescription");
         requireCalls(pool, "anotherspirerework.powers.ShuffleEnergyPower", "onDrawPileShuffled",
                 "com.megacrit.cardcrawl.actions.common.GainEnergyAction");
         // The shuffle event must wait for the shuffle animation before it fires, and it has to land
@@ -317,7 +329,9 @@ public class PatchContractTest {
         require(!exhaustWrite[0], "Reprogram is a Power card and must not set exhaust");
 
         for (String name : new String[]{"anotherspirerework.powers.ShivPoisonPower",
-                "anotherspirerework.powers.ShivAllEnemiesPower"}) {
+                "anotherspirerework.powers.ShivAllEnemiesPower",
+                "anotherspirerework.powers.BlurDrawPower",
+                "anotherspirerework.powers.SadisticNaturePower"}) {
             CtClass power = pool.get(name);
             try {
                 require(power.getDeclaredField("powerStrings").getType().getName()
@@ -467,12 +481,10 @@ public class PatchContractTest {
         // PART B HERE
         // Both out of combat pickers run as effects, and the extra rewards are positioned.
         requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$AstrolabeEquip", "before", "start");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$TinyHouseEquip", "before", "start");
+        // Tiny House opens no picker of its own any more (the check lives in the fourth round below).
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "anyColorChoices",
                 "getAnyColorCard", "makeCopy", "isPickable");
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "isPickable", "contains");
-        requireCalls(pool, "anotherspirerework.effects.TinyHouseEffect", "openRewards",
-                "com.megacrit.cardcrawl.rewards.RewardItem", "open");
         requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ExtraCardRewards", "after",
                 "rareCardReward", "addCardReward");
         requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ExtraCardRewards", "addCardReward",
@@ -481,7 +493,8 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.patches.EnergySpentPatch$Spend", "before", "onEnergySpent");
         requireCalls(pool, "anotherspirerework.powers.JackOfAllTradesPower", "countSpent",
                 "com.megacrit.cardcrawl.actions.common.GainEnergyAction");
-        requireCalls(pool, "anotherspirerework.powers.NirvanaCounterPower", "onUseCard",
+        requireCalls(pool, "anotherspirerework.powers.NirvanaCounterPower", "onAfterUseCard", "grant");
+        requireCalls(pool, "anotherspirerework.powers.NirvanaCounterPower", "grant",
                 "com.megacrit.cardcrawl.powers.DrawCardNextTurnPower");
         requireCalls(pool, "anotherspirerework.util.TempRandomCard", "addEtherealExhaust",
                 "addModifier", "returnTrulyRandomCardInCombat", "makeCopy",
@@ -569,6 +582,201 @@ public class PatchContractTest {
                 + " Tiny House into it, stable across reloads, owned relics dropped)");
     }
 
+    /**
+     * The third round: the seven new cards, the act gate of the bottled relics and the two shop
+     * discounts.
+     *
+     * <p>Everything here is read out of the bytecode, so no game class initializer runs.
+     */
+    private static void thirdRoundRegression(ClassPool pool) throws Exception {
+        requireConstant(pool, "anotherspirerework.cards.purple.Ragnarok", "MULTIPLIER", 2);
+        requireConstant(pool, "anotherspirerework.patches.ShopPricePatch", "UNCOMMON_DISCOUNT", 50);
+        requireConstant(pool, "anotherspirerework.patches.ShopPricePatch", "RARE_DISCOUNT", 100);
+
+        // Blur pays out on the draw the base game reports, and the power cleans itself up.
+        requireCalls(pool, "anotherspirerework.AnotherSpireRework", "receivePostDraw", "onCardDrawn");
+        requireCalls(pool, "anotherspirerework.powers.BlurDrawPower", "payOut",
+                "com.megacrit.cardcrawl.actions.common.GainBlockAction");
+        requireCalls(pool, "anotherspirerework.powers.BlurDrawPower", "atEndOfTurn",
+                "com.megacrit.cardcrawl.actions.common.RemoveSpecificPowerAction");
+
+        // Both X cost cards work out the energy the way the base game does, spend it, and leave the
+        // hits themselves to the base game's own actions.
+        requireCalls(pool, "anotherspirerework.actions.RagnarokXAction", "energyFor", "hasRelic");
+        requireCalls(pool, "anotherspirerework.actions.RagnarokXAction", "update", "energyFor", "flash",
+                "com.megacrit.cardcrawl.actions.common.AttackDamageRandomEnemyAction");
+        requireCalls(pool, "anotherspirerework.actions.BouncingFlaskXAction", "update", "getRandomMonster",
+                "com.megacrit.cardcrawl.vfx.combat.PotionBounceEffect",
+                "com.megacrit.cardcrawl.actions.unique.BouncingFlaskAction");
+
+        // Flurry of Blows: the discard pile is the base game's own walk, the other two are ours.
+        requireCalls(pool, "anotherspirerework.cards.purple.FlurryOfBlows",
+                "triggerExhaustedCardsOnStanceChange",
+                "com.megacrit.cardcrawl.actions.utility.DiscardToHandAction");
+        requireCalls(pool, "anotherspirerework.patches.FlurryOfBlowsPatch$Anywhere", "after", "returnFrom");
+        requireCalls(pool, "anotherspirerework.patches.FlurryOfBlowsPatch", "returnFrom", "addToBottom");
+        requireCalls(pool, "anotherspirerework.actions.ReturnCardToHandAction", "update", "contains",
+                "addToHand", "removeCard", "refreshHandLayout");
+
+        // Sadistic Nature only ever scales the normal damage the two debuffs scale.
+        requireCalls(pool, "anotherspirerework.cards.colorless.SadisticNature", "use",
+                "anotherspirerework.powers.SadisticNaturePower");
+        requireCalls(pool, "anotherspirerework.patches.SadisticNaturePatch", "doubles", "active");
+        requireCalls(pool, "anotherspirerework.patches.SadisticNaturePatch$Weak", "after", "doubles");
+        requireCalls(pool, "anotherspirerework.patches.SadisticNaturePatch$Vulnerable", "after", "doubles");
+        CtClass sadistic = pool.get("anotherspirerework.patches.SadisticNaturePatch");
+        if (sadistic.isFrozen()) sadistic.defrost();
+        final java.util.Set<String> damageTypes = new java.util.HashSet<>();
+        sadistic.getDeclaredMethod("doubles").instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess field) {
+                damageTypes.add(field.getFieldName());
+            }
+        });
+        require(damageTypes.contains("NORMAL") && damageTypes.contains("isPlayer"),
+                "Sadistic Nature must only double enemy debuffs on normal damage");
+        sadistic.toBytecode();
+
+        // Regal Pillow went back to vanilla, so its free-Rest patch must be gone: the rest is paid by
+        // the base game again (30% + 15, onRest, Dream Catcher) and the campfire closes.
+        requireMissing("anotherspirerework.patches.RegalPillowPatch");
+        requireMissing("anotherspirerework.effects.TinyHouseEffect");
+
+        // The shop: the two discounts, and the gate that keeps the bottled relics in the pool.
+        requireCalls(pool, "anotherspirerework.patches.ShopPricePatch$Price", "after", "discounted");
+        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "selectUncommon", "actGated",
+                "remove", "canSpawn");
+        CtClass shop = pool.get("anotherspirerework.patches.ShopRelicPatch");
+        if (shop.isFrozen()) shop.defrost();
+        final java.util.Set<String> shopReads = new java.util.HashSet<>();
+        shop.getDeclaredMethod("actGated").instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess field) {
+                shopReads.add(field.getFieldName());
+            }
+        });
+        require(shopReads.contains("actNum") && shopReads.contains("ACT_THREE_ONLY"),
+                "The bottled relic gate must read the act number and its own list");
+        shop.toBytecode();
+        System.out.println("PASS: third round cards and relics (Predator, Sucker Punch, Blur, Bouncing Flask,"
+                + " Flurry of Blows, Ragnarok, Sadistic Nature, act-gated bottled relics,"
+                + " shop relic discounts)");
+    }
+
+    /**
+     * The fourth round: Blur became 1 (0) with a flat payout, Ragnarok got a per-strike pause,
+     * Sadistic Nature's icon stopped counting, and Tiny House took over the free campfire from the
+     * reverted Regal Pillow.
+     */
+    private static void fourthRoundRegression(ClassPool pool) throws Exception {
+        // Blur: 1 energy, 0 when upgraded, 1 Block per draw at both levels.
+        requireConstant(pool, "anotherspirerework.cards.green.Blur", "BASE_COST", 1);
+        requireConstant(pool, "anotherspirerework.cards.green.Blur", "UPGRADED_COST", 0);
+        requireConstant(pool, "anotherspirerework.cards.green.Blur", "BLOCK_PER_DRAW", 1);
+        CtClass blur = pool.get("anotherspirerework.cards.green.Blur");
+        if (blur.isFrozen()) blur.defrost();
+        final java.util.Set<String> blurUpgrade = new java.util.HashSet<>();
+        blur.getDeclaredMethod("upgrade").instrument(new ExprEditor() {
+            public void edit(javassist.expr.MethodCall call) { blurUpgrade.add(call.getMethodName()); }
+        });
+        require(blurUpgrade.contains("upgradeBaseCost"), "Blur's upgrade must take it to 0 energy");
+        require(!blurUpgrade.contains("upgradeMagicNumber"), "Blur's payout is fixed at 1 Block");
+        blur.toBytecode();
+
+        // Ragnarok: X*2 strikes, each spaced the way the base game spaces random lightning.
+        requireConstant(pool, "anotherspirerework.actions.RagnarokXAction", "HIT_PAUSE", 0.1F);
+        requireCalls(pool, "anotherspirerework.actions.RagnarokXAction", "update",
+                "com.megacrit.cardcrawl.actions.utility.WaitAction",
+                "com.megacrit.cardcrawl.actions.common.AttackDamageRandomEnemyAction");
+
+        // Sadistic Nature: -1 keeps the icon and drops the counter, and stacking never changes it.
+        requireConstant(pool, "anotherspirerework.powers.SadisticNaturePower", "ICON_AMOUNT", -1);
+        requireWrites(pool, "anotherspirerework.powers.SadisticNaturePower", "stackPower", "amount");
+
+        // Tiny House: the used option is spent, and the campfire comes back once it has settled.
+        requireConstant(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "REOPEN_DELAY", 0.3F);
+        requireConstant(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "FORCE_AFTER", 3.0F);
+        requireCalls(pool, "anotherspirerework.AnotherSpireRework", "receivePostDungeonUpdate", "tick");
+        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "tick", "reopen");
+        requireWrites(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "arm", "usable");
+        requireWrites(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "tick", "phase");
+        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$MarkUsed", "after", "arm");
+        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$MarkUsedByTouch", "after", "arm");
+        // Cancelling the grid the option opened hands the option back.
+        requireWrites(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$CancelledChoice", "after", "usable");
+        // Tiny House: silent on pickup, then Courier-style pulse for the whole Rest Site.
+        // The pickup keeps the base game's single flash; only our extra one and the vanilla rewards are gone.
+        requireMissingCalls(pool, "anotherspirerework.patches.RareRelicFixes$TinyHouseEquip", "before", "flash");
+        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$RestRoomPulse", "after",
+                "beginLongPulse", "flash", "stopPulse");
+        System.out.println("PASS: fourth round (Blur 1(0), Ragnarok strike pacing, Sadistic Nature without"
+                + " counter, Tiny House free campfire, Regal Pillow reverted)");
+    }
+
+    /**
+     * The fifth round: Consecrate / Third Eye / Deceive Reality / Stack changes, four replaced cards
+     * (Judgement, Reach Heaven, Wave of the Hand, Violence) and the Indignation stance order fix.
+     */
+    private static void fifthRoundRegression(ClassPool pool) throws Exception {
+        String[][] ids = {
+                {"anotherspirerework.cards.purple.Judgement", "Judgement"},
+                {"anotherspirerework.cards.purple.ReachHeaven", "ReachHeaven"},
+                {"anotherspirerework.cards.purple.WaveOfTheHand", "WaveOfTheHand"},
+                {"anotherspirerework.cards.colorless.Violence", "Violence"}
+        };
+        for (String[] pair : ids) requireConstant(pool, pair[0], "ID", pair[1]);
+
+        requireCalls(pool, "anotherspirerework.cards.purple.Consecrate", "upgrade", "upgradeBaseCost");
+        requireCalls(pool, "anotherspirerework.cards.purple.ThirdEye", "use",
+                "com.megacrit.cardcrawl.actions.common.MakeTempCardInDrawPileAction");
+        requireCalls(pool, "anotherspirerework.cards.purple.DeceiveReality", "use",
+                "com.megacrit.cardcrawl.actions.common.MakeTempCardInDrawPileAction");
+        requireCalls(pool, "anotherspirerework.cards.blue.Stack", "upgrade", "upgradeBaseCost");
+        requireCalls(pool, "anotherspirerework.patches.ShuffleTriggerPatch", "fire", "moveToTopOfDrawPile");
+
+        requireCalls(pool, "anotherspirerework.cards.purple.Judgement", "use",
+                "anotherspirerework.actions.PercentJudgementAction");
+        requireCalls(pool, "anotherspirerework.actions.PercentJudgementAction", "update", "hasPower",
+                "com.megacrit.cardcrawl.actions.common.InstantKillAction");
+        requireCalls(pool, "anotherspirerework.actions.ReachHeavenAction", "update", "damage",
+                "com.megacrit.cardcrawl.actions.watcher.ChangeStanceAction");
+        requireCalls(pool, "anotherspirerework.powers.WaveOfTheHandStancePower", "onChangeStance",
+                "com.megacrit.cardcrawl.powers.WeakPower");
+        requireCalls(pool, "anotherspirerework.actions.PlayRandomAttackFromDrawPileAction", "update",
+                "com.megacrit.cardcrawl.actions.utility.NewQueueCardAction",
+                "com.megacrit.cardcrawl.actions.utility.UnlimboAction");
+
+        // Girya's Lift tooltip reads the mod's own UI string.
+        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes$GiryaLiftText", "after", "getUIString", "setPrivate");
+
+        // The instrumented IndignationAction now queues the stance change at the top.
+        requireCalls(pool, "com.megacrit.cardcrawl.actions.watcher.IndignationAction", "update", "addToTop");
+        System.out.println("PASS: fifth round (Consecrate, Third Eye, Deceive Reality, Stack, Judgement,"
+                + " Reach Heaven, Wave of the Hand, Violence, Indignation stance order)");
+    }
+
+    /** Fails when a class that was deleted in this round is still on the classpath. */
+    private static void requireMissing(String name) {
+        try {
+            Class.forName(name, false, PatchContractTest.class.getClassLoader());
+        } catch (ClassNotFoundException gone) {
+            return;
+        }
+        throw new AssertionError("Class should have been removed: " + name);
+    }
+
+    /** A method must write the named field; used for plain assignments like "usable = false". */
+    private static void requireWrites(ClassPool pool, String name, String method, String expected) throws Exception {
+        CtClass type = pool.get(name);
+        if (type.isFrozen()) type.defrost();
+        final java.util.Set<String> writes = new java.util.HashSet<>();
+        type.getDeclaredMethod(method).instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess field) {
+                if (field.isWriter()) writes.add(field.getFieldName());
+            }
+        });
+        require(writes.contains(expected), "Missing write contract: " + name + "." + method + " -> " + expected);
+        type.toBytecode();
+    }
+
     /** Every new card must claim the vanilla card id it replaces. */
     private static void requireNewCardIds(ClassPool pool) throws Exception {
         String[][] newCards = {
@@ -586,7 +794,14 @@ public class PatchContractTest {
                 {"anotherspirerework.cards.purple.SpiritShield", "SpiritShield"},
                 {"anotherspirerework.cards.purple.EmptyBody", "EmptyBody"},
                 {"anotherspirerework.cards.purple.EmptyMind", "EmptyMind"},
-                {"anotherspirerework.cards.colorless.JackOfAllTrades", "Jack Of All Trades"}
+                {"anotherspirerework.cards.colorless.JackOfAllTrades", "Jack Of All Trades"},
+                {"anotherspirerework.cards.green.Predator", "Predator"},
+                {"anotherspirerework.cards.green.SuckerPunch", "Sucker Punch"},
+                {"anotherspirerework.cards.green.Blur", "Blur"},
+                {"anotherspirerework.cards.green.BouncingFlask", "Bouncing Flask"},
+                {"anotherspirerework.cards.purple.FlurryOfBlows", "FlurryOfBlows"},
+                {"anotherspirerework.cards.purple.Ragnarok", "Ragnarok"},
+                {"anotherspirerework.cards.colorless.SadisticNature", "Sadistic Nature"}
         };
         for (String[] pair : newCards) {
             Object id = pool.get(pair[0]).getDeclaredField("ID").getConstantValue();
@@ -608,6 +823,18 @@ public class PatchContractTest {
         require(expected.equals(value), "Constant mismatch: " + name + "." + field + " = " + value);
     }
 
+    /** The mirror of requireCalls: a call that must NOT be there. */
+    private static void requireMissingCalls(ClassPool pool, String name, String method, String unexpected) throws Exception {
+        CtClass type = pool.get(name);
+        if (type.isFrozen()) type.defrost();
+        final java.util.Set<String> calls = new java.util.HashSet<>();
+        type.getDeclaredMethod(method).instrument(new ExprEditor() {
+            public void edit(javassist.expr.MethodCall call) { calls.add(call.getMethodName()); }
+            public void edit(javassist.expr.NewExpr expr) { calls.add(expr.getClassName()); }
+        });
+        require(!calls.contains(unexpected), "Forbidden call still present: " + name + "." + method + " -> " + unexpected);
+        type.toBytecode();
+    }
     private static void requireCalls(ClassPool pool, String name, String method, String... expected) throws Exception {
         CtClass type = pool.get(name);
         if (type.isFrozen()) type.defrost();

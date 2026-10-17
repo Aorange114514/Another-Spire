@@ -3,10 +3,13 @@ package anotherspirerework.cards.blue;
 import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.common.GainBlockAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
+import com.megacrit.cardcrawl.cards.CardGroup;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
+
+import java.util.ArrayList;
 
 public class Stack extends AbstractCard {
     public static final String ID = "Stack";
@@ -21,24 +24,35 @@ public class Stack extends AbstractCard {
     public void use(AbstractPlayer p, AbstractMonster m) {
         applyPowers();
         addToBot(new GainBlockAction(p, p, block));
-        rawDescription = upgraded ? strings.UPGRADE_DESCRIPTION : strings.DESCRIPTION;
+        rawDescription = strings.DESCRIPTION;
         initializeDescription();
     }
 
     public void applyPowers() {
-        baseBlock = (AbstractDungeon.player == null ? 0 : AbstractDungeon.player.drawPile.size()) + (upgraded ? 3 : 0);
+        baseBlock = AbstractDungeon.player == null ? 0 : AbstractDungeon.player.drawPile.size();
         super.applyPowers();
-        rawDescription = (upgraded ? strings.UPGRADE_DESCRIPTION : strings.DESCRIPTION)
+        rawDescription = strings.DESCRIPTION
                 + (AnotherSpireRework.inCombat() ? AnotherSpireRework.extendedDescription(strings, 0) : "");
         initializeDescription();
     }
 
-    public void upgrade() {
-        if (!upgraded) {
-            upgradeName(); upgradeBlock(3);
-            rawDescription = strings.UPGRADE_DESCRIPTION;
-            initializeDescription();
+    /** Called by ShuffleTriggerPatch once a shuffle has landed: every Stack just shuffled in goes on top. */
+    public static void moveToTopOfDrawPile() {
+        CardGroup drawPile = AbstractDungeon.player.drawPile;
+        for (AbstractCard c : new ArrayList<>(drawPile.group)) {
+            if (c instanceof Stack) {
+                drawPile.group.remove(c);
+                drawPile.addToTop(c);
+            }
         }
     }
+
+    public void upgrade() {
+        if (!upgraded) {
+            upgradeName();
+            upgradeBaseCost(0);
+        }
+    }
+
     public AbstractCard makeCopy() { return new Stack(); }
 }

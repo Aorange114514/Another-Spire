@@ -22,9 +22,7 @@ public class SweepingBeam extends AbstractCard {
 
     public SweepingBeam() {
         super(ID, cardStrings.NAME, "blue/attack/sweeping_beam", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.BLUE, CardRarity.COMMON, CardTarget.ALL_ENEMY);
-        this.baseDamage = 10;
-        this.baseMagicNumber = 1;
-        this.magicNumber = this.baseMagicNumber;
+        this.baseDamage = 12;
         this.isMultiDamage = true;
         this.cardsToPreview = new Slimed();
     }
@@ -33,15 +31,13 @@ public class SweepingBeam extends AbstractCard {
         addToBot(new SFXAction("ATTACK_DEFECT_BEAM"));
         addToBot(new VFXAction(p, new SweepingBeamEffect(AbstractDungeon.player.hb.cX, AbstractDungeon.player.hb.cY, AbstractDungeon.player.flipHorizontal), 0.4F));
         addToBot(new DamageAllEnemiesAction(p, this.multiDamage, this.damageTypeForTurn, AbstractGameAction.AttackEffect.FIRE));
-        addToBot(new DrawCardAction(p, this.magicNumber));
         addToBot(new MakeTempCardInDiscardAction(new Slimed(), 1));
     }
 
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeDamage(4);
-            upgradeMagicNumber(1);
+            upgradeDamage(3);
         }
     }
 

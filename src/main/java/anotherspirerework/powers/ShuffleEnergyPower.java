@@ -29,6 +29,6 @@ public class ShuffleEnergyPower extends AbstractPower implements DrawPileShuffle
 
     @Override
     public void updateDescription() {
-        this.description = powerStrings.DESCRIPTIONS[0];
+        this.description = powerStrings.DESCRIPTIONS[0] + this.amount + powerStrings.DESCRIPTIONS[1];
     }
 }

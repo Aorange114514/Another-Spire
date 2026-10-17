@@ -15,10 +15,15 @@ public class LikeWaterCalmPower extends AbstractPower {
         this.name = powerStrings.NAME;
         this.ID = POWER_ID;
         this.owner = owner;
-        this.amount = amount;
+        this.amount = -1;
         this.type = PowerType.BUFF;
         updateDescription();
         loadRegion("like_water");
+    }
+
+    /** Extra copies change nothing, so the icon never shows a stack number (amount stays -1). */
+    @Override
+    public void stackPower(int stackAmount) {
     }
 
     @Override

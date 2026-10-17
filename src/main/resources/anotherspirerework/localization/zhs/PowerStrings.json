@@ -88,11 +88,11 @@
   },
   "${modID}:Chrysalis": {
     "NAME": "结茧",
-    "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，获得 [E] 。"]
+    "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，获得 #b", " [E] 。"]
   },
   "${modID}:Metamorphosis": {
     "NAME": "羽化",
-    "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，从抽牌堆中选择一张牌放入你的手牌。"]
+    "DESCRIPTIONS": ["你每次将抽牌堆洗牌时，从抽牌堆中选择最多 #b", " 张牌放入你的手牌。", " 张牌放入你的手牌。"]
   },
   "${modID}:DemonFormExhaust": {
     "NAME": "恶魔形态",
@@ -116,5 +116,17 @@
   "${modID}:JackOfAllTrades": {
     "NAME": "花样百出",
     "DESCRIPTIONS": ["你每花费 #b4 点 [E] ，获得 [E] 。"]
+  },
+  "${modID}:Blur": {
+    "NAME": "残影",
+    "DESCRIPTIONS": ["本回合内你每抽一张牌，获得 #b ", " 点 #y格挡 。"]
+  },
+  "${modID}:Sadistic Nature": {
+    "NAME": "残虐天性",
+    "DESCRIPTIONS": ["敌人身上的 #y虚弱 和 #y易伤 效果翻倍。"]
+  },
+  "${modID}:WaveOfTheHandPower": {
+    "NAME": "摆手",
+    "DESCRIPTIONS": ["在本回合，你每次切换 #y姿态 时，给予所有敌人 #b", " 层 #y虚弱 。"]
   }
 }

@@ -1,5 +1,6 @@
 package anotherspirerework.patches;
 
+import anotherspirerework.cards.blue.Stack;
 import anotherspirerework.powers.DrawPileShuffleListener;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
@@ -16,7 +17,7 @@ import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import java.util.ArrayList;
 
 /**
- * Fires "the draw pile was shuffled" for Chrysalis, Metamorphosis and Matryoshka.
+ * Fires "the draw pile was shuffled" for Stack, Chrysalis, Metamorphosis and Matryoshka.
  *
  * <p>The base game shuffles the discard pile and then flies every card into the draw pile over
  * several frames; the shuffle action reports itself as done long before that animation is.
@@ -39,7 +40,15 @@ import java.util.ArrayList;
 public class ShuffleTriggerPatch {
     private static boolean pendingShuffle;
 
-    public static void fire() {
+    /** Cards the interrupted draw still has to draw once the event is over; 0 outside fire(). */
+    private static int drawsAfterShuffle;
+
+    /** For listeners: how many cards will be drawn right after this shuffle event. */
+    public static int drawsAfterShuffle() {
+        return drawsAfterShuffle;
+    }
+
+    public static void fire(int pendingDraws) {
         if (AbstractDungeon.player == null || AbstractDungeon.actionManager == null) {
             return;
         }
@@ -47,10 +56,17 @@ public class ShuffleTriggerPatch {
         if (room == null || room.phase != AbstractRoom.RoomPhase.COMBAT) {
             return;
         }
-        for (AbstractPower power : new ArrayList<>(AbstractDungeon.player.powers)) {
-            if (power instanceof DrawPileShuffleListener) {
-                ((DrawPileShuffleListener) power).onDrawPileShuffled();
+        // First, so that anything the event draws or searches already sees Stack on top.
+        Stack.moveToTopOfDrawPile();
+        drawsAfterShuffle = pendingDraws;
+        try {
+            for (AbstractPower power : new ArrayList<>(AbstractDungeon.player.powers)) {
+                if (power instanceof DrawPileShuffleListener) {
+                    ((DrawPileShuffleListener) power).onDrawPileShuffled();
+                }
             }
+        } finally {
+            drawsAfterShuffle = 0;
         }
         NewRelicFixes.matryoshkaShuffle();
     }
@@ -138,6 +154,7 @@ public class ShuffleTriggerPatch {
             return;
         }
         pendingShuffle = false;
+        int pendingDraws = 0;
         if (interrupted instanceof DrawCardAction && !interrupted.isDone) {
             DrawCardAction draw = (DrawCardAction) interrupted;
             int remaining = draw.amount;
@@ -147,9 +164,12 @@ public class ShuffleTriggerPatch {
                 // handled the history for this draw.
                 draw.amount = 0;
                 AbstractDungeon.actionManager.addToTop(new DrawCardAction(remaining, false));
+                // Only the cards that will really arrive: the draw stops once the hand is full.
+                pendingDraws = Math.min(remaining,
+                        Math.max(0, basemod.BaseMod.MAX_HAND_SIZE - AbstractDungeon.player.hand.size()));
             }
         }
-        fire();
+        fire(pendingDraws);
     }
 }
 

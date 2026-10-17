@@ -2,7 +2,7 @@ package anotherspirerework.cards.purple;
 
 import anotherspirerework.AnotherSpireRework;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
-import com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction;
+import com.megacrit.cardcrawl.actions.common.MakeTempCardInDrawPileAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.tempCards.Insight;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -26,7 +26,7 @@ public class ThirdEye extends AbstractCard {
         if (p != null) {
             addToBot(new VFXAction(new ThirdEyeEffect(p.hb.cX, p.hb.cY)));
         }
-        addToBot(new MakeTempCardInHandAction(this.cardsToPreview.makeStatEquivalentCopy(), this.magicNumber));
+        addToBot(new MakeTempCardInDrawPileAction(this.cardsToPreview.makeStatEquivalentCopy(), this.magicNumber, true, true));
     }
 
     public void upgrade() {

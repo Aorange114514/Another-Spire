@@ -80,7 +80,7 @@
   },
   "${modID}:Metallicize": {
     "NAME": "Metallicize",
-    "DESCRIPTION": "At the end of your turn, gain X*!M! Block."
+    "DESCRIPTION": "At the end of your turn, gain !M!X Block."
   },
   "${modID}:Dagger Spray": {
     "NAME": "Dagger Spray",
@@ -138,7 +138,7 @@
   },
   "${modID}:Sweeping Beam": {
     "NAME": "Sweeping Beam",
-    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Draw !M! cards. NL Add a *Slimed into your discard pile."
+    "DESCRIPTION": "Deal !D! damage to ALL enemies. NL Add a *Slimed into your discard pile."
   },
   "${modID}:Gash": {
     "NAME": "Claw",
@@ -194,7 +194,7 @@
   "${modID}:Multi-Cast": {
     "NAME": "Multi-Cast",
     "DESCRIPTION": "Evoke ALL your Orbs X times.",
-    "UPGRADE_DESCRIPTION": "Evoke ALL your Orbs X*2 times."
+    "UPGRADE_DESCRIPTION": "Evoke ALL your Orbs 2X times."
   },
   "${modID}:Hyperbeam": {
     "NAME": "Hyperbeam",
@@ -218,7 +218,7 @@
   },
   "${modID}:ThirdEye": {
     "NAME": "Third Eye",
-    "DESCRIPTION": "Add !M! *Insights into your hand."
+    "DESCRIPTION": "Shuffle !M! *Insights into your draw pile."
   },
   "${modID}:BattleHymn": {
     "NAME": "Battle Hymn",
@@ -243,7 +243,7 @@
   },
   "${modID}:DeceiveReality": {
     "NAME": "Deceive Reality",
-    "DESCRIPTION": "Add an *Insight and a *Miracle into your hand."
+    "DESCRIPTION": "Shuffle an *Insight and a *Miracle into your draw pile."
   },
   "${modID}:Study": {
     "NAME": "Study",
@@ -375,8 +375,7 @@
   },
   "${modID}:Stack": {
     "NAME": "Stack",
-    "DESCRIPTION": "Gain Block equal to the number of cards in your draw pile.",
-    "UPGRADE_DESCRIPTION": "Gain Block equal to the number of cards in your draw pile plus 3.",
+    "DESCRIPTION": "Gain Block equal to the number of cards in your draw pile. NL Whenever you shuffle, put this card on top of your draw pile.",
     "EXTENDED_DESCRIPTION": [" NL (Gain !B! Block.)"]
   },
   "${modID}:JustLucky": {
@@ -416,7 +415,8 @@
   },
   "${modID}:Metamorphosis": {
     "NAME": "Metamorphosis",
-    "DESCRIPTION": "Whenever you shuffle your draw pile, put a card from your draw pile into your hand."
+    "DESCRIPTION": "Whenever you shuffle your draw pile, put up to 1 card from your draw pile into your hand.",
+    "EXTENDED_DESCRIPTION": ["Choose up to ", " cards to put into your hand."]
   },
   "${modID}:Demon Form": {
     "NAME": "Demon Form",
@@ -438,7 +438,7 @@
   "${modID}:Catalyst": {
     "NAME": "Catalyst",
     "DESCRIPTION": "Double an enemy's Poison. NL Exhaust.",
-    "UPGRADE_DESCRIPTION": "Triple an enemy's Poison. NL Exhaust."
+    "UPGRADE_DESCRIPTION": "Retain. NL Double an enemy's Poison. NL Exhaust."
   },
   "${modID}:Tempest": {
     "NAME": "Tempest",
@@ -506,5 +506,51 @@
   "${modID}:Dramatic Entrance": {
     "NAME": "Dramatic Entrance",
     "DESCRIPTION": "Innate. NL Deal !D! damage to ALL enemies. NL Exhaust."
+  },
+  "${modID}:Predator": {
+    "NAME": "Predator",
+    "DESCRIPTION": "Deal !D! damage. NL Draw !M! additional cards next turn."
+  },
+  "${modID}:Sucker Punch": {
+    "NAME": "Sucker Punch",
+    "DESCRIPTION": "Deal !D! damage. NL Apply !M! Weak."
+  },
+  "${modID}:Blur": {
+    "NAME": "Blur",
+    "DESCRIPTION": "After you play this card, gain !M! Block whenever you draw a card this turn."
+  },
+  "${modID}:Bouncing Flask": {
+    "NAME": "Bouncing Flask",
+    "DESCRIPTION": "Apply !M! Poison to random enemies X times.",
+    "UPGRADE_DESCRIPTION": "Apply !M! Poison to random enemies X+1 times."
+  },
+  "${modID}:FlurryOfBlows": {
+    "NAME": "Flurry of Blows",
+    "DESCRIPTION": "Deal !D! damage. NL Whenever you change Stance, put this card into your hand."
+  },
+  "${modID}:Ragnarok": {
+    "NAME": "Ragnarok",
+    "DESCRIPTION": "Deal 2X damage to random enemies 2X times. NL Exhaust.",
+    "UPGRADE_DESCRIPTION": "Deal 2X damage to random enemies 2X times."
+  },
+  "${modID}:Sadistic Nature": {
+    "NAME": "Sadistic Nature",
+    "DESCRIPTION": "Weak and Vulnerable on enemies are twice as strong."
+  },
+  "${modID}:Judgement": {
+    "NAME": "Judgment",
+    "DESCRIPTION": "If the enemy has no Artifact and its HP is below !M!% of its Max HP, set their NL HP to 0."
+  },
+  "${modID}:ReachHeaven": {
+    "NAME": "Reach Heaven",
+    "DESCRIPTION": "Deal !D! damage. NL If this kills an enemy, enter Divinity."
+  },
+  "${modID}:WaveOfTheHand": {
+    "NAME": "Wave of the Hand",
+    "DESCRIPTION": "Whenever you change Stances this turn, apply !M! Weak to ALL enemies. NL Exhaust."
+  },
+  "${modID}:Violence": {
+    "NAME": "Violence",
+    "DESCRIPTION": "Play !M! random Attacks from your draw pile."
   }
 }

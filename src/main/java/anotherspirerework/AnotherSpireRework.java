@@ -108,6 +108,7 @@ public class AnotherSpireRework implements
         anotherspirerework.patches.RelicReworkPatch.bloodActive = false;
         anotherspirerework.actions.PlayShivsFromExhaustAction.reset();
         anotherspirerework.patches.ShuffleTriggerPatch.reset();
+        anotherspirerework.patches.TinyHouseCampfirePatch.reset();
         OrbTrackerPatch.lastOrb = null;
         ExhaustTracker.reset();
     }
@@ -117,11 +118,12 @@ public class AnotherSpireRework implements
         anotherspirerework.patches.TurnRelicFixes.startGame();
     }
 
-    /** Medical Kit, Blue Candle and Mayhem all watch the cards the player draws. */
+    /** Medical Kit, Blue Candle, Mayhem and Blur all watch the cards the player draws. */
     @Override
     public void receivePostDraw(AbstractCard card) {
         anotherspirerework.patches.NewRelicFixes.onCardDrawn(card);
         anotherspirerework.powers.ScuffleDrawPower.onCardDrawn(card);
+        anotherspirerework.powers.BlurDrawPower.onCardDrawn(card);
     }
 
     /**
@@ -135,6 +137,7 @@ public class AnotherSpireRework implements
         anotherspirerework.patches.StrangeSpoonExhaust.restorePending();
         anotherspirerework.patches.NewRelicFixes.processPendingDraws();
         anotherspirerework.patches.ShuffleTriggerPatch.tick();
+        anotherspirerework.patches.TinyHouseCampfirePatch.tick();
     }
 
     /** Seeing Red needs to know whether a card was exhausted on the turn it is played. */
@@ -179,6 +182,7 @@ public class AnotherSpireRework implements
         BaseMod.loadCustomStringsFile(CardStrings.class, localizationPath(lang, "CardStrings.json"));
         BaseMod.loadCustomStringsFile(PowerStrings.class, localizationPath(lang, "PowerStrings.json"));
         BaseMod.loadCustomStringsFile(com.megacrit.cardcrawl.localization.RelicStrings.class, localizationPath(lang, "RelicStrings.json"));
+        BaseMod.loadCustomStringsFile(com.megacrit.cardcrawl.localization.UIStrings.class, localizationPath(lang, "UIStrings.json"));
     }
 
     @Override

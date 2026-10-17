@@ -12,6 +12,19 @@ import javassist.expr.MethodCall;
 
 public class ShopRelicPatch {
 
+    /** The three bottled relics; the requirements hold them back until the third act. */
+    private static final ArrayList<String> ACT_THREE_ONLY = new ArrayList<>(java.util.Arrays.asList(
+            "Bottled Flame", "Bottled Lightning", "Bottled Tornado"));
+
+    /**
+     * True while a relic has to stay in the saved pool because this act may not offer it. The base
+     * game removes the entry it just drew and retries elsewhere, which would cost this run one of
+     * its relic slots; leaving it in the pool is what keeps the third act able to offer it.
+     */
+    public static boolean actGated(String id) {
+        return ACT_THREE_ONLY.contains(id) && AbstractDungeon.actNum < 3;
+    }
+
     private static boolean eligible(String id) {
         if (id.equals("Lee's Waffle")) {
             return (long) AbstractDungeon.player.currentHealth * 2 < AbstractDungeon.player.maxHealth;
@@ -40,6 +53,9 @@ public class ShopRelicPatch {
 
     // Leave ineligible entries in the saved vanilla pool, so retry survives save/load.
     private static SpireReturn<String> select(AbstractRelic.RelicTier tier, boolean end) {
+        if (tier == AbstractRelic.RelicTier.UNCOMMON) {
+            return selectUncommon(end);
+        }
         if (tier != AbstractRelic.RelicTier.SHOP) return SpireReturn.Continue();
         ArrayList<String> pool = AbstractDungeon.shopRelicPool;
         for (int n = 0; n < pool.size(); n++) {
@@ -51,6 +67,34 @@ public class ShopRelicPatch {
             }
         }
         return SpireReturn.Return(AbstractDungeon.returnRandomRelicKey(AbstractRelic.RelicTier.UNCOMMON));
+    }
+
+    /**
+     * The act gate of the bottled relics. Everything else is left to the base game: the entry is
+     * removed here just like the base game removes it, a relic that cannot spawn right now is
+     * dropped and the draw is retried from the other end (which is what the base game does), and an
+     * empty pool falls back to the next tier.
+     */
+    private static SpireReturn<String> selectUncommon(boolean end) {
+        ArrayList<String> pool = AbstractDungeon.uncommonRelicPool;
+        for (int n = 0; n < pool.size(); n++) {
+            int i = end ? pool.size() - 1 - n : n;
+            String id = pool.get(i);
+            if (actGated(id)) {
+                continue;
+            }
+            pool.remove(i);
+            com.megacrit.cardcrawl.relics.AbstractRelic relic = com.megacrit.cardcrawl.helpers.RelicLibrary.getRelic(id);
+            if (relic == null || !relic.canSpawn()) {
+                return SpireReturn.Return(AbstractDungeon.returnEndRandomRelicKey(AbstractRelic.RelicTier.UNCOMMON));
+            }
+            return SpireReturn.Return(id);
+        }
+        // Only gated entries are left, which the base game would have drawn; the tier's own
+        // empty-pool fallback is used instead, so the gate still holds.
+        return SpireReturn.Return(end
+                ? AbstractDungeon.returnEndRandomRelicKey(AbstractRelic.RelicTier.RARE)
+                : AbstractDungeon.returnRandomRelicKey(AbstractRelic.RelicTier.RARE));
     }
 
     @SpirePatch(clz = AbstractDungeon.class, method = "returnRandomRelicKey")

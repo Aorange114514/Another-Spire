@@ -26,7 +26,7 @@
   "${modID}:Inserter": {"NAME":"机械臂","DESCRIPTIONS":["每 #b2 回合，获得 #b1 个充能球栏位并生成一个随机充能球。"],"FLAVOR":""},
   "${modID}:Matryoshka": {"NAME":"套娃","DESCRIPTIONS":["你每次将抽牌堆洗牌时，抽一张牌。"],"FLAVOR":""},
   "${modID}:Astrolabe": {"NAME":"星盘","DESCRIPTIONS":["拾起时，从任意颜色的 #b40 张牌中选择任意张加入你的牌组。","选择任意数量的牌加入你的牌组。"],"FLAVOR":""},
-  "${modID}:Tiny House": {"NAME":"小屋子","DESCRIPTIONS":["拾起时，升级 #b1 张牌，并获得 #b3 组无色牌奖励。","小小的屋子！","选择一张牌升级。"],"FLAVOR":""},
+  "${modID}:Tiny House": {"NAME":"小屋子","DESCRIPTIONS":["你可以在休息处选择任意数量的选项。","小小的屋子！"],"FLAVOR":""},
   "${modID}:VioletLotus": {"NAME":"紫色莲花","DESCRIPTIONS":["每次你离开 #y平静 时，额外获得 [E] 并抽 #b1 张牌。"],"FLAVOR":""},
   "${modID}:FaceOfCleric": {"NAME":"牧师的脸","DESCRIPTIONS":["每场战斗后你的最大生命值增加 #b2 。"],"FLAVOR":""},
   "${modID}:Snecko Eye": {"NAME":"异蛇之眼","DESCRIPTIONS":["每回合多抽 #b3 张牌。 NL 每场战斗开始时获得 #y混乱 效果。"],"FLAVOR":""},

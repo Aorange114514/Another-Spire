@@ -24,7 +24,7 @@ public class FlyingKnee extends AbstractCard {
 
     public FlyingKnee() {
         super(ID, cardStrings.NAME, "green/attack/flying_knee", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.UNCOMMON, CardTarget.ENEMY);
-        this.baseDamage = 10;
+        this.baseDamage = 8;
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
@@ -47,7 +47,7 @@ public class FlyingKnee extends AbstractCard {
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeDamage(2);
+            upgradeDamage(3);
         }
     }
 

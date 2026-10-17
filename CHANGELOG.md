@@ -1,8 +1,194 @@
-> 本文件是 AnotherSpire Rework 的历史修复记录（原 README.md 原文 + 后续修复，按时间倒序）。
-> 当前的功能说明、改动清单与维护须知见 [README.md](README.md)。
+> 本文件是 AnotherSpire Rework 的历史修复记录（按时间倒序），末尾附「实现与维护参考」。
+> 改动清单见 [README.md](README.md)。
 
 
 # AnotherSpire Rework
+
+## 第五批反馈修复（2026-10-17）
+
+| 项 | 之前 | 现在 | 实现 |
+|---|---|---|---|
+| 立地升天 | 击杀判定照搬狂宴（爪牙、半死不算），文本「斩杀」 | 照搬原版**分离**：目标 `isDying` 或生命 ≤ 0 即进入神格；文本同分离「如果这张牌杀死了敌人」 | `ReachHeavenAction` 改为 `SunderAction` 的写法（`ACTION_DUR_FASTER`、`addToBot`） |
+| 羽化 | 叠加后仍按原版 `SeekAction` 必须选满 n 张，描述不显示数量 | 最多选 n 张；buff 描述与选牌界面提示都显示 n | 新增 `ShuffleSeekAction`：`gridSelectScreen.open(group, n, true, msg)`（原版"任意张数"模式），提示语放在羽化的 `EXTENDED_DESCRIPTION`；手牌上限改用 `BaseMod.MAX_HAND_SIZE` |
+| 涅槃 | 计数器只从能力生效后开始数，打出第二张时数值不统一 | 计数器 = 原版 `cardsPlayedThisTurn`（含涅槃本身与之前打出的牌），多张共用；在 `onAfterUseCard` 判定，第 5 张打出的是涅槃时按叠加后层数立即结算；已结算后再叠加的涅槃在 `stackPower` 里补上自己的 2 张 | `NirvanaCounterPower` |
+| 壶铃 | 举重按钮仍显示原版「（最多+3）」 | 「在战斗开始时获得+1力量和+1敏捷。（最多+5）」 | `NewRelicFixes$GiryaLiftText`（`LiftOption` 构造器后缀）；新增 `localization/{eng,zhs}/UIStrings.json` 并由主类加载，`verify.ps1` 的双语检查纳入 UIStrings |
+| 如水 | buff 显示叠加层数 | 不显示计数器（`amount = -1`，`stackPower` 不改变它） | `LikeWaterCalmPower` |
+| 结茧 | buff 描述固定为一个 [E] | 描述显示叠加后的能量数（同原版能量提升的写法） | `ShuffleEnergyPower.updateDescription` |
+
+羽化体验优化：洗牌事件现在把被打断的抽牌还要抽的张数（按手牌上限截断）传给监听者（`ShuffleTriggerPatch.drawsAfterShuffle()`）；
+抽牌堆张数不超过这个数时，接下来的抽牌本来就会把整个抽牌堆抽进手牌，`ShuffleSeekPower` 不再弹出选牌界面。
+
+### 小屋子闪光
+
+- **保留正常拾取闪光**：原版 `instantObtain()` 给每件遗物的那一次闪光原样保留。
+- **删除额外闪光**：`TinyHouseEquip` 不再自己 `flash()`，拾取时只闪一次。
+- **闪光时机改到休息处**：新增 `TinyHouseCampfirePatch$RestRoomPulse`（`AbstractRelic.onEnterRoom` 后缀），进入 `RestRoom` 时 `beginLongPulse()` + `flash()`，与送货员/会员卡在商店里一样持续脉冲；进入其它房间（含离开休息处）时 `stopPulse()`。存档并在休息处读档时同样会重新点亮。
+- **回忆与其它选项互斥**：`TinyHouseCampfirePatch.arm` 认出 `RecallOption`——选「回忆」时不调用 `reopen`，营火与选项按原版消失；先用了其它选项，则把「回忆」置灰（`usable = false`）。
+- **删除旧奖励界面代码**：原 `effects/TinyHouseEffect`（拾取时升级 1 张牌并打开 3 组无色卡奖励的 `combatRewardScreen.open`）已删除；`TinyHouseEquip` 前缀继续拦截原版 `TinyHouse.onEquip` 的金币/药水/无色牌奖励，只保留本模组的自由营火。
+
+验证：`mvn -B clean package`（JDK 8）202 个补丁目标与全部契约测试通过；`verify.ps1 -CheckJar` 通过。
+
+## 第五批：供奉/天眼/欺瞒现实/堆栈调整，替换审判/立地升天/摆手/暴力，修复义愤填膺结算顺序（2026-10-17）
+
+> 此前同日的两轮实现（含小屋子拾取不闪光、星系仪弹窗等待两项附带修复）未符合需求，已整体撤回后按需求重做。
+
+### 卡牌
+
+| 卡牌 | 原版 ID | 改动 | 实现 |
+|---|---|---|---|
+| 供奉 | `Consecrate` | 1（0）费，每命中一名敌人抽 1 张 | 升级只 `upgradeBaseCost(0)` |
+| 天眼 | `ThirdEye` | 2（3）张洞见放入抽牌堆 | 同怒火中烧，`MakeTempCardInDrawPileAction(…, true, true)` |
+| 欺瞒现实 | `DeceiveReality` | 洞见与奇迹放入抽牌堆 | 同上 |
+| 堆栈 | `Stack` | 1（0）费，格挡 = 抽牌堆张数（取消升级 +3）；洗牌时把这张牌放到抽牌堆顶部 | `Stack.moveToTopOfDrawPile()`，由 `ShuffleTriggerPatch.fire()` 在洗牌动画结束、剩余抽牌之前调用 |
+| 审判 | `Judgement` | 3 费；目标无人工制品且生命值低于最大生命值的 20%（25%）时生命值变为 0 | `PercentJudgementAction`：原版 `JudgementAction` 的百分比版本，仍用 `InstantKillAction` 与原版特效 |
+| 立地升天 | `ReachHeaven` | 3 费，15（20）伤害，斩杀时进入神格；不再加入以暴易暴 | `ReachHeavenAction`：原版 `FeedAction` 的斩杀判定（不含爪牙与半死状态） |
+| 摆手 | `WaveOfTheHand` | 1（0）费，本回合每次切换姿态给予所有敌人 2 层虚弱；消耗 | `WaveOfTheHandStancePower` 继承原版 `WaveOfTheHandPower`（沿用其 ID、图标与回合结束移除），只把触发从获得格挡改为切换姿态 |
+| 暴力 | `Violence` | 3 费，随机打出抽牌堆中 3（4）张攻击牌，不再消耗 | `PlayRandomAttackFromDrawPileAction`：原版 `PlayTopCardAction`（破灭/乱战）的随机攻击牌版本；抽牌堆没有攻击牌时不洗牌 |
+
+摆手是原版卡「摆手」的替换（需求中的「新增」指新增条目），因此沿用原版 ID，不使用命名空间 ID。替换表 124 → **128**。
+
+### 机制：义愤填膺 + 心灵堡垒 + 死亡律动
+
+原版 `IndignationAction` 用 `addToBot` 排队姿态变化，排在该牌自己的 `UseCardAction` 之后；`UseCardAction` 触发死亡律动的伤害，
+于是心灵堡垒的格挡比伤害晚。暴怒直接在 `use()` 里排队姿态变化，没有这个问题。`patches/IndignationStancePatch`（Instrument）
+只把 `IndignationAction.update` 里的 `ChangeStanceAction` 改为 `addToTop`，结算顺序与暴怒一致；不改心灵堡垒本身。
+
+### 验证
+
+- `mvn -B clean package`（JDK 8）：**200 个补丁目标**、`PatchContractTest` 全部通过（新增 `fifthRoundRegression`）。
+- `scripts/verify.ps1 -CheckJar`：双语键/词元、**128 张唯一替换**、卡图与 JAR 条目通过。
+- 仍需游戏内验收：义愤填膺 + 心灵堡垒对腐化之心；堆栈在洗牌后（含羽化/套娃同时触发）位于抽牌堆顶；暴力连续打出 3（4）张及目标随机；
+  立地升天击杀爪牙/觉醒者第一形态时不进神格；审判对有人工制品的敌人无效。
+
+## 第四批：残影/诸神之黄昏/残虐天性调整、小屋子重做、皇家枕头回调（2026-10-17）
+
+### 卡牌
+
+| 卡牌 | 之前 | 现在 | 依据 |
+|---|---|---|---|
+| 残影（`Blur`） | 0 费，格挡 1（2） | **1（0）费**，格挡固定 **1** | 需求第 29 条（猎手）`（修改）` |
+| 诸神之黄昏（`Ragnarok`） | 所有命中一次性入队，无逐击间隔 | 每击前 `WaitAction(0.1F)`（`FAST_MODE` 跳过） | 需求第 27 条（观者）“减缓动画速度，和原版一致” |
+| 残虐天性（`Sadistic Nature`） | power 的 `amount = 1`，buff 图标显示“1” | `amount = -1`，图标不显示计数器 | 需求第 16 条（无色）“相关 buff 不显示计数器” |
+
+实现要点：
+
+- **残影**：`cards/green/Blur` 新增 `BASE_COST = 1`、`UPGRADED_COST = 0`、`BLOCK_PER_DRAW = 1`；
+  升级只调 `upgradeBaseCost(0)`，不再 `upgradeMagicNumber`，文本仍是 `!M!`（恒为 1），无需 `UPGRADE_DESCRIPTION`。
+- **诸神之黄昏**：`actions/RagnarokXAction` 新增 `HIT_PAUSE = 0.1F`，在每次
+  `AttackDamageRandomEnemyAction(LIGHTNING)` 之前排队 `WaitAction`——与原版 `actions.defect.NewThunderStrikeAction`
+  对随机闪电的节奏写法一致；伤害与命中数（X×2 / X×2 次）不变。
+- **残虐天性**：`powers/SadisticNaturePower` 新增 `ICON_AMOUNT = -1`，构造器与 `stackPower` 都用它；
+  原版 `AbstractPower.renderAmount` 只在 `amount > 0`（或允许负数）时画数字，因此图标保留、计数器消失。
+  翻倍仍由 `patches/SadisticNaturePatch` 在 `WeakPower`/`VulnerablePower` 上完成，叠加纸鹤/纸蛙不受影响。
+
+### 遗物：小屋子重做、皇家枕头回调
+
+- **小屋子**（商店遗物）**重做**：删除“拾起时升级 1 张牌 + 3 组无色牌奖励”的 `effects/TinyHouseEffect`；
+  新效果为**在休息处可以选择任意数量的选项**。
+  实现见新增的 `patches/TinyHouseCampfirePatch`：不复制任何营火结算，只用
+  `AbstractCampfireOption.update` / `CampfireUI.updateTouchscreen` 捕捉“这一帧用掉了哪个选项”，把它置灰，
+  等该选项的特效与界面结束后（主类 `receivePostDungeonUpdate` 里的 `tick()`）用 `CampfireUI.reopen()`
+  把营火放回去，并把房间标记为完成，地图/继续按钮照常是离开营火的路。
+  `RareRelicFixes$TinyHouseEquip` 只保留拾取闪光；品级（商店）与旧存档搬池逻辑不变。
+  在选牌界面点取消会退还该选项（取消时原版自己调 `reopen()`，据此判断）。
+- **皇家枕头** **回调**：删除 `patches/RegalPillowPatch`（自由休息、接管回血、捕梦网、描述覆盖）与
+  中英 `RelicStrings` 的 `anotherspirerework:Regal Pillow` 条目；回到原版“休息额外回复 15 点生命”，
+  仍按需求第 23 条不进第四幕。
+
+### 本地化
+
+- `Tiny House`：`你可以在休息处选择任意数量的选项。` / `You may choose any number of options at Rest Sites.`
+  （`DESCRIPTIONS[1]` 保留“小小的屋子！”作为 flavor）。
+- 删除 `Regal Pillow` 条目（双语同步），`verify.ps1` 新增“该键必须不存在、小屋子必须提到休息处”的断言。
+- 残影、诸神之黄昏、残虐天性的文本无需改动（数值/节奏/图标表现变化，词元不变）。
+
+### 验证
+
+- `scripts/verify.ps1`：双语键/词元、124 张唯一替换、小屋子与皇家枕头的新断言。
+- `mvn -B clean package`（JDK 8）：**199 个补丁目标**、全部契约测试通过（新增 `fourthRoundRegression`）。
+- 仍需游戏内验收：残影 1（0）费与回合内抽牌结算、诸神之黄昏在 X=1/2/3 与化学物 X 下的逐击节奏、
+  残虐天性图标无数字且与纸鹤/纸蛙叠加、小屋子的营火（休息/锻造/抽烟/举重/挖掘各一次、界面关闭后才放回营火、
+  最后能正常离开）、皇家枕头回到原版行为。
+
+## 第三批：7 张新卡、3 项遗物改动与商店降价（2026-10-16）
+
+### 卡牌
+
+- **新增 7 张**（沿用原版 ID 与原版图片路径，进入 `CardSwapPatch` 替换表，总数 117 → **124**）：
+  - 静默猎手：猎杀者（`Predator`，稀有度改普通，2 费，15（18）点伤害 + 下回合多抽 2（3）张）、
+    突然一拳（`Sucker Punch`，1 费，7（10）点伤害 + 2 层虚弱，升级只加伤害）、
+    残影（`Blur`，0 费，本回合内每抽 1 张牌获得 1（2）点格挡）、
+    弹跳药瓶（`Bouncing Flask`，X 费，随机给予敌人 6 层中毒 X（X+1）次）
+  - 观者：疾风连击（`FlurryOfBlows`，0 费，4（6）点伤害；转换姿态时从弃牌堆/抽牌堆/消耗堆回到手牌）、
+    诸神之黄昏（`Ragnarok`，X 费，随机对敌人造成 X×2 点伤害 X×2 次，消耗；升级取消消耗）
+  - 无色：残虐天性（`Sadistic Nature`，2（1）费能力牌，敌人身上的虚弱与易伤效果翻倍，可与纸鹤/纸蛙叠加）
+- **修改 3 张**：灾祸（`Bane`，稀有度普通 → 罕见，伤害 7（10）→ **8（10）**）、
+  飞膝（`Flying Knee`，伤害 10（12）→ **8（11）**）、
+  催化剂（`Catalyst`，升级奖励由“中毒三倍”改为**保留**，仍是 1 费翻倍 + 消耗）
+
+### 校对：本轮核对代码与需求/文档时发现并修正的偏差
+
+| 项 | 之前 | 现在 | 依据 |
+|---|---|---|---|
+| 致命毒药 | 中毒 6（9） | 中毒 **7（9）** | 需求第 23 条与第二批记录都是 7（9），代码少 1 |
+| 飞膝 | 伤害 10（12） | 伤害 **8（11）** | 需求第 25 条与第二批记录 |
+| 灾祸 | 伤害 7（10）、普通 | 伤害 **8（10）**、**罕见** | 需求第 24 条 |
+| 交锋（README 行） | 14（18） | 10（14） | 代码与需求一致，README 过期 |
+| 活动肌肉（README 行） | 0 费、4（8） | 1（0）费、5 | 同上 |
+| 断魂斩（README 行） | 16 | 10 | 同上 |
+| 旋风斩（README 行） | 6（10） | 6（7） | 同上 |
+| 灼热攻击（README 行） | 10（13） | 7（10） | 同上 |
+| 玻璃刀刃（README 行） | 8 点伤害 | 4（6）点伤害 | 同上 |
+| 扫荡射线（README 行） | 6（7）伤、抽 2（3） | 10（14）伤、抽 1（2）、加黏液 | 同上 |
+| 精简改良（README 行） | 18（22） | 22（28） | 同上 |
+| 快斩（README 行） | 8 点伤害 | 10（14）点伤害 | 与代码一致；需求写 8，按“仅数值差异以模组为准”保留实现 |
+
+其余 124 张的数值已逐张对着 `baseDamage/baseBlock/baseMagicNumber` 与升级增量核对过，与需求一致。
+
+### 遗物与机制
+
+- **皇家枕头**：休息成为自由行动。休息照常结算（最大生命 30% + 15、`onRest`、捕梦网奖励），
+  但营火不结束，休息后仍可选升级/抽烟/举重/挖掘；房间标记为完成，地图按钮照常是离开营火的路。
+- **瓶装旋风 / 瓶装闪电 / 瓶装火焰**：原效果不变，仅第三幕起才可能从遗物池抽出；
+  第一、二幕抽到它们时不消耗池位（留在可存档的池里），其余 `canSpawn` 条件仍按原版处理。
+- **商店遗物降价**：罕见遗物基准价 −50、稀有遗物 −100（250 / 300 → 200 / 200）。
+
+### 反馈修复（本轮）
+
+1. **皇家枕头休息不回血**：自由休息原来把回血排进了 Action 队列（`HealAction`），但
+   `GameActionManager.addToBottom` 只在房间处于 `RoomPhase.COMBAT` 时才会入队，营火房间下动作被**静默丢弃**，
+   于是休息只闪了一下遗物、生命没变。现在改为直接 `AbstractPlayer.heal(30% + 15, false)`，
+   与 `CampfireSleepEffect` 的写法一致；契约测试新增断言：`before` 必须调用 `heal`、且不得再构造 `HealAction`。
+
+### 落点（新增文件）
+
+| 文件 | 作用 |
+|---|---|
+| `cards/green/Predator`、`SuckerPunch`、`Blur`、`BouncingFlask` | 第三批的猎手牌 |
+| `cards/purple/FlurryOfBlows`、`Ragnarok` | 第三批的观者牌 |
+| `cards/colorless/SadisticNature` | 第三批的无色牌 |
+| `powers/BlurDrawPower` | 残影：本回合抽牌给格挡，回合结束自我移除 |
+| `powers/SadisticNaturePower` | 残虐天性的开关与文本 |
+| `actions/BouncingFlaskXAction` | 弹跳药瓶的 X 次结算（交给原版 `BouncingFlaskAction`） |
+| `actions/RagnarokXAction` | 诸神之黄昏的 X×2 次随机打击（交给原版 `AttackDamageRandomEnemyAction`） |
+| `actions/ReturnCardToHandAction` | 从抽牌堆/消耗堆回到手牌（原版只有弃牌堆版本） |
+| `patches/FlurryOfBlowsPatch` | 姿态变化时把疾风连击从抽牌堆/消耗堆取回 |
+| `patches/SadisticNaturePatch` | 虚弱/易伤的伤害钩子翻倍 |
+| `patches/RegalPillowPatch` | 皇家枕头的自由休息、描述与捕梦网（**第四批已删除**，机制改由小屋子承担） |
+| `patches/ShopPricePatch` | 商店遗物折价 |
+
+### 需要你提供的卡图
+
+这 7 张都沿用原版类型（攻击/技能/能力不变），原画不会露框，**不需要新卡图**。
+想换的话按本文件末尾的「卡图」放图即可。
+
+### 验证
+
+- `mvn -B clean package`（JDK 8）：199 个补丁目标、全部契约测试通过（新增 `thirdRoundRegression`）。
+- `scripts/verify.ps1 -CheckJar`：双语键/词元、124 张唯一替换、卡图与 JAR 条目全部通过。
+- 仍需游戏内验收：残影的抽牌结算时机、弹跳药瓶与诸神之黄昏的 X 费（含化学物 X）、
+  疾风连击从消耗堆回手、残虐天性与纸鹤/纸蛙/其它模组伤害修正的叠加、皇家枕头的营火流程、
+  瓶装三遗物的幕数门槛。
 
 ## 第二批：新增 21 张卡与 12 件遗物（2026-10-11）
 
@@ -474,184 +660,251 @@ mvn -f 'c:\Users\riced\VS Code\STS modding\AnotherSpireRework\pom.xml' '-Dlocal.
 新增无图形环境的补丁契约检查：使用实际依赖JAR验证目标方法、插入定位器、字段及Instrument产生的字节码。
 这不能替代ModTheSpire启动及游戏内验收。需重点实测时间吞噬者跨12/24张牌、心脏限伤、药水丢弃、商店补货、Boss遗物替换、休息处举重和降级。
 
-## 重写版说明
 
-原工程保留在相邻的 AnotherSpire 目录。此工程使用独立包名、资源目录和
-mod ID `anotherspirerework`，但原版卡牌 ID 与效果保持原实现的基线。
-**不要同时启用 AnotherSpire 和此版本**：两者修改相同卡牌和方法，独立 ID 不代表机制可叠加。
-切换版本前请结束当前战斗并备份存档；新 Power 的命名空间不同，不承诺迁移进行中的战斗。
+## 实现与维护参考
 
-实际重构：集中卡牌替换表、独立饱和算术工具、临时伤害/力量的 finally 恢复、
-语言大小写转换独立于系统区域设置、追踪状态重置，以及移除未使用的 StSLib 构建依赖。
-复杂补丁及各卡牌机制保留原实现，尚不宣称所有游戏场景已经实测。
+> 本节由原 README 的机制说明、验证流程与硬性规则移入，供维护时查阅。改动清单见 [README.md](README.md)。
 
-中文空格按关键词和符号词元边界保留，不作机械删除。JSON 可解析并不足以证明卡面渲染正确。
+### 重写版说明
 
-验证（PowerShell，在此工程目录执行）：
+原工程保留在相邻的 AnotherSpire 目录。此工程使用独立包名、资源目录和 mod ID `anotherspirerework`，
+但原版卡牌 ID 与效果保持原实现的基线。**不要同时启用 AnotherSpire 和此版本**：两者修改相同卡牌和方法，
+独立 ID 不代表机制可叠加。切换版本前结束当前战斗并备份存档；新 Power 的命名空间不同，
+不承诺迁移进行中的战斗。
+
+实际重构：集中卡牌替换表、独立饱和算术工具、临时伤害/力量的 finally 恢复、语言大小写转换独立于系统区域设置、
+追踪状态重置，以及移除未使用的 StSLib 构建依赖。复杂补丁及各卡牌机制保留原实现。
+
+### 替换机制
+
+`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 128 个条目换成
+`anotherspirerework.cards.<color>.<Name>`，**保留原版 cardID 与原版图片路径**，并带过 `isSeen`。
+游戏所有取卡路径（`CardLibrary.getCardList`、`AbstractDungeon.getCardFromPool`、`initializeStarterDeck`…）
+都读这张表，所以替换一处即全局生效。事件里 `new Bite()` 这类**绕过卡库的直接构造**由 `patches.BitePatch` 单独补丁。
+全部沿用原版 cardID，因此没有注册任何新卡池。
+
+### 卡图
+
+`patches.CardArtLoaderPatch` **只做绘制**：有图就画，没图回退原版图集，不裁切、不缩放、不动卡牌坐标。
+
+- 位置：`src/main/resources/anotherspirerework/images/` 或 `.../images/cards/`。
+- 尺寸：卡面 **250×190**、放大界面 **500×380**，给其中一个即可（另一个按整图缩放使用）。
+- 文件名：卡 ID 去空格（`DieDieDie.png`）或原版图片名（`die_die_die.png`），两种都识别；`_p` 后缀表示放大图。
+- 改图后重新 `mvn package` 并重启游戏。
+
+### 能力图标
+
+`patches/PowerArtLoaderPatch` 只覆盖**本模组自己新增的能力**（原版能力保持原版图标），有图就换、没图保持现状：
+
+- 位置：`src/main/resources/anotherspirerework/images/powers/`。
+- 尺寸：`<名字>_48.png`（48×48，buff 栏小图标）、`<名字>_128.png`（128×128，获得/触发时的放大闪光）；
+  两者互不影响，可只给一个。尺寸必须与后缀一致（游戏按固定倍率绘制）。
+- 文件名：能力 ID 去掉 `anotherspirerework:` 前缀（如 `Nirvana_48.png`），或能力类名（`NirvanaCounterPower_48.png`）。
+
+### 本地化
+
+中英 `CardStrings` / `PowerStrings` / `RelicStrings` 都按 `anotherspirerework:<原版ID>` 建键，不覆盖原版字符串。
+新增关键词只有 `Mark`（印记）；其余关键词沿用原版写法，保证高亮与提示正常。
+中文的 ` NL ` 空格、`#`/`*` 标注与关键词边界不要机械删除；JSON 能解析不等于卡面渲染正确。
+
+### 遗物机制
+
+两套机制并存：
+
+1. **包装类**：`patches.RelicReworkPatch.Swap` 把 `RelicLibrary.getRelic()` 返回的 16 件原版遗物包装成
+   `relics.ReworkedRelic`，保留原版 ID、图片与获取途径。属这 16 件的是：棱镜碎片、勇气投石索、手钻、
+   邪教徒头套、大锅、融合之锤、痛楚印记、天鹅绒颈圈、灵体外质、黑暗之血、破碎王冠、神圣树皮、添水、
+   长蛇戒指、壶铃、黑星（判定见 `ReworkedRelic.supports`）。
+2. **直接补丁**：其余遗物直接给原版类打 Prefix/Postfix/Insert（`RelicReworkPatch`、`ReportedRelicFixes`、
+   `TurnRelicFixes`、`NewRelicFixes`、`ShopRelicPatch`、`StrangeSpoonExhaust`），让**原版实例与包装实例共用同一行为**。
+
+> ⚠ 包装类**取代**了原版实例，它没有转发的原版钩子就等于不存在。例如原版 `VelvetChoker.onVictory()`
+> 用 `counter = -1` 在战斗结束隐藏计数，包装类不转发就会把上回合的张数一直挂在遗物栏上。
+> 改包装遗物的行为时，必须逐项核对它取代了哪些原版钩子。
+
+遗物描述放在 `localization/eng|zhs/RelicStrings.json` 的 `anotherspirerework:<原版遗物ID>` 键下，
+不覆盖原版字符串。遗物标注规范**与卡牌不同**：以 `#r卡名`、`#g遗物名`、`#y遗物` 标注（卡牌才用 `*卡名`）。
+需求中以 `#` 标注的补充说明（生成条件、隐藏效果等）不进描述文本。
+
+**不进第四幕（心脏层）的 27 件遗物**（`NewRelicFixes.ACT_FOUR_BLOCKED`）：不覆盖 `canSpawn` 的 6 件走
+`AbstractRelic` 基类补丁，自己声明了 `canSpawn` 的 21 件逐个打前缀，避免基类补丁被子类覆盖绕过。
+清单见 [README.md](README.md) §2。
+
+**条件生成遗物**（化学物 X、李家华夫饼）不满足条件时**留在可存档的遗物池里**，下个商店再判定，
+不会消耗本局的生成机会。瓶装三遗物的幕数门槛在**遗物池抽取时**生效，抽到但不满足幕数时留在池里；
+其余 `canSpawn` 条件仍按原版处理。
+
+### 其它机制实现
+
+- **无色选牌加「跳过」**：`ColorlessSkipPatch` 给 `CardRewardScreen.customCombatOpen` 打开跳过硬开关，
+  覆盖发现、无色药水、工具箱、尼尔里的典籍、外来影响；普通卡牌奖励与观者的「抉择」不受影响。
+- **移除数值上限**：原版把格挡/力量·敏捷·集中·枷锁/中毒(9999)/充能/能量钳制在 ±999，现放宽到 int 上限。
+  补丁为 `NoBlockCapPatch`、`NoPowerCapPatch`、`NoEnergyCapPatch`：**Prefix 算原值、仅当钳制真的触发时由
+  Postfix 写回**，不复制也不替换原版代码，其它模组的补丁照常运行。
+- **溢出饱和**：上限解除后，越界运算饱和到 int 上限而不是翻符号（"超过上限就是上限"）。由
+  `util.SaturatingMath` 与 `NoPowerCapPatch`/`NoBlockCapPatch`/`NoEnergyCapPatch`/`TriplePoisonSaturatePatch`
+  负责；重刃不再沿用原版"乘上去再除回来"的取巧写法。
+- **洗牌事件**：`EmptyDeckShuffleAction` / `ShuffleAllAction` 结算完成时只标记"待处理"，等 `SoulGroup.isActive()`
+  为 false（洗牌动画播完）且没有界面打开时才触发。堆栈、结茧、羽化、套娃都依赖它。故意不接 `ShuffleAction`，
+  避免同一次洗牌触发两次。
+- **界面保护（只改时机，不取消效果）**：浏览牌堆/地图/单卡界面期间，洗牌触发、医药箱·蓝蜡烛的抽牌处理、
+  勺子·星系仪选牌都推迟到界面关闭后执行。
+- **商店遗物降价**：`ShopPricePatch` 在 `StoreRelic` 构造完成后按遗物自身品级改写价格——罕见 −50、稀有 −100
+  （原版 250 / 300 → 200 / 200）。只动商店货架，不影响宝箱与奖励。
+
+### 主类与辅助类
+
+主类 `AnotherSpireRework`（`@SpireInitializer`）：
+
+| 方法 | 用途 |
+|---|---|
+| `makeID(String)` | 生成 `modID:name`，本地化 lookup key |
+| `getCardStrings(String)` / `getPowerStrings(String)` | 读带命名空间的字符串；缺失时记录 error 并回退 mock |
+| `extendedDescription(CardStrings, int)` | 安全读 `EXTENDED_DESCRIPTION[i]`，越界或翻译缺失返回空串 |
+| `localizationPath(String lang, String file)` / `imagePath(String file)` | 资源路径拼接 |
+| `inCombat()` | 当前是否在战斗中 |
+
+订阅的 BaseMod 钩子：`PostInitialize`、`PostBattle`、`PostDraw`、`PostExhaust`、`PostDungeonUpdate`、
+`PostPowerApply`、`StartGame`、`PreStartGame`、`EditStrings`、`EditKeywords`。
+
+洗牌事件 `patches.ShuffleTriggerPatch`：
+
+| 方法 | 用途 |
+|---|---|
+| `fire()` | 先把抽牌堆里的堆栈移到顶部，再触发所有 `DrawPileShuffleListener` 与套娃 |
+| `reset()` | 战斗开始/结束时清空待处理标记 |
+| `tick()` | 每帧兜底（由 `receivePostDungeonUpdate` 调用），处理"抽牌先结束、动画还没播完"的路径 |
+| `flush(AbstractGameAction)` | 包级；动画结束且无界面时触发，并把被中断抽牌的剩余张数放回队首 |
+
+选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、
+`enum Choice { REMOVE_EXHAUST, ADD_TO_DECK }`。它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：
+`GameActionManager.addToBottom` 只在战斗房间接收动作，商店/宝箱拾取时会被直接丢弃。
+
+饱和算术 `util.SaturatingMath`：`fromLong(long)`、`add(int,int)`、`subtract(int,int)`、`multiply(int,int)`。
+
+卡图 `patches.CardArtLoaderPatch`：`candidateNames(String cardID, String assetUrl)` 按"卡 ID 去空格 → 图片路径转下划线
+→ 图片文件名"返回候选名。
+
+能力图标 `patches.PowerArtLoaderPatch`：`fileId(String powerId)`（去掉 `anotherspirerework:` 前缀）、
+`candidateNames(String powerId, String className)`、`owns(String className)`（只认 `anotherspirerework.powers.*`）、
+`load(String name, int size)`：按 `<名字>_48` / `_128` 找图。
+
+供其它补丁复用的静态助手：
+
+| 类 | 方法 |
+|---|---|
+| `ExhaustTracker` | `onCardExhausted()`、`exhaustedThisTurn()`、`reset()`（燃愿判断本回合是否消耗过牌） |
+| `TurnRelicFixes` | `serpentActive`、`starActive`、`potionLocked`、`potionsLocked`、`resetBattle`、`discard`、`prismEquip`、`serpentTurn`、`vanillaElites`、`victory`、`startGame`、`currentElites`、`syncStar`、`starTurn`；实现 `CustomSavable<Integer>`（精英击杀），内部 `StatMigration` 做旧存档一次性迁移 |
+| `NewRelicFixes` | `inActFour`、`actFourBlocked`、`ninjaScrollTurn`、`yangUse`、`enchiridionStart`、`onCardDrawn`、`processPendingDraws`、`isStrikeOrDefend`、`frozenEyeOwned`、`applyFrozenEye`、`removeFrozenEye`、`keywordSuffix`、`inserterTurn`、`matryoshkaShuffle`、`spoonEquip`、`orreryEquip`、`giryaCampfireOptions` |
+| `ReportedRelicFixes` | `penalizeChoker`、`penalizeBark`、`loseEnergy`、`markStart`、`chokerStart`、`barkStart`、`cauldronEquip` |
+| `StrangeSpoonExhaust` | `removed`、`strip`、`mark`、`withoutExhaustText`、`formatCounts`、`restorePending`；实现 `CustomSavable<String>`（去消耗张数） |
+| `RelicReworkPatch` | `ignoreRelic(String)`（生成 `ExprEditor` 关掉指定遗物的原版 `hasRelic` 分支）、`potionsLocked()`、`bypass(DamageInfo)`（手钻无视格挡）、公开字段 `bloodActive` |
+| `ReworkedRelic` | `supports(String)`：判定哪些遗物需要包装；覆写 `onEquip`/`onUnequip`/`atBattleStart`/`atTurnStart`/`onVictory`/`onPlayCard`/`addCampfireOption` |
+| `ShopRelicPatch` | 条件遗物（化学物 X、李家华夫饼）的跳过与补货/池持久化；`actGated(String)` 判定瓶装三遗物的幕数门槛 |
+| `TinyHouseCampfirePatch` | `tick()`、`reset()`：小屋子把用过的营火选项置灰，界面与特效结束后用 `CampfireUI.reopen()` 放回营火；常量 `REOPEN_DELAY = 0.3F`、`FORCE_AFTER = 3.0F` |
+| `ShopPricePatch` | `discounted(RelicTier, int)`：商店折后价；常量 `UNCOMMON_DISCOUNT = 50`、`RARE_DISCOUNT = 100` |
+| `RagnarokXAction` | `energyFor(int)`：X 费的当前取值（含化学物 X），卡面显示与结算共用 |
+| `SadisticNaturePower` | `active()`：玩家是否持有残虐天性，供两处伤害补丁判定 |
+| `BlurDrawPower` | `onCardDrawn(AbstractCard)`：残影的抽牌结算，由主类 `receivePostDraw` 调用 |
+
+新 Power（18）：`NextTurnFocus`、`GlassKnifeMark`、`Mark`、`HelloWorldAnyCard`、`ShivMastery`、`FreeSkill`、
+`CreativeAIUpgraded`、`BattleHymnSmite`、`LikeWaterCalm`、`StudyInsight`、`DevotionDraw`、`ScuffleDraw`、
+`ShuffleEnergy`、`ShuffleSeek`、`ShivAllEnemies`、`ShivPoison`、`BlurDraw`、`SadisticNature`； `WaveOfTheHandStancePower`，继承原版 `WaveOfTheHandPower` 并沿用其原版 ID。
+
+新 Action（16）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
+`PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`IncreaseCostAction`、
+`SanctityEnergyAction`、`ShivDamageAction`、`TransformDrawPileToShivsAction`、`BouncingFlaskXAction`、
+`RagnarokXAction`、`ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、
+`PlayRandomAttackFromDrawPileAction`。
+
+Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域，不需要额外美术；
+`Entrench` 刻意复用原版 `NextTurnBlockPower`。
+
+观察者接口 `powers.DrawPileShuffleListener`：实现 `onDrawPileShuffled()` 的 power 自动接入洗牌事件
+（结茧、羽化即通过它工作）。
+
+### 存档
+
+`BaseMod.addSaveField` 注册了四个自定义字段：
+
+| 字段 | 内容 |
+|---|---|
+| `EliteKills` | 黑星的全局精英击杀数；旧存档以原版前三幕击杀数兜底 |
+| `TurnRelicStatsV1` | 一次性迁移：给已持有的棱镜碎片补基础能量/抽牌量，迁完打标记不再重复 |
+| `SpoonNoExhaust` | 勺子"已去掉消耗"的牌，按"卡牌 ID + 升级次数 + misc"记张数，读档后按张数重新应用 |
+| `SneckoHandV1` | 给旧存档的异蛇之眼补上第 3 个手牌位 |
+
+另有一项**不走自定义字段**的存档兼容处理：遗物池（`shop_relics` / `boss_relics`）随存档保存，读档时不会按品级重建，
+因此在品级改动之前开局的存档会把棱镜碎片留在商店池（实例已是 BOSS 品级，`getPrice()` 返回 999 金币）、
+把小屋子留在 BOSS 池。`RareRelicFixes.normalizePools`（`AbstractDungeon.loadSave` 的后缀补丁）读档后把
+这两件挪回各自品级的池子，插入位置由该局种子决定（存档/读档不会重置遗物池），已持有的遗物丢弃不放回；
+`ShopRelicPatch` 另有品级守卫，商店位置只接受自身品级为商店遗物的 id。新开局本来就按品级建池，不受影响。
+
+原则：**不猜测存档没有保存的信息**（例如旧长蛇戒指是原版还是包装版，存档只有 ID）；
+不承诺"先升级、再退回旧版本、再升级"的混用存档。
+
+### 构建与验证
 
 ```powershell
-mvn clean package
+# 必须用 JDK 8；默认的 JDK 25 会让 PatchContractTest 在 javassist 里抛 NPE
+$env:JAVA_HOME='C:/Program Files/Zulu/zulu-8'; mvn -B clean package
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 ```
 
-Maven 的 test 阶段执行无额外测试库的饱和算术边界/随机回归测试。
-默认打包不会安装到游戏；需要安装时，将 target/anotherspirerework.jar 手动复制到游戏 mods 目录，
-在 ModTheSpire 中禁用原版、仅启用重写版与 BaseMod。
+- 产出 Java 8 字节码（`maven.compiler.source/target = 1.8`），输出 `target/anotherspirerework.jar`。
+- **默认不部署**：`mod.deploy.skip` 默认 `true`，而且 Ant 的 `unless` 判定的是"属性有没有被设置"，
+  传 `-Dmod.deploy.skip=false` 同样会**跳过**复制。要部署就手动把 jar 拷贝到游戏 `mods/`，
+  再用 Java 8 启动 ModTheSpire，只启用 BaseMod + 本模组。
+- 代码改动必须重新构建并重启游戏才生效。
+- 本机依赖不在 Steam 目录时，用 `mvn -f pom.xml '-Dlocal.dependencies=<目录>' clean package`。
 
-A Slay the Spire mod with 89 card-library replacements (Ironclad / Silent / Defect / Watcher / Colorless), plus the separately patched Bite and existing relic reworks.
-The full list of changes lives in `../requirements.txt`.
-
-## How it works
-
-* Every reworked card is an `AbstractCard` subclass of our own (`anotherspirerework.cards.<color>.<Name>`) that keeps the
-  **original card ID** and the **original art path**, so card pools, starting decks, shops, rewards, transforms,
-  the compendium and existing save files all keep working without any extra code.
-* `patches.CardSwapPatch` rewrites `CardLibrary.cards` right after `CardLibrary.initialize()`.
-  The vanilla game builds every card from that map (`CardLibrary.getCardList`, `AbstractDungeon.getCardFromPool`,
-  `AbstractPlayer.initializeStarterDeck`, ...), so replacing the map entries replaces the cards everywhere.
-  The vanilla `isSeen` flag is carried over and the library counters are left untouched.
-* Card text lives under mod prefixed keys (`anotherspirerework:Clash`, `anotherspirerework:Steam`, ...) in
-  `localization/eng|zhs/CardStrings.json`, so vanilla strings are never overwritten and no load order matters.
-* Vanilla hooks are used wherever possible: `triggerOnManualDiscard` (Quick Slash), `onRetained`
-  (Perseverance, Windmill Strike), `triggerWhenDrawn` (Streamline), `triggerOnExhaust` (Sentinel),
-  `AbstractPlayer.channelOrb` (Rebound), `PostExhaustSubscriber` + `GameActionManager.turn`
-  (Seeing Red), `MarkPower` + an attack hook (Path to Victory, pressure points),
-  `Shiv.<init>` / `Shiv.use` hooks (Unload), `AbstractCard.freeToPlay()` (Follow-Up, Wheel Kick),
-  `VampireDamageAction` (Bite), X-cost handling from Whirlwind/Multi-Cast (Metallicize, Whirlwind,
-  Multi-Cast).
-* Cards that hand out another card use the vanilla presentation: a `cardsToPreview` preview and a
-  `*CardName` marker in the description (Shiv, Smite, Safety, Insight, Miracle), so no extra
-  keyword had to be registered for them.
-* `Purity` keeps its vanilla effect (exhaust up to 3 (5) cards in your hand) and gains Retain
-  (`selfRetain`); the card itself is still exhausted when played.
-* `Bite` is the only card that is not obtained through `CardLibrary` (the Vampires event does `new Bite()`),
-  so it is patched in place (`patches.BitePatch`) and its strings are swapped with `ReflectionHacks`.
-* Cards whose value depends on the rest of the board show a live counter on the card face, written with the
-  vanilla `!M!` dynamic number (the game substitutes it while rendering, so the number follows the board
-  with no extra work): `Expect a Fight` (the reworked `Pummel`) counts the Attacks in hand, `Storm of Steel`
-  counts the Shivs waiting in the exhaust pile. Only the display name of `Pummel` changed; its ID did not.
-  The counter line lives in `EXTENDED_DESCRIPTION` and is only appended to the description while a fight is
-  going on, so the card reward screen, the deck view and the compendium show the plain text.
-
-## New helper content
-
-| Type | Name | Used by |
+| 层级 | 入口 | 能证明什么 |
 |---|---|---|
-| Power | `anotherspirerework:NextTurnFocus` | Leap, Blizzard (negative amount = lose it again) and Hyperbeam (positive amount = gives the Focus back) |
-| Power | `anotherspirerework:GlassKnifeMark` | Glass Knife (the enemy debuff, vanilla "Talk to the Hand" icon) |
-| Power | `anotherspirerework:Mark` | Path to Victory (the mod's own Mark debuff, no vanilla `MarkPower` trigger) |
-| Power | `anotherspirerework:HelloWorldAnyCard` | Hello World (vanilla HelloPower without the Common rarity restriction) |
-| Power | `anotherspirerework:ShivMastery` | Unload (Shivs Retain + first Shiv of the turn hits harder) |
-| Power | `anotherspirerework:FreeSkill` | Wheel Kick (next Skill costs 0, mirrors vanilla `FreeAttackPower`) |
-| Power | `anotherspirerework:CreativeAIUpgraded` | Creative AI+ (hands out upgraded Power cards) |
-| Power | `anotherspirerework:BattleHymnSmite` | Battle Hymn |
-| Power | `anotherspirerework:LikeWaterCalm` | Like Water |
-| Power | `anotherspirerework:StudyInsight` | Study |
-| Power | `anotherspirerework:DevotionDraw` | Devotion |
-| Action | `WhirlwindXAction` / `MultiCastXAction` | Whirlwind / Multi-Cast (X and X+1 / X*2) |
-| Action | `GashClawAction` | Claw (vanilla `GashAction` only matches the vanilla class) |
-| Action | `DiscardForShivsAction` | Masterful Stab (discard up to 3, then a Shiv per card) |
-| Action | `PlayShivsFromExhaustAction` | Storm of Steel (replays a copy of every Shiv in the exhaust pile) |
-| Action | `ExhaustAllStatusAction` | Reboot (burns every Status card) |
-| Action | `IncreaseCostAction` | Core Surge (raise this card's cost by 1 this combat) |
-| Action | `SanctityEnergyAction` | Sanctity (energy instead of cards when the previous card was a Skill) |
+| 纯逻辑回归 | `SaturatingMathTest` | 饱和算术与随机边界，不初始化图形环境 |
+| 补丁契约 | `PatchContractTest`（随 `mvn package` 运行） | 用真实依赖 JAR 校验目标方法、locator、字段与 Instrument 后的字节码 |
+| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、128 张唯一替换、卡图尺寸、JAR 条目 |
+| 真实运行 | ModTheSpire + 游戏内场景 | 补丁组合、动作/UI 时序、卡面观感、存档迁移；**前三层都不能替代它** |
 
-Patches that go with them: `ShivCreationPatch` (new Shivs are born Retaining and already show the
-Shiv mastery bonus), `ShivMasteryPatch` (first Shiv of the turn bonus), `FreeSkillCardPatch`
-(teaches `AbstractCard.freeToPlay()` about the Free Skill power), `MarkAttackPatch` (marked enemies
-lose HP when attacked), `BitePatch.StringPatch` (writes our strings onto every Bite instance as well
-as the class), `ExhaustTracker` (Seeing Red's "did you exhaust a card this turn" bookkeeping),
-`RetainedCardFadeInPatch` (fades cards back in if the base game ever hands the player one that was
-left in limbo as it was fading out).
+### 改代码的硬性规则
 
-`PlayShivsFromExhaustAction` parks its replays in `AbstractDungeon.player.limbo` while they are being
-played, exactly like the base game's own `PlayTopCardAction` does, and takes each copy back out again
-with an `UnlimboAction` once the replay is over (the copies also drop their Retain flags). Leaving
-them there would be a bug: at the end of a turn `GameActionManager.cleanCardQueue` marks everything
-still in limbo as fading out, and `DiscardAtEndOfTurnAction` hands every retained limbo card back to
-the player, which with Unload's Retain on Shivs produced invisible but playable Shivs in hand.
+1. **有返回值的 `@SpirePostfixPatch`，第一个参数必须是 `__result`。** MTS 按位置传参（返回值在前、实例在后），
+   写成 `(__instance, __result)` 会把源对象当副本返回——曾经导致"战斗中消耗一张牌，永久牌组里也消失、
+   下局只剩发光底盘"。
+2. **每个 `AbstractPower` 子类必须声明 `powerStrings` 字段**：能力列表按该字段名反射取标题，
+   缺了就取不到本地化文本。
+3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
+   中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
+4. **替换表必须仍是 128 个唯一实例**（`CardSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
+5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
+   必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。
+6. **包装遗物必须转发它取代的原版钩子**；新增遗物行为时先确认原版钩子是取消还是保留。
+7. **条件生成遗物**不满足条件时要留在池中，不能消耗掉本局的一次生成机会。
+8. **补丁优先 Prefix/Postfix/语义 Locator**，`Replace`/`Insert` 只在上面的手段都不行时用；
+   需要绕过原版 `hasRelic` 之类判断时走 `RelicReworkPatch.ignoreRelic`。
+9. **中文本地化的 ` NL ` 空格、`#`/`*` 标注与关键词边界不要机械删除**；JSON 能解析不等于卡面渲染正确。
+10. **新内容用命名空间 ID**；刻意替换原版内容可以保留原版 ID，但要在文档说明冲突范围。
+11. 新增延迟工作（需要等动画/界面结束的）沿用现有落点：每帧工作放 `receivePostDungeonUpdate`，
+    战斗开始/结束的状态清理放 `receiveStartGame` / `receivePostBattle`。
+12. **「消耗」标志必须与中英文本一致**：带消耗的牌两种语言都要写「消耗 / Exhaust」，
+    不消耗的牌一处都不能出现（`verify.ps1` 都有断言）。带 `UPGRADE_DESCRIPTION` 的卡在 `upgrade()` 里要显式
+    `rawDescription = cardStrings.UPGRADE_DESCRIPTION; initializeDescription();`——引擎不会自动应用它。
 
-Powers reuse vanilla icon regions (`focus`, `talk_to_hand`, `hymn`, `like_water`, `draw`, `devotion`), so no artwork is needed.
-Entrench intentionally uses the **vanilla** `NextTurnBlockPower` (the power Dodge and Roll uses).
-Rebound's "last orb" tracker is cleared when a battle ends (`PostBattleSubscriber`) and when a run starts,
-so orbs channeled by relics during `atPreBattle` (Cracked Core, Nuclear Battery, ...) are recorded.
+### 已知取舍
 
-## Localization
-
-`eng` and `zhs` files are provided for card text, keyword entries and power strings.
-The `Mark` keyword (`印记`) is the only new glossary entry; every other keyword is written exactly as the base game
-writes it, so the in-game highlighting and tooltips work as usual.
-
-## Defaults chosen for values the requirements did not specify
-
-| Card | Upgrade |
-|---|---|
-| Bloodletting | energy `[E][E] -> [E][E][E]`, HP loss `3 -> 2` |
-| Bite | +2 damage |
-| Quick Slash | +4 damage (vanilla direction) |
-| Rampage | +3 to the per-play damage bonus (vanilla direction) |
-| Rebound | +2 damage |
-| Weave | +2 damage (vanilla direction) |
-| Blizzard | cost `1 -> 0` **and** `2 -> 3` temporary Focus per Frost Orb (both values were listed in the requirements) |
-| Dodge and Roll | +3 Block |
-| Just Lucky | adds "draw 1 card"; Block and damage stay at 2 / 3 |
-| Rainbow | keeps the vanilla structure: Exhaust on the base card, Exhaust removed by the upgrade |
-| Die Die Die | cost `2 -> 1` |
-| Steam Barrier | keeps Exhaust at both levels (the requirements list it once, with no "remove it when upgraded" note) |
-| Perseverance | the requirements list no Block for playing it, so it only pays out when Retained |
-
-## Uncapped values
-
-The base game clamps a set of numbers to +-999 (Poison to 9999). Every one of those clamps is lifted to
-the int limit (`Integer.MAX_VALUE`). `long` is not reachable: these values live in `int` fields
-(`AbstractCreature.currentBlock`, `AbstractPower.amount`, `EnergyPanel.totalCount`), so widening them
-would mean replacing the fields, every formula that reads them and every save file.
-
-| Value | Where the base game clamped it | Patch |
-|---|---|---|
-| Block | `AbstractCreature.addBlock` | `NoBlockCapPatch` |
-| Strength, Dexterity, Focus, Shackled | constructor, `stackPower`, `reducePower` | `NoPowerCapPatch` |
-| Plated Armor, Like Water | `stackPower` | `NoPowerCapPatch` |
-| Poison | constructor (cap 9999) | `NoPowerCapPatch` |
-| Energized (green / blue), Collect | constructor, `stackPower` | `NoPowerCapPatch` |
-| Energy | `EnergyPanel.addEnergy` | `NoEnergyCapPatch` |
-
-They all work the same way: a Prefix works out the amount the base game wanted, a Postfix writes that
-amount back when (and only when) the clamp actually fired, and the power tooltip is refreshed. No part of
-the original code is copied or replaced, so patches from other mods still run.
-
-Block is the odd one out because the clamp sits in the middle of `addBlock`, after the relics and powers
-have modified the amount. `NoBlockCapPatch.BlockCapWriteMatcher` searches for the one write of
-`currentBlock` that pushes 999 right before storing it (the clamp statement itself), so the Insert lands
-inside the clamp branch where `currentBlock` still holds the amount that is about to be discarded.
-
-## Overflow: over the limit means at the limit
-
-Once the 999 clamps are gone, arithmetic that used to be safe can wrap around, so anything that could
-go past the int limit saturates instead of flipping sign (that is what "over the limit means at the
-limit" means here):
-
-* `NoPowerCapPatch` also wraps `AbstractPower.stackPower`, which is where every power does its plain
-  `amount += ...`. The sign check it uses (`delta > 0 && result < before`, or `delta < 0 && result >
-  before`) is an exact overflow test for int addition.
-* `NoBlockCapPatch` does the same for block: if `currentBlock` came out lower than it went in, the
-  addition wrapped, so it is set to `Integer.MAX_VALUE`.
-* `NoEnergyCapPatch` does it for energy, because doubling effects (`Double Energy`) add the current
-  energy to itself.
-* `TriplePoisonSaturatePatch` handles the one multiplication that happens outside of any power
-  method: Catalyst+ computes `poison.amount * 2` in int math before applying it, so the current
-  Poison is saturated to `Integer.MAX_VALUE / 3` first and the tripling stays in range.
-* The reworked **Heavy Blade** used to copy the base game's trick of multiplying the player's Strength
-  power by its multiplier and dividing it back afterwards. With uncapped Strength that wraps as soon as
-  Strength passes ~429 million, and dividing cannot undo the wrap, which left the player with *negative*
-  Strength. It now multiplies with saturating math and restores the exact original value instead.
-
-## Build
-
-```powershell
-mvn -q clean package
-```
-
-Java 8 bytecode is produced (`maven.compiler.source/target = 1.8`).
-Copy `target/anotherspirerework.jar` into the game's `mods/` folder manually; deployment is skipped by default.
-Start ModTheSpire with Java 8, mod id `anotherspirerework`, dependencies: BaseMod only.
+- 浏览牌堆、地图或单卡界面期间，洗牌触发、医药箱·蓝蜡烛的抽牌处理、勺子·星系仪选牌都**推迟到界面关闭后**；
+  被推迟的牌若在此之前已离开手牌（例如被打出），本次处理会跳过。效果本身不取消。
+- 勺子的"继承去消耗"按源卡牌对象判定，读档按"ID + 升级 + misc 张数"恢复；
+  战斗牌组复制、多利之镜等**等价复制**会一并继承。
+- 数值上限放宽只到 int 上限：这些值存在 `int` 字段里（`AbstractCreature.currentBlock`、`AbstractPower.amount`、
+  `EnergyPanel.totalCount`），改成 `long` 意味着替换字段、所有读取公式和存档格式。
+- **小屋子的自由营火**：每个营火选项用它自己的原版结算，本模组只做两件事——把刚用过的选项置灰
+  （每个选项每次营火各一次），以及在该选项的**特效与界面都结束之后**用 `CampfireUI.reopen()` 把营火放回去，
+  并把房间标记为完成。等待在 `receivePostDungeonUpdate` 里做，另有 `FORCE_AFTER = 3.0F` 的兜底。
+  在锻造/抽烟/净化的选牌界面点取消会**退还**该选项。已知小瑕疵：休息、举重、挖掘、回忆会淡出营火的循环环境音，
+  放回营火后本处营火是安静的。
+- **疾风连击**从消耗堆/抽牌堆回手用的是本模组自己的 `ReturnCardToHandAction`；手牌已满
+  （`BaseMod.MAX_HAND_SIZE`）时它留在原处，不会掉进弃牌堆。
+- **瓶装三遗物**的幕数门槛在**遗物池抽取时**生效，抽到但不满足幕数时它们留在可存档的池里；
+  其余条件仍按原版处理。
+- **残虐天性**的翻倍只作用于敌人的**普通伤害**；敌人身上的虚弱/易伤层数本身不变，改的是它们生效的比例。
+  该 power 的 `amount` 固定为 `-1`，buff 图标不画数字；多张仍只留一个图标，`active()` 只看 ID。

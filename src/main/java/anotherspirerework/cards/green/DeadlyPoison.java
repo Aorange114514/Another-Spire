@@ -17,7 +17,7 @@ public class DeadlyPoison extends AbstractCard {
 
     public DeadlyPoison() {
         super(ID, cardStrings.NAME, "green/skill/deadly_poison", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.COMMON, CardTarget.ENEMY);
-        this.baseMagicNumber = 6;
+        this.baseMagicNumber = 7;
         this.magicNumber = this.baseMagicNumber;
         this.exhaust = true;
     }
@@ -29,7 +29,7 @@ public class DeadlyPoison extends AbstractCard {
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeMagicNumber(3);
+            upgradeMagicNumber(2);
         }
     }
 

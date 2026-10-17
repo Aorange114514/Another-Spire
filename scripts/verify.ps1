@@ -4,7 +4,7 @@ $project = Split-Path $PSScriptRoot -Parent
 $root = Join-Path $project 'src\main\resources\anotherspirerework\localization'
 function Assert($condition, $message) { if (-not $condition) { throw $message } }
 function Json($path) { Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json }
-foreach ($type in @('CardStrings', 'PowerStrings', 'RelicStrings')) {
+foreach ($type in @('CardStrings', 'PowerStrings', 'RelicStrings', 'UIStrings')) {
     $eng = Json (Join-Path $root "eng\$type.json")
     $zhs = Json (Join-Path $root "zhs\$type.json")
     Assert (@(Compare-Object @($eng.psobject.Properties.Name) @($zhs.psobject.Properties.Name)).Count -eq 0) "$type language keys differ"
@@ -20,8 +20,8 @@ foreach ($type in @('CardStrings', 'PowerStrings', 'RelicStrings')) {
 }
 $patch = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\CardSwapPatch.java') -Raw
 $list = @([regex]::Matches($patch, 'new (\w+)\(\)') | ForEach-Object {$_.Groups[1].Value})
-Assert ($list.Count -eq 117) 'Expected 117 replacements'
-Assert (@($list | Select-Object -Unique).Count -eq 117) 'Duplicate replacement'
+Assert ($list.Count -eq 128) 'Expected 128 replacements'
+Assert (@($list | Select-Object -Unique).Count -eq 128) 'Duplicate replacement'
 $cards = Json (Join-Path $root 'eng\CardStrings.json')
 $zhCards = Json (Join-Path $root 'zhs\CardStrings.json')
 foreach ($langCards in @($cards, $zhCards)) {
@@ -53,6 +53,14 @@ foreach ($lang in @('eng', 'zhs')) {
     Assert (-not ($reprogram -match 'Exhaust|\u6d88\u8017')) "Reprogram must not advertise Exhaust: $lang"
     $steam = $langCards.psobject.Properties['${modID}:Steam'].Value
     Assert (-not ($steam.DESCRIPTION -match 'Exhaust|\u6d88\u8017')) "Steam Barrier must not Exhaust: $lang"
+}
+# The fourth round moved the free campfire from Regal Pillow to Tiny House: the reverted relic must
+# keep the vanilla text (no mod entry at all), and the reworked one must describe the Rest Site.
+foreach ($lang in @('eng', 'zhs')) {
+    $relics = Json (Join-Path $root "$lang\RelicStrings.json")
+    Assert ($null -eq $relics.psobject.Properties['${modID}:Regal Pillow']) "Regal Pillow must keep the vanilla text: $lang"
+    $tiny = $relics.psobject.Properties['${modID}:Tiny House'].Value
+    Assert ($tiny.DESCRIPTIONS[0] -match 'Rest Site|\u4f11\u606f\u5904') "Tiny House must grant the free campfire: $lang"
 }
 # Every power exposes its strings as a static field named powerStrings: the power list screens read
 # that name by reflection, and a power without it shows an unresolved title.
@@ -104,6 +112,11 @@ foreach ($source in (Get-ChildItem (Join-Path $project 'src\main\java') -Recurse
         Assert ($paramName -eq '__result') "$($source.Name): a value returning postfix must declare __result first, found '$firstParam'"
     }
 }
+# Tiny House leaves Recall out: using it ends the visit, using anything else locks it.
+$tinyHouse = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\TinyHouseCampfirePatch.java') -Raw
+Assert ($tinyHouse -match 'instanceof RecallOption') 'Tiny House must recognise the Recall option'
+Assert ($tinyHouse -match 'recallOption\.usable = false') 'Tiny House must lock Recall once another option is used'
+
 # Card art must be one of the two sizes the game draws in: the 250x190 face and the 500x380
 # zoomed view. Anything else would be stretched in a way the artist did not intend.
 Add-Type -AssemblyName System.Drawing
@@ -178,4 +191,4 @@ if ($CheckJar) {
         }
     } finally { $jar.Dispose() }
 }
-Write-Output 'PASS: JSON, bilingual fields/tokens, 117 unique replacements, localization coverage, source references and requested JAR checks.'
+Write-Output 'PASS: JSON, bilingual fields/tokens, 128 unique replacements, localization coverage, source references and requested JAR checks.'

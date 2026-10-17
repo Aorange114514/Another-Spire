@@ -16,7 +16,7 @@ public class DodgeAndRoll extends AbstractCard {
 
     public DodgeAndRoll() {
         super(ID, cardStrings.NAME, "green/skill/dodge_and_roll", -2, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.COMMON, CardTarget.SELF);
-        this.baseBlock = 8;
+        this.baseBlock = 6;
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
