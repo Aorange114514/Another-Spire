@@ -524,6 +524,10 @@
     "DESCRIPTION": "Apply !M! Poison to random enemies X times.",
     "UPGRADE_DESCRIPTION": "Apply !M! Poison to random enemies X+1 times."
   },
+  "${modID}:Skewer": {
+    "NAME": "Skewer",
+    "DESCRIPTION": "Deal !D! damage X times."
+  },
   "${modID}:FlurryOfBlows": {
     "NAME": "Flurry of Blows",
     "DESCRIPTION": "Deal !D! damage. NL Whenever you change Stance, put this card into your hand."
@@ -552,5 +556,9 @@
   "${modID}:Violence": {
     "NAME": "Violence",
     "DESCRIPTION": "Play !M! random Attacks from your draw pile."
+  },
+  "${modID}:Transmutation": {
+    "NAME": "Transmutation",
+    "DESCRIPTION": "Exhaust all cards in your hand. NL Add a random card into your hand for each card Exhausted."
   }
 }

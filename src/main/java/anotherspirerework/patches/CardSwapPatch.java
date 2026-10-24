@@ -9,6 +9,7 @@ import anotherspirerework.cards.colorless.Metamorphosis;
 import anotherspirerework.cards.colorless.SecretTechnique;
 import anotherspirerework.cards.colorless.SecretWeapon;
 import anotherspirerework.cards.colorless.ThinkingAhead;
+import anotherspirerework.cards.colorless.Transmutation;
 import anotherspirerework.cards.colorless.Violence;
 import anotherspirerework.cards.red.InfernalBlade;
 import anotherspirerework.cards.green.StormOfSteel;
@@ -75,6 +76,7 @@ import anotherspirerework.cards.green.Outmaneuver;
 import anotherspirerework.cards.green.PoisonedStab;
 import anotherspirerework.cards.green.QuickSlash;
 import anotherspirerework.cards.green.RiddleWithHoles;
+import anotherspirerework.cards.green.Skewer;
 import anotherspirerework.cards.green.Unload;
 import anotherspirerework.cards.purple.BattleHymn;
 import anotherspirerework.cards.purple.CarveReality;
@@ -165,7 +167,7 @@ public class CardSwapPatch {
                 new AfterImage(), new DodgeAndRoll(), new StormOfSteel(), new Envenom(),
                 new Distraction(), new CloakAndDagger(), new Concentrate(),
                 new DeadlyPoison(), new Bane(), new FlyingKnee(), new Catalyst(),
-                new Predator(), new SuckerPunch(), new Blur(), new BouncingFlask(),
+                new Predator(), new SuckerPunch(), new Blur(), new BouncingFlask(), new Skewer(),
                 new Dualcast(), new Rebound(), new Barrage(), new SweepingBeam(), new Claw(), new Streamline(),
                 new SteamBarrier(), new Leap(), new HelloWorld(), new Chill(), new ForceField(), new Blizzard(),
                 new RipAndTear(), new Melter(), new Fusion(), new Reprogram(), new MultiCast(), new Hyperbeam(),
@@ -179,7 +181,7 @@ public class CardSwapPatch {
                 new SpiritShield(), new EmptyBody(), new EmptyMind(),
                 new FlurryOfBlows(), new Ragnarok(), new Judgement(), new ReachHeaven(), new WaveOfTheHand(),
                 new Mayhem(), new ThinkingAhead(), new SecretTechnique(), new SecretWeapon(),
-                new Chrysalis(), new Metamorphosis(), new Violence(),
+                new Chrysalis(), new Metamorphosis(), new Violence(), new Transmutation(),
                 new JackOfAllTrades(), new FlashOfSteel(), new Finesse(), new SwiftStrike(),
                 new GoodInstincts(), new MindBlast(), new DramaticEntrance(), new SadisticNature());
     }

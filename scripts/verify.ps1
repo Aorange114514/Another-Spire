@@ -20,8 +20,8 @@ foreach ($type in @('CardStrings', 'PowerStrings', 'RelicStrings', 'UIStrings'))
 }
 $patch = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\CardSwapPatch.java') -Raw
 $list = @([regex]::Matches($patch, 'new (\w+)\(\)') | ForEach-Object {$_.Groups[1].Value})
-Assert ($list.Count -eq 128) 'Expected 128 replacements'
-Assert (@($list | Select-Object -Unique).Count -eq 128) 'Duplicate replacement'
+Assert ($list.Count -eq 130) 'Expected 130 replacements'
+Assert (@($list | Select-Object -Unique).Count -eq 130) 'Duplicate replacement'
 $cards = Json (Join-Path $root 'eng\CardStrings.json')
 $zhCards = Json (Join-Path $root 'zhs\CardStrings.json')
 foreach ($langCards in @($cards, $zhCards)) {
@@ -191,4 +191,4 @@ if ($CheckJar) {
         }
     } finally { $jar.Dispose() }
 }
-Write-Output 'PASS: JSON, bilingual fields/tokens, 128 unique replacements, localization coverage, source references and requested JAR checks.'
+Write-Output 'PASS: JSON, bilingual fields/tokens, 130 unique replacements, localization coverage, source references and requested JAR checks.'

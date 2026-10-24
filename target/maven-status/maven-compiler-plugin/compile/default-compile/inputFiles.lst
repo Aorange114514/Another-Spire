@@ -1,6 +1,7 @@
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\BanePoisonAction.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\BouncingFlaskXAction.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\DiscardForShivsAction.java
+C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\ExhaustAllHandAction.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\ExhaustAllStatusAction.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\GashClawAction.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\actions\IncreaseCostAction.java
@@ -60,6 +61,7 @@ C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerewor
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\colorless\SecretWeapon.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\colorless\SwiftStrike.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\colorless\ThinkingAhead.java
+C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\colorless\Transmutation.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\colorless\Violence.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\AfterImage.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\AThousandCuts.java
@@ -88,6 +90,7 @@ C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerewor
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\Predator.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\QuickSlash.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\RiddleWithHoles.java
+C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\Skewer.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\StormOfSteel.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\SuckerPunch.java
 C:\Users\riced\VS Code\STS modding\Another-Spire\src\main\java\anotherspirerework\cards\green\Unload.java

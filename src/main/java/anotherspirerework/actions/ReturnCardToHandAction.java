@@ -8,33 +8,31 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 
 /**
- * Moves a card out of the draw pile or the exhaust pile into the hand.
+ * Moves a card out of the draw pile, the exhaust pile or the discard pile into the hand.
  *
- * <p>The base game only ships this for the discard pile ({@code DiscardToHandAction}); the draw
- * pile and the exhaust pile are walked the same way here, including the icon the exhaust pile
- * leaves on the card.
+ * <p>The base game only ships this for the discard pile ({@code DiscardToHandAction}); the other
+ * piles are handled the same way here, including the icon the exhaust pile leaves on the card.
  */
 public class ReturnCardToHandAction extends AbstractGameAction {
     private final AbstractCard card;
-    private final boolean fromExhaust;
+    private final CardGroup source;
 
-    public ReturnCardToHandAction(AbstractCard card, boolean fromExhaust) {
+    public ReturnCardToHandAction(AbstractCard card, CardGroup source) {
         this.actionType = ActionType.CARD_MANIPULATION;
         this.card = card;
-        this.fromExhaust = fromExhaust;
+        this.source = source;
         this.duration = Settings.ACTION_DUR_FAST;
     }
 
     @Override
     public void update() {
         if (this.duration == Settings.ACTION_DUR_FAST) {
-            CardGroup source = source();
-            if (source != null && source.contains(this.card)
+            if (this.source != null && this.source.contains(this.card)
                     && AbstractDungeon.player.hand.size() < BaseMod.MAX_HAND_SIZE) {
                 AbstractDungeon.player.hand.addToHand(this.card);
                 this.card.stopGlowing();
                 this.card.unhover();
-                if (this.fromExhaust) {
+                if (this.source.type == CardGroup.CardGroupType.EXHAUST_PILE) {
                     this.card.unfadeOut();
                 }
                 this.card.setAngle(0.0F, true);
@@ -42,19 +40,12 @@ public class ReturnCardToHandAction extends AbstractGameAction {
                 this.card.drawScale = 0.12F;
                 this.card.targetDrawScale = 0.75F;
                 this.card.applyPowers();
-                source.removeCard(this.card);
+                this.source.removeCard(this.card);
             }
             AbstractDungeon.player.hand.refreshHandLayout();
             AbstractDungeon.player.hand.glowCheck();
         }
         tickDuration();
         this.isDone = true;
-    }
-
-    private CardGroup source() {
-        if (AbstractDungeon.player == null) {
-            return null;
-        }
-        return this.fromExhaust ? AbstractDungeon.player.exhaustPile : AbstractDungeon.player.drawPile;
     }
 }

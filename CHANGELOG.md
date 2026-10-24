@@ -4,6 +4,18 @@
 
 # AnotherSpire Rework
 
+## 第六批：新增串刺/转化（2026-10-24）
+
+| 卡牌 | 原版 ID | 改动 | 实现 |
+|---|---|---|---|
+| 串刺 | `Skewer` | X 费，造成 9（12）点伤害 X 次 | 复用原版 `SkewerAction`；升级只 `upgradeDamage(3)` |
+| 转化 | `Transmutation` | 1（0）费，消耗所有手牌；每消耗一张牌，将一张随机牌加入手牌 | 新增 `ExhaustAllHandAction` 报告实际消耗张数；随机牌沿用枯木树枝的 `AbstractDungeon.returnTrulyRandomCardInCombat()` + `MakeTempCardInHandAction`，手牌满时按原版规则进入弃牌堆 |
+
+两者都是原版卡「串刺」「转化」的替换（需求中的「新增」指新增条目），沿用原版 ID 与图片路径。替换表 128 → **130**。
+
+验证：`mvn -B clean package`（JDK 8）编译 210 个源文件，202 个补丁目标与全部契约测试通过；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：串刺的 X 次数与化学物 X 加成、转化在满手牌时的替换与弃牌堆溢出、以及枯木树枝同时持有时的双倍印牌。
+
 ## 第五批反馈修复（2026-10-17）
 
 | 项 | 之前 | 现在 | 实现 |
@@ -677,7 +689,7 @@ mvn -f 'c:\Users\riced\VS Code\STS modding\AnotherSpireRework\pom.xml' '-Dlocal.
 
 ### 替换机制
 
-`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 128 个条目换成
+`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 130 个条目换成
 `anotherspirerework.cards.<color>.<Name>`，**保留原版 cardID 与原版图片路径**，并带过 `isSeen`。
 游戏所有取卡路径（`CardLibrary.getCardList`、`AbstractDungeon.getCardFromPool`、`initializeStarterDeck`…）
 都读这张表，所以替换一处即全局生效。事件里 `new Bite()` 这类**绕过卡库的直接构造**由 `patches.BitePatch` 单独补丁。
@@ -811,8 +823,8 @@ mvn -f 'c:\Users\riced\VS Code\STS modding\AnotherSpireRework\pom.xml' '-Dlocal.
 `CreativeAIUpgraded`、`BattleHymnSmite`、`LikeWaterCalm`、`StudyInsight`、`DevotionDraw`、`ScuffleDraw`、
 `ShuffleEnergy`、`ShuffleSeek`、`ShivAllEnemies`、`ShivPoison`、`BlurDraw`、`SadisticNature`； `WaveOfTheHandStancePower`，继承原版 `WaveOfTheHandPower` 并沿用其原版 ID。
 
-新 Action（16）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
-`PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`IncreaseCostAction`、
+新 Action（17）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
+`PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`ExhaustAllHandAction`、`IncreaseCostAction`、
 `SanctityEnergyAction`、`ShivDamageAction`、`TransformDrawPileToShivsAction`、`BouncingFlaskXAction`、
 `RagnarokXAction`、`ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、
 `PlayRandomAttackFromDrawPileAction`。
@@ -862,7 +874,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 |---|---|---|
 | 纯逻辑回归 | `SaturatingMathTest` | 饱和算术与随机边界，不初始化图形环境 |
 | 补丁契约 | `PatchContractTest`（随 `mvn package` 运行） | 用真实依赖 JAR 校验目标方法、locator、字段与 Instrument 后的字节码 |
-| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、128 张唯一替换、卡图尺寸、JAR 条目 |
+| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、130 张唯一替换、卡图尺寸、JAR 条目 |
 | 真实运行 | ModTheSpire + 游戏内场景 | 补丁组合、动作/UI 时序、卡面观感、存档迁移；**前三层都不能替代它** |
 
 ### 改代码的硬性规则
@@ -874,7 +886,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
    缺了就取不到本地化文本。
 3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
    中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
-4. **替换表必须仍是 128 个唯一实例**（`CardSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
+4. **替换表必须仍是 130 个唯一实例**（`CardSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
 5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
    必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。
 6. **包装遗物必须转发它取代的原版钩子**；新增遗物行为时先确认原版钩子是取消还是保留。

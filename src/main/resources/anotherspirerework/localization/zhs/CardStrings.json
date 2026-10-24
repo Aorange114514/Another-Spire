@@ -524,6 +524,10 @@
     "DESCRIPTION": "随机给予敌人 !M! 层 中毒 X 次。",
     "UPGRADE_DESCRIPTION": "随机给予敌人 !M! 层 中毒 X+1 次。"
   },
+  "${modID}:Skewer": {
+    "NAME": "串刺",
+    "DESCRIPTION": "造成 !D! 点伤害X次。"
+  },
   "${modID}:FlurryOfBlows": {
     "NAME": "疾风连击",
     "DESCRIPTION": "造成 !D! 点伤害。 NL 你每次转换姿态时，将这张牌放入你的手牌。"
@@ -552,5 +556,9 @@
   "${modID}:Violence": {
     "NAME": "暴力",
     "DESCRIPTION": "随机打出你抽牌堆中的 !M! 张攻击牌。"
+  },
+  "${modID}:Transmutation": {
+    "NAME": "转化",
+    "DESCRIPTION": "消耗 所有手牌。 NL 每 消耗 一张牌，将一张随机牌加入你的手牌。"
   }
 }

@@ -609,11 +609,13 @@ public class PatchContractTest {
                 "com.megacrit.cardcrawl.vfx.combat.PotionBounceEffect",
                 "com.megacrit.cardcrawl.actions.unique.BouncingFlaskAction");
 
-        // Flurry of Blows: the discard pile is the base game's own walk, the other two are ours.
+        // Flurry of Blows: the discard pile keeps the base game's own walk, and all three piles are
+        // pulled back before the power loop so Rushdown's draw is queued behind the returns.
         requireCalls(pool, "anotherspirerework.cards.purple.FlurryOfBlows",
                 "triggerExhaustedCardsOnStanceChange",
                 "com.megacrit.cardcrawl.actions.utility.DiscardToHandAction");
-        requireCalls(pool, "anotherspirerework.patches.FlurryOfBlowsPatch$Anywhere", "after", "returnFrom");
+        requireCalls(pool, "anotherspirerework.patches.FlurryOfBlowsPatch$BeforeStancePowers",
+                "beforePowers", "returnFrom");
         requireCalls(pool, "anotherspirerework.patches.FlurryOfBlowsPatch", "returnFrom", "addToBottom");
         requireCalls(pool, "anotherspirerework.actions.ReturnCardToHandAction", "update", "contains",
                 "addToHand", "removeCard", "refreshHandLayout");

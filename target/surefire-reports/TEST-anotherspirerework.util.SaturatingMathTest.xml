@@ -18,7 +18,7 @@
     <property name="user.country" value="CN"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Zulu\zulu-8\jre\bin"/>
-    <property name="sun.java.command" value="C:\Users\riced\AppData\Local\Temp\surefire4443604784441030403\surefirebooter-20261017200843583_3.jar C:\Users\riced\AppData\Local\Temp\surefire4443604784441030403 2026-10-17T20-08-43_349-jvmRun1 surefire-20261017200843583_1tmp surefire_0-20261017200843583_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\riced\AppData\Local\Temp\surefire1356451593042568221\surefirebooter-20261024101234606_3.jar C:\Users\riced\AppData\Local\Temp\surefire1356451593042568221 2026-10-24T10-12-34_211-jvmRun1 surefire-20261024101234606_1tmp surefire_0-20261024101234606_2tmp"/>
     <property name="surefire.test.class.path" value="C:\Users\riced\VS Code\STS modding\Another-Spire\target\test-classes;C:\Users\riced\VS Code\STS modding\Another-Spire\target\classes;C:\Program Files (x86)\steam\steamapps\common\SlayTheSpire\desktop-1.0.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605060445\ModTheSpire.jar;C:\Program Files (x86)\steam\steamapps\workshop\content\646570\1605833019\BaseMod.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="C:\Users\riced"/>
@@ -32,7 +32,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment"/>
-    <property name="surefire.real.class.path" value="C:\Users\riced\AppData\Local\Temp\surefire4443604784441030403\surefirebooter-20261017200843583_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\riced\AppData\Local\Temp\surefire1356451593042568221\surefirebooter-20261024101234606_3.jar"/>
     <property name="sun.boot.class.path" value="C:\Program Files\Zulu\zulu-8\jre\lib\resources.jar;C:\Program Files\Zulu\zulu-8\jre\lib\rt.jar;C:\Program Files\Zulu\zulu-8\jre\lib\sunrsasign.jar;C:\Program Files\Zulu\zulu-8\jre\lib\jsse.jar;C:\Program Files\Zulu\zulu-8\jre\lib\jce.jar;C:\Program Files\Zulu\zulu-8\jre\lib\charsets.jar;C:\Program Files\Zulu\zulu-8\jre\lib\jfr.jar;C:\Program Files\Zulu\zulu-8\jre\lib\cat.jar;C:\Program Files\Zulu\zulu-8\jre\classes"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>

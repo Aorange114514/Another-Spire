@@ -28,6 +28,7 @@ anotherspirerework\patches\RareRelicFixes$FunnelHealthBar.class
 anotherspirerework\cards\purple\FollowUp.class
 anotherspirerework\cards\colorless\GoodInstincts.class
 anotherspirerework\cards\purple\CarveReality.class
+anotherspirerework\patches\FlurryOfBlowsPatch$BeforePowersLocator.class
 anotherspirerework\cards\blue\SteamBarrier.class
 anotherspirerework\cards\purple\Nirvana.class
 anotherspirerework\cards\purple\Consecrate.class
@@ -46,6 +47,7 @@ anotherspirerework\patches\ShivCreationPatch.class
 anotherspirerework\patches\RelicReworkPatch$Swap.class
 anotherspirerework\patches\RareRelicFixes$FunnelBattleStart.class
 anotherspirerework\patches\EnergySpentPatch.class
+anotherspirerework\actions\ExhaustAllHandAction.class
 anotherspirerework\patches\NewRelicFixes$Description.class
 anotherspirerework\powers\ShivMasteryPower.class
 anotherspirerework\patches\FreeSkillCardPatch.class
@@ -207,6 +209,7 @@ anotherspirerework\cards\blue\Leap.class
 anotherspirerework\cards\green\AThousandCuts.class
 anotherspirerework\patches\ReportedRelicFixes$1.class
 anotherspirerework\patches\ReportedRelicFixes$CrownRewards.class
+anotherspirerework\cards\green\Skewer.class
 anotherspirerework\cards\blue\Hyperbeam.class
 anotherspirerework\patches\ShopRelicPatch$Front.class
 anotherspirerework\patches\RareRelicFixes$MelangeUse.class
@@ -312,16 +315,17 @@ anotherspirerework\patches\ReportedRelicFixes$BarkEquip.class
 anotherspirerework\patches\SadisticNaturePatch$Weak.class
 anotherspirerework\patches\ReportedRelicFixes.class
 anotherspirerework\patches\TurnRelicFixes$Description.class
+anotherspirerework\cards\colorless\Transmutation.class
 anotherspirerework\powers\DemonFormExhaustPower.class
 anotherspirerework\patches\ShopRelicPatch$Bell.class
 anotherspirerework\patches\NoBlockCapPatch.class
 anotherspirerework\patches\RelicReworkPatch$ObtainPotion.class
 anotherspirerework\cards\green\CripplingPoison.class
-anotherspirerework\patches\FlurryOfBlowsPatch$Anywhere.class
 anotherspirerework\AnotherSpireRework.class
 anotherspirerework\cards\blue\Fusion.class
 anotherspirerework\patches\NoPowerCapPatch$CollectStacked.class
 anotherspirerework\patches\ShopRelicPatch$Courier$1.class
+anotherspirerework\patches\FlurryOfBlowsPatch$BeforeStancePowers.class
 anotherspirerework\cards\red\SeverSoul.class
 anotherspirerework\patches\NoPowerCapPatch$DexterityCreated.class
 anotherspirerework\cards\blue\RipAndTear.class

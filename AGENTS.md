@@ -39,7 +39,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 ## Hard constraints enforced by tests/verify.ps1
 
-- `CardSwapPatch.replacements()` must contain exactly **128 unique** card classes. If you change it,
+- `CardSwapPatch.replacements()` must contain exactly **130 unique** card classes. If you change it,
   update the assertion in `scripts/verify.ps1` and the counts in `README.md`.
 - Localization keys are `"${modID}:<vanilla ID>"` under `src/main/resources/anotherspirerework/localization/{eng,zhs}/`.
   Eng and zhs must have identical key/field sets and identical dynamic-token sequences
