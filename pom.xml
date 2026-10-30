@@ -24,16 +24,16 @@
     </properties>
 
     <!-- This information will be displayed in ModTheSpire, the modded launcher. -->
-    <name>AnotherSpire Rework</name>
+    <name>AnotherSpire</name>
     <version>1.0.0</version>
-    <description>Reworks a large set of vanilla cards. See requirements.txt for the full list of changes.</description>
+    <description>Reworks a large set of vanilla cards and relics.</description>
 
     <!--You shouldn't need to change anything below this point, but feel free to look at it.-->
     <!--You'll get a warning regarding these when you package your mod, but don't worry, it's just set up like this for convenience.-->
     <!--Technically these should be changed individually, but this allows you to just set it in one place.-->
     <!--Absolutely a no-go for larger projects, but for a personal mod it's fine.-->
-    <groupId>anotherspirerework</groupId>
-    <artifactId>anotherspirerework</artifactId>
+    <groupId>anotherspire</groupId>
+    <artifactId>anotherspire</artifactId>
 
     <dependencies>
         <dependency>

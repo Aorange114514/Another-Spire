@@ -1,8 +1,8 @@
 {
   "modid": "anotherspirerework",
-  "name": "AnotherSpire Rework",
+  "name": "AnotherSpire",
   "author_list": ["AnotherSpire Rework"],
-  "description": "Reworks a large set of vanilla cards. See requirements.txt for the full list of changes.",
+  "description": "Reworks a large set of vanilla cards and relics.",
   "version": "1.0.0",
   "sts_version": "12-18-2022",
   "mts_version": "3.30.0",
