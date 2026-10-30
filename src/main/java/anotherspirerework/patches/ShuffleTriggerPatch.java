@@ -68,7 +68,7 @@ public class ShuffleTriggerPatch {
         } finally {
             drawsAfterShuffle = 0;
         }
-        NewRelicFixes.matryoshkaShuffle();
+        anotherspirerework.relics.Matryoshka.drawOnShuffle();
     }
 
     /** Cleared when a fight starts or ends, so a shuffle that is never followed by a draw expires. */

@@ -1,7 +1,7 @@
 package anotherspirerework.effects;
 
-import anotherspirerework.patches.RareRelicFixes;
-import anotherspirerework.patches.StrangeSpoonExhaust;
+import anotherspirerework.relics.Astrolabe;
+import anotherspirerework.relics.StrangeSpoon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -149,7 +149,7 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
             AbstractDungeon.effectsQueue.add(new ShowCardAndObtainEffect(
                     card, Settings.WIDTH / 2.0F, Settings.HEIGHT / 2.0F));
         } else {
-            StrangeSpoonExhaust.mark(card);
+            StrangeSpoon.mark(card);
         }
     }
 
@@ -176,7 +176,7 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
     private static CardGroup anyColorChoices() {
         CardGroup group = new CardGroup(CardGroup.CardGroupType.UNSPECIFIED);
         Set<String> seen = new HashSet<>();
-        int wanted = RareRelicFixes.ASTROLABE_CHOICES;
+        int wanted = Astrolabe.CHOICES;
         for (int guard = 0; seen.size() < wanted && guard < wanted * 40; guard++) {
             AbstractCard.CardRarity rarity = ANY_COLOR_RARITIES[AbstractDungeon.cardRandomRng.random(ANY_COLOR_RARITIES.length - 1)];
             AbstractCard card = com.megacrit.cardcrawl.helpers.CardLibrary.getAnyColorCard(rarity);

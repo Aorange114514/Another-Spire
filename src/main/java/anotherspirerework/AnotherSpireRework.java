@@ -4,6 +4,15 @@ import anotherspirerework.patches.ExhaustTracker;
 import anotherspirerework.patches.BitePatch;
 import anotherspirerework.patches.OrbTrackerPatch;
 import anotherspirerework.powers.DevotionDrawPower;
+import anotherspirerework.relics.BlackBlood;
+import anotherspirerework.relics.BlackStar;
+import anotherspirerework.relics.BlueCandle;
+import anotherspirerework.relics.MedicalKit;
+import anotherspirerework.relics.PrismaticShard;
+import anotherspirerework.relics.SneckoEye;
+import anotherspirerework.relics.Sozu;
+import anotherspirerework.relics.StrangeSpoon;
+import anotherspirerework.relics.TinyHouse;
 import basemod.BaseMod;
 import basemod.interfaces.EditKeywordsSubscriber;
 import basemod.interfaces.EditStringsSubscriber;
@@ -79,10 +88,10 @@ public class AnotherSpireRework implements
 
     public AnotherSpireRework() {
         BaseMod.subscribe(this);
-        BaseMod.addSaveField(makeID("EliteKills"), new anotherspirerework.patches.TurnRelicFixes());
-        BaseMod.addSaveField(makeID("TurnRelicStatsV1"), new anotherspirerework.patches.TurnRelicFixes.StatMigration());
-        BaseMod.addSaveField(makeID("SpoonNoExhaust"), new anotherspirerework.patches.StrangeSpoonExhaust());
-        BaseMod.addSaveField(makeID("SneckoHandV1"), new anotherspirerework.patches.RareRelicFixes.SneckoMigration());
+        BaseMod.addSaveField(makeID("EliteKills"), new BlackStar.SaveData());
+        BaseMod.addSaveField(makeID("TurnRelicStatsV1"), new PrismaticShard.StatMigration());
+        BaseMod.addSaveField(makeID("SpoonNoExhaust"), new StrangeSpoon.SaveData());
+        BaseMod.addSaveField(makeID("SneckoHandV1"), new SneckoEye.Migration());
         logger.info(modID + " subscribed to BaseMod.");
     }
 
@@ -95,8 +104,8 @@ public class AnotherSpireRework implements
 
     @Override
     public void receivePostBattle(AbstractRoom room) {
-        anotherspirerework.patches.TurnRelicFixes.victory(room);
-        anotherspirerework.patches.RelicReworkPatch.bloodActive = false;
+        BlackStar.onVictory(room);
+        BlackBlood.reset();
         anotherspirerework.actions.PlayShivsFromExhaustAction.reset();
         anotherspirerework.patches.ShuffleTriggerPatch.reset();
         OrbTrackerPatch.lastOrb = null;
@@ -105,23 +114,25 @@ public class AnotherSpireRework implements
 
     @Override
     public void receiveStartGame() {
-        anotherspirerework.patches.RelicReworkPatch.bloodActive = false;
+        BlackBlood.reset();
         anotherspirerework.actions.PlayShivsFromExhaustAction.reset();
         anotherspirerework.patches.ShuffleTriggerPatch.reset();
-        anotherspirerework.patches.TinyHouseCampfirePatch.reset();
+        TinyHouse.reset();
         OrbTrackerPatch.lastOrb = null;
         ExhaustTracker.reset();
     }
 
     @Override
     public void receivePreStartGame() {
-        anotherspirerework.patches.TurnRelicFixes.startGame();
+        BlackStar.resetRun();
+        Sozu.resetBattle();
     }
 
     /** Medical Kit, Blue Candle, Mayhem and Blur all watch the cards the player draws. */
     @Override
     public void receivePostDraw(AbstractCard card) {
-        anotherspirerework.patches.NewRelicFixes.onCardDrawn(card);
+        MedicalKit.onCardDrawn(card);
+        BlueCandle.onCardDrawn(card);
         anotherspirerework.powers.ScuffleDrawPower.onCardDrawn(card);
         anotherspirerework.powers.BlurDrawPower.onCardDrawn(card);
     }
@@ -134,10 +145,11 @@ public class AnotherSpireRework implements
      */
     @Override
     public void receivePostDungeonUpdate() {
-        anotherspirerework.patches.StrangeSpoonExhaust.restorePending();
-        anotherspirerework.patches.NewRelicFixes.processPendingDraws();
+        StrangeSpoon.restorePending();
+        MedicalKit.processPendingDraws();
+        BlueCandle.processPendingDraws();
         anotherspirerework.patches.ShuffleTriggerPatch.tick();
-        anotherspirerework.patches.TinyHouseCampfirePatch.tick();
+        TinyHouse.tick();
     }
 
     /** Seeing Red needs to know whether a card was exhausted on the turn it is played. */
@@ -270,6 +282,26 @@ public class AnotherSpireRework implements
             strings.DESCRIPTIONS = new String[]{"Missing description.", " Missing description.", " Missing description."};
         }
         return strings;
+    }
+
+    /** Relic text lives under the mod prefixed key, so overwriting vanilla strings is never required. */
+    public static String getRelicDescription(String vanillaID) {
+        return getRelicDescription(vanillaID, 0);
+    }
+
+    /**
+     * The n-th line of a relic's own description. Relics use the extra lines for the header of a
+     * card picker (Spoon, Orrery, Astrolabe, Tiny House), so a missing line must not be fatal.
+     */
+    public static String getRelicDescription(String vanillaID, int index) {
+        com.megacrit.cardcrawl.localization.RelicStrings strings =
+                CardCrawlGame.languagePack.getRelicStrings(makeID(vanillaID));
+        if (strings == null || strings.DESCRIPTIONS == null || index < 0
+                || index >= strings.DESCRIPTIONS.length || strings.DESCRIPTIONS[index] == null) {
+            logger.error("Missing RelicStrings entry for " + makeID(vanillaID) + " line " + index);
+            return "";
+        }
+        return strings.DESCRIPTIONS[index];
     }
 
     public static String localizationPath(String lang, String file) {

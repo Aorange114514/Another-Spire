@@ -10,40 +10,7 @@ public class PatchContractTest {
     public static void main(String[] args) throws Exception {
         ClassPool pool = new ClassPool(true);
         int count = 0;
-        for (String name : new String[]{
-                "anotherspirerework.patches.RelicReworkPatch",
-                "anotherspirerework.patches.ShopRelicPatch",
-                "anotherspirerework.patches.ReportedRelicFixes",
-                "anotherspirerework.patches.TurnRelicFixes",
-                "anotherspirerework.actions.PlayShivsFromExhaustAction",
-                "anotherspirerework.patches.ShivPatch",
-                "anotherspirerework.patches.NewRelicFixes",
-                "anotherspirerework.patches.ShuffleTriggerPatch",
-                "anotherspirerework.patches.ColorlessSkipPatch",
-                "anotherspirerework.patches.CardArtLoaderPatch",
-                "anotherspirerework.patches.StrangeSpoonExhaust",
-                "anotherspirerework.patches.EnergySpentPatch",
-                "anotherspirerework.patches.RareRelicFixes",
-                "anotherspirerework.patches.PowerArtLoaderPatch",
-                "anotherspirerework.patches.BitePatch",
-                "anotherspirerework.patches.CardSwapPatch",
-                "anotherspirerework.patches.ExhaustTracker",
-                "anotherspirerework.patches.FreeSkillCardPatch",
-                "anotherspirerework.patches.MarkAttackPatch",
-                "anotherspirerework.patches.NoBlockCapPatch",
-                "anotherspirerework.patches.NoEnergyCapPatch",
-                "anotherspirerework.patches.NoPowerCapPatch",
-                "anotherspirerework.patches.OrbTrackerPatch",
-                "anotherspirerework.patches.RetainedCardFadeInPatch",
-                "anotherspirerework.patches.ShivCreationPatch",
-                "anotherspirerework.patches.ShivMasteryPatch",
-                "anotherspirerework.patches.TriplePoisonSaturatePatch",
-                "anotherspirerework.patches.TinyHouseCampfirePatch",
-                "anotherspirerework.patches.SadisticNaturePatch",
-                "anotherspirerework.patches.FlurryOfBlowsPatch",
-                "anotherspirerework.patches.ShopPricePatch",
-                "anotherspirerework.patches.IndignationStancePatch",
-                "anotherspirerework.effects.ChooseDeckCardsEffect"}) {
+        for (String name : patchSourceNames()) {
             Class<?> outer = Class.forName(name, false, PatchContractTest.class.getClassLoader());
             java.util.List<Class<?>> patches = new java.util.ArrayList<>();
             patches.add(outer);
@@ -112,6 +79,56 @@ public class PatchContractTest {
         powerTitleAndReprogramRegression(pool);
         postfixBindingRegression();
         System.out.println("PASS: " + count + " patch targets, instrumented bytecode, insertion locators and injected fields");
+    }
+
+    /**
+     * Every class of the mod that may carry a patch: the patch package classes, the card picker and
+     * every relic class. The relic classes are discovered from the build output so a new relic file
+     * is picked up without touching this test.
+     */
+    private static java.util.List<String> patchSourceNames() {
+        java.util.List<String> names = new java.util.ArrayList<>(java.util.Arrays.asList(
+                "anotherspirerework.patches.ActFourRelicBlockPatch",
+                "anotherspirerework.patches.RelicTierPatch",
+                "anotherspirerework.patches.RelicSwapPatch",
+                "anotherspirerework.patches.ShopRelicPatch",
+                "anotherspirerework.actions.PlayShivsFromExhaustAction",
+                "anotherspirerework.patches.ShivPatch",
+                "anotherspirerework.patches.ShuffleTriggerPatch",
+                "anotherspirerework.patches.ColorlessSkipPatch",
+                "anotherspirerework.patches.CardArtLoaderPatch",
+                "anotherspirerework.patches.EnergySpentPatch",
+                "anotherspirerework.patches.PowerArtLoaderPatch",
+                "anotherspirerework.patches.BitePatch",
+                "anotherspirerework.patches.CardSwapPatch",
+                "anotherspirerework.patches.ExhaustTracker",
+                "anotherspirerework.patches.FreeSkillCardPatch",
+                "anotherspirerework.patches.MarkAttackPatch",
+                "anotherspirerework.patches.NoBlockCapPatch",
+                "anotherspirerework.patches.NoEnergyCapPatch",
+                "anotherspirerework.patches.NoPowerCapPatch",
+                "anotherspirerework.patches.OrbTrackerPatch",
+                "anotherspirerework.patches.RetainedCardFadeInPatch",
+                "anotherspirerework.patches.ShivCreationPatch",
+                "anotherspirerework.patches.ShivMasteryPatch",
+                "anotherspirerework.patches.TriplePoisonSaturatePatch",
+                "anotherspirerework.patches.SadisticNaturePatch",
+                "anotherspirerework.patches.FlurryOfBlowsPatch",
+                "anotherspirerework.patches.ShopPricePatch",
+                "anotherspirerework.patches.IndignationStancePatch",
+                "anotherspirerework.effects.ChooseDeckCardsEffect"));
+        java.io.File relicDir = new java.io.File("target/classes/anotherspirerework/relics");
+        java.io.File[] files = relicDir.listFiles();
+        if (files != null) {
+            for (java.io.File file : files) {
+                String fileName = file.getName();
+                if (fileName.endsWith(".class") && !fileName.contains("$")) {
+                    names.add("anotherspirerework.relics."
+                            + fileName.substring(0, fileName.length() - ".class".length()));
+                }
+            }
+        }
+        return names;
     }
 
     private static CtBehavior find(CtClass target, SpirePatch patch) throws Exception {
@@ -219,50 +236,53 @@ public class PatchContractTest {
         // first update, so it also has to be polled once per frame instead of only by that draw.
         requireCalls(pool, "anotherspirerework.patches.ShuffleTriggerPatch", "tick", "flush");
         requireCalls(pool, "anotherspirerework.AnotherSpireRework", "receivePostDungeonUpdate", "tick");
-        requireCalls(pool, "anotherspirerework.patches.ShuffleTriggerPatch", "fire", "matryoshkaShuffle");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "matryoshkaShuffle",
+        requireCalls(pool, "anotherspirerework.patches.ShuffleTriggerPatch", "fire", "drawOnShuffle");
+        requireCalls(pool, "anotherspirerework.relics.Matryoshka", "drawOnShuffle",
                 "com.megacrit.cardcrawl.actions.common.DrawCardAction");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "applyDrawnCard",
+        requireCalls(pool, "anotherspirerework.relics.MedicalKit", "applyDrawn",
+                "com.megacrit.cardcrawl.actions.common.ExhaustSpecificCardAction",
+                "com.megacrit.cardcrawl.actions.common.DrawCardAction");
+        requireCalls(pool, "anotherspirerework.relics.MedicalKit", "onCardDrawn", "add");
+        requireCalls(pool, "anotherspirerework.relics.MedicalKit", "processPendingDraws", "contains");
+        requireCalls(pool, "anotherspirerework.relics.BlueCandle", "applyDrawn",
                 "com.megacrit.cardcrawl.actions.common.ExhaustSpecificCardAction");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "onCardDrawn", "add");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "processPendingDraws", "contains");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "inserterTurn",
+        requireCalls(pool, "anotherspirerework.relics.Inserter", "atTurnStart",
                 "com.megacrit.cardcrawl.actions.defect.IncreaseMaxOrbAction",
                 "com.megacrit.cardcrawl.actions.defect.ChannelAction", "getRandomOrb");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "ninjaScrollTurn",
+        requireCalls(pool, "anotherspirerework.relics.NinjaScroll", "atTurnStart",
                 "com.megacrit.cardcrawl.cards.tempCards.Shiv");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "enchiridionStart",
+        requireCalls(pool, "anotherspirerework.relics.Enchiridion", "atPreBattle",
                 "com.megacrit.cardcrawl.actions.unique.DiscoveryAction");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "yangUse",
+        requireCalls(pool, "anotherspirerework.relics.Duality", "onUseCard",
                 "com.megacrit.cardcrawl.powers.LoseStrengthPower",
                 "com.megacrit.cardcrawl.powers.LoseDexterityPower");
         // The two pickup effects run outside combat, as effects rather than as actions.
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "spoonEquip", "start");
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "orreryEquip", "start");
+        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "onEquip", "start");
+        requireCalls(pool, "anotherspirerework.relics.Orrery", "onEquip", "start");
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "apply",
                 "com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndObtainEffect", "mark");
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "update", "open", "size");
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "orreryChoices", "getCard", "makeCopy");
         // Removing Exhaust has to survive copies and save loading, and the vanilla roll is off.
-        requireCalls(pool, "anotherspirerework.patches.StrangeSpoonExhaust", "strip", "initializeDescription");
-        requireCalls(pool, "anotherspirerework.patches.StrangeSpoonExhaust", "restorePending", "strip");
+        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "strip", "initializeDescription");
+        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "restorePending", "strip");
         // The copy hook's shape and ModTheSpire's argument order are checked by
         // postfixBindingRegression() below; a body level check cannot see static calls.
         java.util.Map<String, Integer> spoonCounts = new java.util.HashMap<>();
         spoonCounts.put("Cleave|0|0", 1);
         spoonCounts.put("Die Die Die|2|5", 2);
-        require(anotherspirerework.patches.StrangeSpoonExhaust
-                .parseCounts(anotherspirerework.patches.StrangeSpoonExhaust.formatCounts(spoonCounts))
+        require(anotherspirerework.util.RelicSave
+                .parseCounts(anotherspirerework.util.RelicSave.formatCounts(spoonCounts))
                 .equals(spoonCounts), "Spoon counts must survive a save round trip");
-        require(anotherspirerework.patches.StrangeSpoonExhaust.parseCounts("").isEmpty()
-                && anotherspirerework.patches.StrangeSpoonExhaust.parseCounts("broken").isEmpty(),
+        require(anotherspirerework.util.RelicSave.parseCounts("").isEmpty()
+                && anotherspirerework.util.RelicSave.parseCounts("broken").isEmpty(),
                 "Spoon save parsing must tolerate empty and malformed data");
         // A mod card image, when present, replaces the base game portrait and the zoomed view.
         requireCalls(pool, "anotherspirerework.patches.CardArtLoaderPatch", "load", "internal", "exists");
         requireCalls(pool, "anotherspirerework.patches.CardArtLoaderPatch$Face", "before", "draw");
         requireCalls(pool, "anotherspirerework.patches.CardArtLoaderPatch$Popup", "before", "draw");
         // Frozen Eye's keyword has to stay its own word so the parser can highlight it.
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes", "applyFrozenEye", "keywordSuffix");
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "applyFrozenEye", "keywordSuffix");
 
         // Art file names: both the card ID spelling and the vanilla asset spelling are accepted.
         java.util.List<String> artNames = anotherspirerework.patches.CardArtLoaderPatch
@@ -279,17 +299,17 @@ public class PatchContractTest {
                 "Core Surge art must resolve to core_surge.png");
 
         // Exhaust text: both the Chinese and the English spelling have to disappear.
-        require(anotherspirerework.patches.StrangeSpoonExhaust
+        require(anotherspirerework.util.RelicChecks
                 .withoutExhaustText("造成 8 点伤害。 NL 消耗 。", "消耗").equals("造成 8 点伤害。"),
                 "Chinese Exhaust keyword must be removed");
-        require(anotherspirerework.patches.StrangeSpoonExhaust
+        require(anotherspirerework.util.RelicChecks
                 .withoutExhaustText("Deal 8 damage. NL Exhaust.", "Exhaust").equals("Deal 8 damage."),
                 "English Exhaust keyword must be removed");
 
         // The Chinese Ethereal keyword needs a space before the full stop to be parsed at all.
-        require(anotherspirerework.patches.NewRelicFixes.keywordSuffix("ZHS").equals(" 。"),
+        require(anotherspirerework.util.RelicChecks.keywordSuffix("ZHS").equals(" 。"),
                 "Chinese keyword separator");
-        require(anotherspirerework.patches.NewRelicFixes.keywordSuffix("ENG").equals("."),
+        require(anotherspirerework.util.RelicChecks.keywordSuffix("ENG").equals("."),
                 "Latin keyword separator");
 
         // Nothing in this mod may move cards while a deck screen is being browsed: the deferral
@@ -298,7 +318,7 @@ public class PatchContractTest {
                         .getDeclaredMethod("before",
                                 com.megacrit.cardcrawl.actions.common.DrawCardAction.class) != null,
                 "The shuffle trigger needs its deferred entry point");
-        require(anotherspirerework.patches.NewRelicFixes.class.getDeclaredMethod("processPendingDraws") != null,
+        require(anotherspirerework.relics.MedicalKit.class.getDeclaredMethod("processPendingDraws") != null,
                 "On-draw relic effects need a deferred pass");
         require(anotherspirerework.effects.ChooseDeckCardsEffect.class.getDeclaredMethod("browsingCards") != null,
                 "The picker needs the deck-browsing guard");
@@ -401,7 +421,7 @@ public class PatchContractTest {
                 "Postfix binding: result first, instance second, got " + result);
 
         // The mod's real copy hook keeps that same shape.
-        Method copyHook = anotherspirerework.patches.StrangeSpoonExhaust.Copies.class
+        Method copyHook = anotherspirerework.relics.StrangeSpoon.Copies.class
                 .getDeclaredMethod("after", com.megacrit.cardcrawl.cards.AbstractCard.class,
                         com.megacrit.cardcrawl.cards.AbstractCard.class);
         require(copyHook.getReturnType() == com.megacrit.cardcrawl.cards.AbstractCard.class
@@ -412,12 +432,12 @@ public class PatchContractTest {
 
     /** Relics, cards and powers added in the second round of reworks. */
     private static void secondRoundRegression(ClassPool pool) throws Exception {
-        requireConstant(pool, "anotherspirerework.patches.NewRelicFixes", "INSERTER_TURNS", 2);
-        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "EXTRA_POISON_TICKS", 2);
-        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "SNECKO_HAND_SIZE", 3);
-        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "GOLDEN_EYE_SCRY", 3);
-        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "THREAD_AND_NEEDLE_ARMOR", 2);
-        requireConstant(pool, "anotherspirerework.patches.RareRelicFixes", "MELANGE_BLOCK", 3);
+        requireConstant(pool, "anotherspirerework.relics.Inserter", "TURNS", 2);
+        requireConstant(pool, "anotherspirerework.relics.TwistedFunnel", "EXTRA_TICKS", 2);
+        requireConstant(pool, "anotherspirerework.relics.SneckoEye", "HAND_SIZE", 3);
+        requireConstant(pool, "anotherspirerework.relics.GoldenEye", "SCRY", 3);
+        requireConstant(pool, "anotherspirerework.relics.ThreadAndNeedle", "ARMOR", 2);
+        requireConstant(pool, "anotherspirerework.relics.Melange", "BLOCK", 3);
         requireConstant(pool, "anotherspirerework.powers.NirvanaCounterPower", "CARDS_PER_TURN", 5);
         requireConstant(pool, "anotherspirerework.powers.JackOfAllTradesPower", "ENERGY_PER_PAYOUT", 4);
         // Twisted Funnel: the example in the requirements, 7 layers dealing 7 + 6 + 5.
@@ -427,68 +447,68 @@ public class PatchContractTest {
                 "A single Poison layer must not be inflated");
         require(anotherspirerework.util.SaturatingMath.poisonPreview(2, 2) == 3,
                 "Two layers with two extra ticks must deal 2 + 1");
-        // Prismatic Shard and Tiny House changed tier; every other relic keeps its own.
-        require(anotherspirerework.patches.RareRelicFixes.tierFor("PrismaticShard",
-                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP)
-                        == com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.BOSS,
-                "Prismatic Shard must be a boss relic");
-        require(anotherspirerework.patches.RareRelicFixes.tierFor("Tiny House",
-                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.BOSS)
-                        == com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP,
-                "Tiny House must be a shop relic");
-        require(anotherspirerework.patches.RareRelicFixes.tierFor("Anchor",
-                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON)
-                        == com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON,
-                "A relic without a tier change must keep its own tier");
-        // The shop may only sell ids whose own tier is SHOP; without this a pool saved before the
-        // tier change would put Prismatic Shard on the rug at its 999 gold boss price.
-        require(!anotherspirerework.patches.RareRelicFixes.allowedInShop("PrismaticShard",
-                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP),
-                "A boss relic must not be sellable from a shop slot");
-        require(anotherspirerework.patches.RareRelicFixes.allowedInShop("Tiny House",
-                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.SHOP),
-                "Tiny House is a shop relic and may be sold");
-        require(!anotherspirerework.patches.RareRelicFixes.allowedInShop("Anchor",
-                        com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier.COMMON),
-                "A common relic must not be sellable from a shop slot");
+        // Prismatic Shard and Tiny House changed tier in their own constructors; every other relic
+        // keeps the vanilla tier it inherits.
+        requireTierAssignment(pool, "anotherspirerework.relics.PrismaticShard", "BOSS");
+        requireTierAssignment(pool, "anotherspirerework.relics.TinyHouse", "SHOP");
+        requireNoTierWrite(pool, "anotherspirerework.relics.Sling");
+        // The shop may only sell a relic whose own tier is SHOP; without this a pool saved before
+        // the tier change would put Prismatic Shard on the rug at its 999 gold boss price.
         requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "select", "sellable",
                 "returnRandomRelicKey");
-        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "sellable", "allowedInShop",
-                "canSpawn");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$LoadedPools", "after",
+        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "sellable", "canSpawn");
+        java.util.Set<String> shopReads = new java.util.HashSet<>();
+        CtClass shopClass = pool.get("anotherspirerework.patches.ShopRelicPatch");
+        if (shopClass.isFrozen()) shopClass.defrost();
+        shopClass.getDeclaredMethod("sellable", new CtClass[]{pool.get("java.lang.String")})
+                .instrument(new ExprEditor() {
+                    @Override
+                    public void edit(javassist.expr.FieldAccess field) {
+                        if (field.isReader()) shopReads.add(field.getFieldName());
+                    }
+                });
+        require(shopReads.contains("tier") && shopReads.contains("SHOP"),
+                "Shop slots must compare the relic's own tier with SHOP");
+        shopClass.toBytecode();
+        requireCalls(pool, "anotherspirerework.patches.RelicTierPatch$LoadedPools", "after",
                 "normalizeRelicPools");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$FunnelTicks", "after",
-                "anotherspirerework.patches.RareRelicFixes$PoisonExtraTickAction", "addToBottom");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$PoisonExtraTickAction", "update",
+        requireCalls(pool, "anotherspirerework.relics.TwistedFunnel$FunnelTicks", "after",
+                "anotherspirerework.relics.TwistedFunnel$PoisonExtraTickAction", "addToBottom");
+        requireCalls(pool, "anotherspirerework.relics.TwistedFunnel$PoisonExtraTickAction", "update",
                 "com.megacrit.cardcrawl.actions.unique.PoisonLoseHpAction");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "poisonForBar", "previewPoison");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "previewPoison", "poisonPreview");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "spreadPoison",
+        requireCalls(pool, "anotherspirerework.relics.TwistedFunnel", "poisonForBar", "previewPoison");
+        requireCalls(pool, "anotherspirerework.relics.TwistedFunnel", "previewPoison", "poisonPreview");
+        requireCalls(pool, "anotherspirerework.relics.TheSpecimen", "spreadPoison",
                 "com.megacrit.cardcrawl.actions.common.LoseHPAction");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$MelangeUse", "after",
+        requireCalls(pool, "anotherspirerework.relics.Melange", "onUseCard",
                 "com.megacrit.cardcrawl.actions.common.GainBlockAction");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes", "goldenEyeScry",
+        requireCalls(pool, "anotherspirerework.relics.GoldenEye", "goldenEyeScry",
                 "com.megacrit.cardcrawl.actions.utility.ScryAction",
                 "com.megacrit.cardcrawl.actions.common.EmptyDeckShuffleAction");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$GoldenEyeTurn", "after", "goldenEyeScry");
+        requireCalls(pool, "anotherspirerework.relics.GoldenEye", "atTurnStart", "goldenEyeScry");
         // The opening hand is scried before it is drawn, and the turn start right after skips once.
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$GoldenEyeOpeningScry", "before", "goldenEyeScry");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$NeedleTurn", "after",
+        requireCalls(pool, "anotherspirerework.relics.GoldenEye$OpeningScry", "before", "goldenEyeScry");
+        requireCalls(pool, "anotherspirerework.relics.ThreadAndNeedle", "atTurnStart",
                 "com.megacrit.cardcrawl.powers.PlatedArmorPower");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ClericVictory", "before", "increaseMaxHp");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$LotusStance", "after",
+        requireCalls(pool, "anotherspirerework.relics.FaceOfCleric", "onVictory", "increaseMaxHp");
+        requireCalls(pool, "anotherspirerework.relics.VioletLotus", "onChangeStance",
                 "com.megacrit.cardcrawl.actions.common.DrawCardAction");
         // PART B HERE
         // Both out of combat pickers run as effects, and the extra rewards are positioned.
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$AstrolabeEquip", "before", "start");
+        requireCalls(pool, "anotherspirerework.relics.Astrolabe", "onEquip", "start");
+        requireConstant(pool, "anotherspirerework.relics.Astrolabe", "CHOICES", 40);
         // Tiny House opens no picker of its own any more (the check lives in the fourth round below).
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "anyColorChoices",
                 "getAnyColorCard", "makeCopy", "isPickable");
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "isPickable", "contains");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ExtraCardRewards", "after",
-                "rareCardReward", "addCardReward");
-        requireCalls(pool, "anotherspirerework.patches.RareRelicFixes$ExtraCardRewards", "addCardReward",
+        requireCalls(pool, "anotherspirerework.relics.PrayerWheel$ExtraCardReward", "after",
+                "add", "positionRewards");
+        requireCalls(pool, "anotherspirerework.relics.NlothsGift$ExtraCardReward", "after",
+                "addCardReward");
+        requireCalls(pool, "anotherspirerework.relics.NlothsGift$ExtraCardReward", "addCardReward",
                 "positionRewards", "add");
+        requireCalls(pool, "anotherspirerework.relics.NlothsGift", "rareCardReward",
+                "makeCopy", "onPreviewObtainCard");
         // Energy spent on cards pays out once per four; the random card handout keeps both modifiers.
         requireCalls(pool, "anotherspirerework.patches.EnergySpentPatch$Spend", "before", "onEnergySpent");
         requireCalls(pool, "anotherspirerework.powers.JackOfAllTradesPower", "countSpent",
@@ -527,7 +547,7 @@ public class PatchContractTest {
         java.util.ArrayList<String> boss = new java.util.ArrayList<>(
                 java.util.Arrays.asList("FrozenCore", "Tiny House"));
         java.util.ArrayList<String> owned = new java.util.ArrayList<>();
-        anotherspirerework.patches.RareRelicFixes.normalizePools(shop, boss, owned, false,
+        anotherspirerework.patches.RelicTierPatch.normalizePools(shop, boss, owned, false,
                 new java.util.Random(1L));
         require(!shop.contains("PrismaticShard"), "Prismatic Shard must leave the shop pool");
         require(boss.contains("PrismaticShard"), "Prismatic Shard must join the boss pool");
@@ -540,12 +560,12 @@ public class PatchContractTest {
                 java.util.Arrays.asList("Lee's Waffle", "PrismaticShard"));
         java.util.ArrayList<String> reloadBoss = new java.util.ArrayList<>(
                 java.util.Arrays.asList("FrozenCore", "Tiny House"));
-        anotherspirerework.patches.RareRelicFixes.normalizePools(reloadShop, reloadBoss, owned,
+        anotherspirerework.patches.RelicTierPatch.normalizePools(reloadShop, reloadBoss, owned,
                 false, new java.util.Random(1L));
         require(reloadShop.equals(shop) && reloadBoss.equals(boss),
                 "Reloading a save must not reroll the relic pools");
         // Pool order is what the base game pops from, so a repaired pool must stay untouched.
-        anotherspirerework.patches.RareRelicFixes.normalizePools(shop, boss, owned, false,
+        anotherspirerework.patches.RelicTierPatch.normalizePools(shop, boss, owned, false,
                 new java.util.Random(1L));
         require(shop.equals(reloadShop) && boss.equals(reloadBoss),
                 "Repairing an already repaired pool must change nothing");
@@ -556,7 +576,7 @@ public class PatchContractTest {
                 java.util.Arrays.asList("PrismaticShard"));
         java.util.ArrayList<String> ownedBoss = new java.util.ArrayList<>(
                 java.util.Arrays.asList("Tiny House"));
-        anotherspirerework.patches.RareRelicFixes.normalizePools(ownedShop, ownedBoss, owned,
+        anotherspirerework.patches.RelicTierPatch.normalizePools(ownedShop, ownedBoss, owned,
                 false, new java.util.Random(1L));
         require(ownedShop.isEmpty() && ownedBoss.isEmpty(),
                 "A relic the player already owns must not return to a pool");
@@ -565,7 +585,7 @@ public class PatchContractTest {
                 java.util.Arrays.asList("PrismaticShard"));
         java.util.ArrayList<String> diverseBoss = new java.util.ArrayList<>(
                 java.util.Arrays.asList("Tiny House"));
-        anotherspirerework.patches.RareRelicFixes.normalizePools(diverseShop, diverseBoss,
+        anotherspirerework.patches.RelicTierPatch.normalizePools(diverseShop, diverseBoss,
                 new java.util.ArrayList<String>(), true, new java.util.Random(1L));
         require(!diverseShop.contains("PrismaticShard") && !diverseBoss.contains("PrismaticShard"),
                 "Diverse must not put Prismatic Shard back into a pool");
@@ -573,7 +593,7 @@ public class PatchContractTest {
         // A relic whose tier never changed is left exactly where it was.
         java.util.ArrayList<String> anchorShop = new java.util.ArrayList<>(
                 java.util.Arrays.asList("Anchor", "Circlet"));
-        anotherspirerework.patches.RareRelicFixes.normalizePools(anchorShop,
+        anotherspirerework.patches.RelicTierPatch.normalizePools(anchorShop,
                 new java.util.ArrayList<String>(), new java.util.ArrayList<String>(), false,
                 new java.util.Random(1L));
         require(anchorShop.equals(java.util.Arrays.asList("Anchor", "Circlet")),
@@ -645,19 +665,22 @@ public class PatchContractTest {
 
         // The shop: the two discounts, and the gate that keeps the bottled relics in the pool.
         requireCalls(pool, "anotherspirerework.patches.ShopPricePatch$Price", "after", "discounted");
-        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "selectUncommon", "actGated",
+        requireCalls(pool, "anotherspirerework.patches.ShopRelicPatch", "selectUncommon", "keepInPool",
                 "remove", "canSpawn");
-        CtClass shop = pool.get("anotherspirerework.patches.ShopRelicPatch");
-        if (shop.isFrozen()) shop.defrost();
-        final java.util.Set<String> shopReads = new java.util.HashSet<>();
-        shop.getDeclaredMethod("actGated").instrument(new ExprEditor() {
+        // The bottled relic classes own the act number their inventory gate reads.
+        CtClass bottled = pool.get("anotherspirerework.relics.BottledFlame");
+        if (bottled.isFrozen()) bottled.defrost();
+        final java.util.Set<String> bottleReads = new java.util.HashSet<>();
+        bottled.getDeclaredMethod("keepInPool").instrument(new ExprEditor() {
+            @Override
             public void edit(javassist.expr.FieldAccess field) {
-                shopReads.add(field.getFieldName());
+                bottleReads.add(field.getFieldName());
             }
         });
-        require(shopReads.contains("actNum") && shopReads.contains("ACT_THREE_ONLY"),
-                "The bottled relic gate must read the act number and its own list");
-        shop.toBytecode();
+        require(bottleReads.contains("actNum"),
+                "The bottled relic gate must read the act number");
+        bottled.toBytecode();
+        requireCalls(pool, "anotherspirerework.relics.BottledFlame", "canSpawn", "canSpawn");
         System.out.println("PASS: third round cards and relics (Predator, Sucker Punch, Blur, Bouncing Flask,"
                 + " Flurry of Blows, Ragnarok, Sadistic Nature, act-gated bottled relics,"
                 + " shop relic discounts)");
@@ -694,20 +717,20 @@ public class PatchContractTest {
         requireWrites(pool, "anotherspirerework.powers.SadisticNaturePower", "stackPower", "amount");
 
         // Tiny House: the used option is spent, and the campfire comes back once it has settled.
-        requireConstant(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "REOPEN_DELAY", 0.3F);
-        requireConstant(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "FORCE_AFTER", 3.0F);
+        requireConstant(pool, "anotherspirerework.relics.TinyHouse", "REOPEN_DELAY", 0.3F);
+        requireConstant(pool, "anotherspirerework.relics.TinyHouse", "FORCE_AFTER", 3.0F);
         requireCalls(pool, "anotherspirerework.AnotherSpireRework", "receivePostDungeonUpdate", "tick");
-        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "tick", "reopen");
-        requireWrites(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "arm", "usable");
-        requireWrites(pool, "anotherspirerework.patches.TinyHouseCampfirePatch", "tick", "phase");
-        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$MarkUsed", "after", "arm");
-        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$MarkUsedByTouch", "after", "arm");
+        requireCalls(pool, "anotherspirerework.relics.TinyHouse", "tick", "reopen");
+        requireWrites(pool, "anotherspirerework.relics.TinyHouse", "arm", "usable");
+        requireWrites(pool, "anotherspirerework.relics.TinyHouse", "tick", "phase");
+        requireCalls(pool, "anotherspirerework.relics.TinyHouse$MarkUsed", "after", "arm");
+        requireCalls(pool, "anotherspirerework.relics.TinyHouse$MarkUsedByTouch", "after", "arm");
         // Cancelling the grid the option opened hands the option back.
-        requireWrites(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$CancelledChoice", "after", "usable");
+        requireWrites(pool, "anotherspirerework.relics.TinyHouse$CancelledChoice", "after", "usable");
         // Tiny House: silent on pickup, then Courier-style pulse for the whole Rest Site.
         // The pickup keeps the base game's single flash; only our extra one and the vanilla rewards are gone.
-        requireMissingCalls(pool, "anotherspirerework.patches.RareRelicFixes$TinyHouseEquip", "before", "flash");
-        requireCalls(pool, "anotherspirerework.patches.TinyHouseCampfirePatch$RestRoomPulse", "after",
+        requireMissingCalls(pool, "anotherspirerework.relics.TinyHouse", "onEquip", "flash");
+        requireCalls(pool, "anotherspirerework.relics.TinyHouse$RestRoomPulse", "after",
                 "beginLongPulse", "flash", "stopPulse");
         System.out.println("PASS: fourth round (Blur 1(0), Ragnarok strike pacing, Sadistic Nature without"
                 + " counter, Tiny House free campfire, Regal Pillow reverted)");
@@ -747,7 +770,7 @@ public class PatchContractTest {
                 "com.megacrit.cardcrawl.actions.utility.UnlimboAction");
 
         // Girya's Lift tooltip reads the mod's own UI string.
-        requireCalls(pool, "anotherspirerework.patches.NewRelicFixes$GiryaLiftText", "after", "getUIString", "setPrivate");
+        requireCalls(pool, "anotherspirerework.relics.Girya$GiryaLiftText", "after", "getUIString", "setPrivate");
 
         // The instrumented IndignationAction now queues the stance change at the top.
         requireCalls(pool, "com.megacrit.cardcrawl.actions.watcher.IndignationAction", "update", "addToTop");
@@ -819,6 +842,48 @@ public class PatchContractTest {
         }
     }
 
+    /**
+     * A relic constructor that assigns its own tier: the field is written and the expected tier
+     * constant is read, which is how a tier change stays in the relic class instead of a patch.
+     */
+    private static void requireTierAssignment(ClassPool pool, String name, String tier) throws Exception {
+        CtClass type = pool.get(name);
+        if (type.isFrozen()) type.defrost();
+        final boolean[] writes = {false};
+        final java.util.Set<String> reads = new java.util.HashSet<>();
+        type.getDeclaredConstructor(new CtClass[0]).instrument(new ExprEditor() {
+            @Override
+            public void edit(javassist.expr.FieldAccess field) {
+                if (field.isWriter() && field.getFieldName().equals("tier")) {
+                    writes[0] = true;
+                }
+                if (field.isReader() && field.getClassName().endsWith("AbstractRelic$RelicTier")) {
+                    reads.add(field.getFieldName());
+                }
+            }
+        });
+        type.toBytecode();
+        require(writes[0], "Tier change must be assigned in the relic constructor: " + name);
+        require(reads.contains(tier), name + " must assign the " + tier + " tier");
+    }
+
+    /** A relic constructor that does not touch the tier, so the vanilla one is inherited. */
+    private static void requireNoTierWrite(ClassPool pool, String name) throws Exception {
+        CtClass type = pool.get(name);
+        if (type.isFrozen()) type.defrost();
+        final boolean[] writes = {false};
+        type.getDeclaredConstructor(new CtClass[0]).instrument(new ExprEditor() {
+            @Override
+            public void edit(javassist.expr.FieldAccess field) {
+                if (field.isWriter() && field.getFieldName().equals("tier")) {
+                    writes[0] = true;
+                }
+            }
+        });
+        type.toBytecode();
+        require(!writes[0], "A relic without a tier change must keep the vanilla tier: " + name);
+    }
+
     /** A compile time constant, read straight out of the bytecode so no class initializer runs. */
     private static void requireConstant(ClassPool pool, String name, String field, Object expected) throws Exception {
         Object value = pool.get(name).getDeclaredField(field).getConstantValue();
@@ -851,16 +916,16 @@ public class PatchContractTest {
 
     private static void turnRelicRegression(ClassPool pool) throws Exception {
         for (int turn = 0; turn < 10; turn++) {
-            require(anotherspirerework.patches.TurnRelicFixes.serpentActive(turn) == (turn >= 1 && turn <= 3),
+            require(anotherspirerework.util.RelicChecks.serpentTurnActive(turn) == (turn >= 1 && turn <= 3),
                     "Serpent turn boundary: " + turn);
         }
         for (int kills = 0; kills < 12; kills++) {
-            require(anotherspirerework.patches.TurnRelicFixes.starActive(kills) == (kills >= 5),
+            require(anotherspirerework.util.RelicChecks.blackStarActive(kills) == (kills >= 5),
                     "Black Star kill threshold: " + kills);
         }
         for (int bits = 0; bits < 8; bits++) {
             boolean combat = (bits & 1) != 0, sozu = (bits & 2) != 0, unlocked = (bits & 4) != 0;
-            require(anotherspirerework.patches.TurnRelicFixes.potionLocked(combat, sozu, unlocked)
+            require(anotherspirerework.util.RelicChecks.sozuLocked(combat, sozu, unlocked)
                     == (bits == 3), "Sozu state: " + bits);
         }
         CtClass popup = pool.get("com.megacrit.cardcrawl.ui.panels.PotionPopUp");
@@ -869,7 +934,7 @@ public class PatchContractTest {
         popup.getDeclaredMethod("updateInput").instrument(new ExprEditor() {
             public void edit(javassist.expr.MethodCall call) {
                 if (call.getMethodName().equals("destroyPotion")) removals[0]++;
-                if (call.getClassName().equals("anotherspirerework.patches.TurnRelicFixes")
+                if (call.getClassName().equals("anotherspirerework.relics.Sozu")
                         && call.getMethodName().equals("discard")) {
                     require(removals[0] == 1, "Sozu unlock must precede only the second (discard) removal");
                     unlocks[0]++;
@@ -877,118 +942,129 @@ public class PatchContractTest {
             }
         });
         require(removals[0] == 2 && unlocks[0] == 1, "Potion discard branch layout changed");
-        CtClass fixes = pool.get("anotherspirerework.patches.TurnRelicFixes");
-        final java.util.Set<String> fields = new java.util.HashSet<>();
-        fixes.getDeclaredMethod("prismEquip").instrument(new ExprEditor() {
-            public void edit(javassist.expr.FieldAccess field) {
-                if (field.isWriter()) fields.add(field.getFieldName());
-            }
-        });
-        require(fields.contains("energyMaster") && fields.contains("masterHandSize"),
+        // Prism uses the vanilla permanent energy and draw fields.
+        CtClass prism = pool.get("anotherspirerework.relics.PrismaticShard");
+        if (prism.isFrozen()) prism.defrost();
+        final java.util.Set<String> prismFields = new java.util.HashSet<>();
+        for (String method : new String[]{"onEquip", "onUnequip"}) {
+            prism.getDeclaredMethod(method).instrument(new ExprEditor() {
+                public void edit(javassist.expr.FieldAccess field) {
+                    if (field.isWriter()) prismFields.add(field.getFieldName());
+                }
+            });
+        }
+        prism.toBytecode();
+        require(prismFields.contains("energyMaster") && prismFields.contains("masterHandSize"),
                 "Prism must use vanilla permanent energy/draw fields");
-        Method serpentHook = anotherspirerework.patches.TurnRelicFixes.SerpentTurn.class.getDeclaredMethod(
-                "before", com.megacrit.cardcrawl.relics.RingOfTheSerpent.class);
-        require(serpentHook.isAnnotationPresent(SpirePrefixPatch.class)
-                && serpentHook.getReturnType() == SpireReturn.class,
-                "Serpent must skip the original unconditional flash using a returning prefix");
+        // The Serpent flashes and draws only inside the active-turn guard.
+        CtClass serpent = pool.get("anotherspirerework.relics.RingOfTheSerpent");
+        if (serpent.isFrozen()) serpent.defrost();
         final java.util.List<String> serpentCalls = new java.util.ArrayList<>();
-        fixes.getDeclaredMethod("serpentTurn").instrument(new ExprEditor() {
+        serpent.getDeclaredMethod("atTurnStart").instrument(new ExprEditor() {
             public void edit(javassist.expr.MethodCall call) { serpentCalls.add(call.getMethodName()); }
         });
-        require(serpentCalls.indexOf("serpentActive") >= 0
-                && serpentCalls.indexOf("flash") > serpentCalls.indexOf("serpentActive")
-                && serpentCalls.indexOf("addToBottom") > serpentCalls.indexOf("flash"),
+        serpent.toBytecode();
+        require(serpentCalls.indexOf("activeTurn") >= 0
+                && serpentCalls.indexOf("flash") > serpentCalls.indexOf("activeTurn")
+                && serpentCalls.indexOf("addToBot") > serpentCalls.indexOf("flash"),
                 "Serpent flash and draw must share the active-turn guard");
+        // Black Star shows the global Elite total in the vanilla counter.
+        CtClass star = pool.get("anotherspirerework.relics.BlackStar");
+        if (star.isFrozen()) star.defrost();
         final java.util.Set<String> counterFields = new java.util.HashSet<>();
         final java.util.List<String> counterCalls = new java.util.ArrayList<>();
-        fixes.getDeclaredMethod("syncStar").instrument(new ExprEditor() {
+        star.getDeclaredMethod("sync").instrument(new ExprEditor() {
             public void edit(javassist.expr.FieldAccess field) {
                 if (field.isWriter()) counterFields.add(field.getFieldName());
             }
             public void edit(javassist.expr.MethodCall call) { counterCalls.add(call.getMethodName()); }
         });
+        star.toBytecode();
         require(counterFields.contains("counter") && counterCalls.contains("currentElites"),
                 "Black Star must display the global elite total using the vanilla counter");
-        for (String method : new String[]{"victory", "onLoad", "starTurn"}) {
-            final boolean[] sync = {false};
-            fixes.getDeclaredMethod(method).instrument(new ExprEditor() {
-                public void edit(javassist.expr.MethodCall call) {
-                    if (call.getMethodName().equals("syncOwnedStar")) sync[0] = true;
-                }
-            });
-            require(sync[0], "Black Star counter must synchronize on " + method);
+        for (String method : new String[]{"onVictory", "atTurnStart"}) {
+            requireCalls(pool, "anotherspirerework.relics.BlackStar", method, "syncOwnedStar");
         }
-        System.out.println("PASS: Serpent conditional flash/returning prefix; Black Star counter and victory/load/turn synchronization");
+        requireCalls(pool, "anotherspirerework.relics.BlackStar$SaveData", "onLoad", "syncOwnedStar");
+        requireCalls(pool, "anotherspirerework.relics.BlackStar", "renderCounter", "sync");
+        System.out.println("PASS: Serpent per-turn guard; Black Star counter and victory/load/turn synchronization");
         System.out.println("PASS: 30 turn/potion/elite boundary cases; discard-only unlock; vanilla Prism fields");
     }
 
     private static void reportedRelicRegression(ClassPool pool) throws Exception {
-        // These predicates do not initialize game objects, so run their real production code.
-        for (int cards = 0; cards < 40; cards++) {
-            require(anotherspirerework.patches.ReportedRelicFixes.penalizeChoker(cards) == (cards >= 7),
-                    "Choker threshold: " + cards);
-        }
-        for (int potions = 0; potions < 12; potions++) {
-            require(anotherspirerework.patches.ReportedRelicFixes.penalizeBark(potions) == (potions <= 1),
-                    "Bark threshold: " + potions);
-        }
-        CtClass fixes = pool.get("anotherspirerework.patches.ReportedRelicFixes");
-        final java.util.List<String> markCalls = new java.util.ArrayList<>();
-        fixes.getDeclaredMethod("markStart").instrument(new ExprEditor() {
-            public void edit(javassist.expr.NewExpr expr) { markCalls.add(expr.getClassName()); }
-        });
-        require(markCalls.contains("com.megacrit.cardcrawl.actions.common.MakeTempCardInDiscardAction"),
-                "Mark must create discard-pile action");
-        require(!markCalls.contains("com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction")
-                && !markCalls.contains("com.megacrit.cardcrawl.actions.common.MakeTempCardInDrawPileAction"),
-                "Mark must not create hand/draw-pile action");
+        requireConstant(pool, "anotherspirerework.relics.VelvetChoker", "PLAY_LIMIT", 6);
+        requireConstant(pool, "anotherspirerework.relics.SacredBark", "MIN_POTIONS", 2);
+        requireCalls(pool, "anotherspirerework.relics.VelvetChoker", "atTurnStart", "loseEnergy");
+        requireCalls(pool, "anotherspirerework.relics.SacredBark", "atTurnStart", "loseEnergy");
+        // Mark of Pain puts its Wounds into the discard pile.
+        requireCalls(pool, "anotherspirerework.relics.MarkOfPain", "atBattleStart",
+                "com.megacrit.cardcrawl.actions.common.MakeTempCardInDiscardAction");
+        requireMissingCalls(pool, "anotherspirerework.relics.MarkOfPain", "atBattleStart",
+                "com.megacrit.cardcrawl.actions.common.MakeTempCardInDrawPileAction");
         final int[] slots = {0};
-        fixes.getDeclaredMethod("cauldronEquip").instrument(new ExprEditor() {
+        CtClass cauldron = pool.get("anotherspirerework.relics.Cauldron");
+        if (cauldron.isFrozen()) cauldron.defrost();
+        cauldron.getDeclaredMethod("onEquip").instrument(new ExprEditor() {
             public void edit(javassist.expr.NewExpr expr) {
                 if (expr.getClassName().equals("com.megacrit.cardcrawl.potions.PotionSlot")) slots[0]++;
             }
         });
+        cauldron.toBytecode();
         require(slots[0] == 1, "Cauldron must append one empty potion slot");
-        // The wrapper takes the vanilla instance's place, so a vanilla hook it does not forward is
-        // gone for good - Velvet Choker hides its play counter with -1 when a fight ends, and the
-        // wrapper has to do that itself.
-        CtClass choker = pool.get("anotherspirerework.relics.ReworkedRelic");
-        if (choker.isFrozen()) choker.defrost();
+        // The subclass inherits the vanilla onVictory, which hides the play counter with -1: no
+        // subclass override is needed (and adding one would be a second implementation).
+        try {
+            pool.get("anotherspirerework.relics.VelvetChoker").getDeclaredMethod("onVictory");
+            throw new AssertionError("Velvet Choker should inherit the vanilla counter cleanup");
+        } catch (javassist.NotFoundException inherited) {
+            // expected
+        }
+        CtClass vanillaChoker = pool.get("com.megacrit.cardcrawl.relics.VelvetChoker");
+        if (vanillaChoker.isFrozen()) vanillaChoker.defrost();
         final java.util.Set<String> victoryWrites = new java.util.HashSet<>();
-        choker.getDeclaredMethod("onVictory").instrument(new ExprEditor() {
+        vanillaChoker.getDeclaredMethod("onVictory").instrument(new ExprEditor() {
             public void edit(javassist.expr.FieldAccess field) {
                 if (field.isWriter()) victoryWrites.add(field.getFieldName());
             }
         });
+        vanillaChoker.toBytecode();
         require(victoryWrites.contains("counter"),
                 "Velvet Choker must clear its play counter when the fight ends");
         // Girya's campfire limit moved from three to five lifts.
-        require(anotherspirerework.patches.NewRelicFixes.GIRYA_MAX_LIFTS == 5, "Girya lift limit");
-        java.lang.reflect.Field blocked = anotherspirerework.patches.NewRelicFixes.class
-                .getDeclaredField("ACT_FOUR_BLOCKED");
-        blocked.setAccessible(true);
-        require(((String[]) blocked.get(null)).length == 27, "Act four list size");
-        for (Class<?> patch : anotherspirerework.patches.RelicReworkPatch.class.getDeclaredClasses()) {
-            for (SpirePatch annotation : patch.getAnnotationsByType(SpirePatch.class)) {
-                require(annotation.clz() != com.megacrit.cardcrawl.rewards.RewardItem.class
-                        || !annotation.method().equals(SpirePatch.CONSTRUCTOR),
-                        "Crown must not mutate RewardItem during construction");
+        require(anotherspirerework.relics.Girya.MAX_LIFTS == 5, "Girya lift limit");
+        require(anotherspirerework.patches.ActFourRelicBlockPatch.BLOCKED.size() == 27,
+                "Act four list size");
+        // No patch may mutate a RewardItem during construction; the card reward is converted only
+        // when the reward screen is laid out.
+        for (String name : patchSourceNames()) {
+            Class<?> outer = Class.forName(name, false, PatchContractTest.class.getClassLoader());
+            java.util.List<Class<?>> patches = new java.util.ArrayList<>();
+            patches.add(outer);
+            patches.addAll(java.util.Arrays.asList(outer.getDeclaredClasses()));
+            for (Class<?> patch : patches) {
+                for (SpirePatch annotation : patch.getAnnotationsByType(SpirePatch.class)) {
+                    require(annotation.clz() != com.megacrit.cardcrawl.rewards.RewardItem.class
+                                    || !annotation.method().equals(SpirePatch.CONSTRUCTOR),
+                            "Crown must not mutate RewardItem during construction");
+                }
             }
         }
+        requireCalls(pool, "anotherspirerework.relics.BustedCrown$CrownRewards", "before", "isBrewing");
         final boolean[] vanillaReward = {false};
-        CtClass crown = pool.get("anotherspirerework.patches.ReportedRelicFixes$CrownRewards");
+        CtClass crown = pool.get("anotherspirerework.relics.BustedCrown$CrownRewards");
         if (crown.isFrozen()) crown.defrost();
         crown.getDeclaredMethod("before").instrument(new ExprEditor() {
-                    public void edit(javassist.expr.NewExpr expr) {
-                        if (expr.getClassName().equals("com.megacrit.cardcrawl.rewards.RewardItem")
-                                && expr.getSignature().equals("(Lcom/megacrit/cardcrawl/relics/AbstractRelic;)V")) {
-                            vanillaReward[0] = true;
-                        }
-                    }
-                });
+            public void edit(javassist.expr.NewExpr expr) {
+                if (expr.getClassName().equals("com.megacrit.cardcrawl.rewards.RewardItem")
+                        && expr.getSignature().equals("(Lcom/megacrit/cardcrawl/relics/AbstractRelic;)V")) {
+                    vanillaReward[0] = true;
+                }
+            }
+        });
+        crown.toBytecode();
         require(vanillaReward[0], "Crown must construct a complete vanilla relic reward");
-        System.out.println("PASS: 52 relic threshold cases; Mark action destination, Cauldron slot "
-                + "constructors, Velvet Choker counter cleanup, Crown safe construction path "
+        System.out.println("PASS: Choker/Bark thresholds; Mark action destination, Cauldron slot "
+                + "constructors, Velvet Choker inherited counter cleanup, Crown safe construction path "
                 + "(headless structural checks)");
     }
 }

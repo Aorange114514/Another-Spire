@@ -83,6 +83,8 @@ foreach ($name in $list) {
 foreach ($file in $sources) {
     $text = Get-Content $file.FullName -Raw
     Assert (-not ($text -match '\banotherspire\.|\bAnotherSpire\b')) "Stale package: $($file.FullName)"
+    # The old relic implementation (wrapper + in-place patches) is gone; no source may point at it.
+    Assert (-not ($text -match 'RelicReworkPatch|NewRelicFixes|RareRelicFixes|ReportedRelicFixes|TurnRelicFixes|StrangeSpoonExhaust|TinyHouseCampfirePatch|ReworkedRelic')) "Stale relic implementation reference: $($file.FullName)"
     $relative = $file.FullName.Substring((Join-Path $project 'src\main\java').Length + 1).Replace('\', '/')
     $required += $relative.Replace('.java', '.class')
 }
@@ -112,10 +114,26 @@ foreach ($source in (Get-ChildItem (Join-Path $project 'src\main\java') -Recurse
         Assert ($paramName -eq '__result') "$($source.Name): a value returning postfix must declare __result first, found '$firstParam'"
     }
 }
-# Tiny House leaves Recall out: using it ends the visit, using anything else locks it.
-$tinyHouse = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\TinyHouseCampfirePatch.java') -Raw
+# Tiny House leaves Recall out: using it ends the visit, using anything else locks it. The free
+# Rest Site lives in the relic class itself now, so the campsite code moved with it.
+$tinyHouse = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\relics\TinyHouse.java') -Raw
 Assert ($tinyHouse -match 'instanceof RecallOption') 'Tiny House must recognise the Recall option'
 Assert ($tinyHouse -match 'recallOption\.usable = false') 'Tiny House must lock Recall once another option is used'
+
+# One class per reworked relic: RelicSwapPatch lists the replacements, and each of them is its own
+# file extending the vanilla relic class with its own makeCopy.
+$relicSwap = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\RelicSwapPatch.java') -Raw
+$relicList = @([regex]::Matches($relicSwap, 'new (\w+)\(\)') | ForEach-Object {$_.Groups[1].Value})
+Assert ($relicList.Count -eq 45) 'Expected 45 relic replacements'
+Assert (@($relicList | Select-Object -Unique).Count -eq 45) 'Duplicate relic replacement'
+$relicSources = Get-ChildItem (Join-Path $project 'src\main\java\anotherspirerework\relics') -Filter '*.java'
+foreach ($name in $relicList) {
+    $file = @($relicSources | Where-Object {$_.BaseName -ceq $name})
+    Assert ($file.Count -eq 1) "Missing/ambiguous relic source: $name"
+    $text = Get-Content $file[0].FullName -Raw
+    Assert ($text -match 'extends\s+com\.megacrit\.cardcrawl\.relics\.') "$name must extend its vanilla relic class"
+    Assert ($text -cmatch 'AbstractRelic\s+makeCopy\s*\(') "$name must override makeCopy"
+}
 
 # Card art must be one of the two sizes the game draws in: the 250x190 face and the 500x380
 # zoomed view. Anything else would be stretched in a way the artist did not intend.
@@ -177,7 +195,7 @@ if (Test-Path $powerArtRoot) {
 }
 if ($CheckJar) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $jar = [IO.Compression.ZipFile]::OpenRead((Join-Path $project 'target\anotherspirerework.jar'))
+    $jar = [IO.Compression.ZipFile]::OpenRead((Join-Path $project 'target\anotherspire.jar'))
     try {
         $names = @($jar.Entries | ForEach-Object {$_.FullName})
         foreach ($entry in $required) { Assert ($names -contains $entry) "Missing JAR entry: $entry" }

@@ -4,6 +4,27 @@
 
 # AnotherSpire Rework
 
+## 第七批：遗物改为「一件遗物一个类」（2026-10-30）
+
+遗物实现从「包装类 + 分散在原版类上的补丁」改为与卡牌一致的范式：每件被重写的遗物在
+`src/main/java/anotherspirerework/relics/<名称>.java` 里一个类，继承原版遗物类，只覆写改动的钩子；
+`patches/RelicSwapPatch` 在 `RelicLibrary.initialize()` 之后把原版原型替换为这些类（保留原版 ID、图片、
+品级与全部获取路径）。共 **45** 个遗物类：40 件行为重写（含送货员的隐藏补货）、化学物 X 与李家华夫饼的
+生成条件、瓶装三遗物的幕数门槛。
+
+- 删除旧实现：`patches/RelicReworkPatch`、`NewRelicFixes`、`RareRelicFixes`、`ReportedRelicFixes`、
+  `TurnRelicFixes`、`StrangeSpoonExhaust`、`TinyHouseCampfirePatch` 与 `relics/ReworkedRelic`。
+- 跨遗物的规则保留为独立补丁：`RelicSwapPatch`（替换表）、`ActFourRelicBlockPatch`（27 件不进第四幕）、
+  `RelicTierPatch`（旧存档遗物池修复）、`ShopRelicPatch`（遗物池抽取与条件遗物保留）、`ShopPricePatch`。
+- 原版写在别处（`hasRelic` 判断、伤害管线、奖励界面、洗牌事件）的行为放进对应遗物类的嵌套补丁；
+  存档字段类改为 `relics.BlackStar.SaveData`、`relics.PrismaticShard.StatMigration`、
+  `relics.StrangeSpoon.SaveData`、`relics.SneckoEye.Migration`（字段键不变，旧存档可继续读）。
+- 顺手修正：`scripts/verify.ps1 -CheckJar` 与文档里的产物名改为实际的 `target/anotherspire.jar`。
+
+验证：`mvn -B clean package`（JDK 8）通过（SaturatingMathTest、PatchContractTest 124 个补丁目标），
+`verify.ps1 -CheckJar` 通过。仍需游戏内验收：读档后的遗物文案/品级/池、N'loth 事件的直接构造、
+小屋子营火流程、勺子的跨存档恢复。
+
 ## 第六批：新增串刺/转化（2026-10-24）
 
 | 卡牌 | 原版 ID | 改动 | 实现 |
@@ -724,30 +745,35 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 ### 遗物机制
 
-两套机制并存：
+与卡牌同一范式：**一件遗物一个类**。
 
-1. **包装类**：`patches.RelicReworkPatch.Swap` 把 `RelicLibrary.getRelic()` 返回的 16 件原版遗物包装成
-   `relics.ReworkedRelic`，保留原版 ID、图片与获取途径。属这 16 件的是：棱镜碎片、勇气投石索、手钻、
-   邪教徒头套、大锅、融合之锤、痛楚印记、天鹅绒颈圈、灵体外质、黑暗之血、破碎王冠、神圣树皮、添水、
-   长蛇戒指、壶铃、黑星（判定见 `ReworkedRelic.supports`）。
-2. **直接补丁**：其余遗物直接给原版类打 Prefix/Postfix/Insert（`RelicReworkPatch`、`ReportedRelicFixes`、
-   `TurnRelicFixes`、`NewRelicFixes`、`ShopRelicPatch`、`StrangeSpoonExhaust`），让**原版实例与包装实例共用同一行为**。
-
-> ⚠ 包装类**取代**了原版实例，它没有转发的原版钩子就等于不存在。例如原版 `VelvetChoker.onVictory()`
-> 用 `counter = -1` 在战斗结束隐藏计数，包装类不转发就会把上回合的张数一直挂在遗物栏上。
-> 改包装遗物的行为时，必须逐项核对它取代了哪些原版钩子。
+1. **替换**：`patches.RelicSwapPatch` 在 `RelicLibrary.initialize()` 之后把原版原型换成
+   `anotherspirerework.relics.<名称>`（45 件）。替换发生在原型表（`sharedRelics` / `redRelics` /
+   `greenRelics` / `blueRelics` / `purpleRelics`）、品级列表和颜色列表上，并带过 `isSeen`；游戏所有获取
+   路径都走 `RelicLibrary.getRelic(id).makeCopy()`（卡池、宝箱、奖励、商店、事件、读档），所以替换一处
+   即全局生效。品级改变（棱镜碎片 BOSS、小屋子 SHOP）直接写在各遗物构造函数里，替换时同步移入对应品级列表。
+2. **继承**：每件遗物的类 `extends com.megacrit.cardcrawl.relics.<原版类>`，只覆写行为改动的钩子；
+   **未覆写的原版钩子自动保留**——这是与旧包装类的关键区别（包装类不转发的钩子等于不存在）。
+   `makeCopy()` 返回本类实例。原版写在别处的行为（`hasRelic` 判断、伤害管线、奖励界面、洗牌事件）由该
+   遗物类里的嵌套 `@SpirePatch` 负责，例如 `HandDrill`、`Ectoplasm`、`Sozu`、`TwistedFunnel`、`TheSpecimen`。
+3. **文本**：`getUpdatedDescription()` 返回 `AnotherSpireRework.getRelicDescription(relicId)`。原版类自己
+   覆写 `updateDescription()` 的五件（融合之锤、天鹅绒颈圈、灵体外质、破碎王冠、添水）必须一并覆写，
+   否则读档后会被原版文案覆盖；邪教徒头套、化学物 X、李家华夫饼、送货员、瓶装三遗物刻意保留原版文本。
+   多行描述（勺子/星系仪/星盘/小屋子）用 `getRelicDescription(relicId, 1)` 作选牌界面标题。
+4. **直接构造**：N'loth 事件直接 `new NlothsGift()`，由 `relics.NlothsGift$NlothEvent` 的仪器补丁换成新类；
+   其余原版内容都经由 `RelicLibrary.getRelic` 获取。
+5. **不进第四幕（心脏层）的 27 件遗物**：仍由 `patches.ActFourRelicBlockPatch.BLOCKED` 清单 + `canSpawn`
+   后缀/前缀处理（自己声明 `canSpawn` 的 21 件逐个打前缀）。
+6. **条件生成**：化学物 X、李家华夫饼的条件写进各自 `canSpawn()`；瓶装三遗物的幕数门槛也写进
+   `canSpawn()`，并通过 `relics.KeepInPool` 告诉 `ShopRelicPatch`「这是暂时不满足，留在池里」，
+   不消耗本局机会。其余条件仍按原版处理。
+7. **跨遗物规则**留在 `patches/`：`RelicTierPatch`（旧存档池修复）、`ShopRelicPatch`（池抽取）与
+   `ShopPricePatch`（商店降价）；它们只读遗物 ID/品级与 `canSpawn()`，不包含单件遗物的行为。
 
 遗物描述放在 `localization/eng|zhs/RelicStrings.json` 的 `anotherspirerework:<原版遗物ID>` 键下，
 不覆盖原版字符串。遗物标注规范**与卡牌不同**：以 `#r卡名`、`#g遗物名`、`#y遗物` 标注（卡牌才用 `*卡名`）。
 需求中以 `#` 标注的补充说明（生成条件、隐藏效果等）不进描述文本。
-
-**不进第四幕（心脏层）的 27 件遗物**（`NewRelicFixes.ACT_FOUR_BLOCKED`）：不覆盖 `canSpawn` 的 6 件走
-`AbstractRelic` 基类补丁，自己声明了 `canSpawn` 的 21 件逐个打前缀，避免基类补丁被子类覆盖绕过。
-清单见 [README.md](README.md) §2。
-
-**条件生成遗物**（化学物 X、李家华夫饼）不满足条件时**留在可存档的遗物池里**，下个商店再判定，
-不会消耗本局的生成机会。瓶装三遗物的幕数门槛在**遗物池抽取时**生效，抽到但不满足幕数时留在池里；
-其余 `canSpawn` 条件仍按原版处理。
+不进第四幕的 27 件清单见 [README.md](README.md) §2。
 
 ### 其它机制实现
 
@@ -792,7 +818,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | `flush(AbstractGameAction)` | 包级；动画结束且无界面时触发，并把被中断抽牌的剩余张数放回队首 |
 
 选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、
-`enum Choice { REMOVE_EXHAUST, ADD_TO_DECK }`。它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：
+`enum Choice { REMOVE_EXHAUST, ADD_TO_DECK, ADD_ANY_COLOR }`。它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：
 `GameActionManager.addToBottom` 只在战斗房间接收动作，商店/宝箱拾取时会被直接丢弃。
 
 饱和算术 `util.SaturatingMath`：`fromLong(long)`、`add(int,int)`、`subtract(int,int)`、`multiply(int,int)`。
@@ -809,18 +835,27 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | 类 | 方法 |
 |---|---|
 | `ExhaustTracker` | `onCardExhausted()`、`exhaustedThisTurn()`、`reset()`（燃愿判断本回合是否消耗过牌） |
-| `TurnRelicFixes` | `serpentActive`、`starActive`、`potionLocked`、`potionsLocked`、`resetBattle`、`discard`、`prismEquip`、`serpentTurn`、`vanillaElites`、`victory`、`startGame`、`currentElites`、`syncStar`、`starTurn`；实现 `CustomSavable<Integer>`（精英击杀），内部 `StatMigration` 做旧存档一次性迁移 |
-| `NewRelicFixes` | `inActFour`、`actFourBlocked`、`ninjaScrollTurn`、`yangUse`、`enchiridionStart`、`onCardDrawn`、`processPendingDraws`、`isStrikeOrDefend`、`frozenEyeOwned`、`applyFrozenEye`、`removeFrozenEye`、`keywordSuffix`、`inserterTurn`、`matryoshkaShuffle`、`spoonEquip`、`orreryEquip`、`giryaCampfireOptions` |
-| `ReportedRelicFixes` | `penalizeChoker`、`penalizeBark`、`loseEnergy`、`markStart`、`chokerStart`、`barkStart`、`cauldronEquip` |
-| `StrangeSpoonExhaust` | `removed`、`strip`、`mark`、`withoutExhaustText`、`formatCounts`、`restorePending`；实现 `CustomSavable<String>`（去消耗张数） |
-| `RelicReworkPatch` | `ignoreRelic(String)`（生成 `ExprEditor` 关掉指定遗物的原版 `hasRelic` 分支）、`potionsLocked()`、`bypass(DamageInfo)`（手钻无视格挡）、公开字段 `bloodActive` |
-| `ReworkedRelic` | `supports(String)`：判定哪些遗物需要包装；覆写 `onEquip`/`onUnequip`/`atBattleStart`/`atTurnStart`/`onVictory`/`onPlayCard`/`addCampfireOption` |
-| `ShopRelicPatch` | 条件遗物（化学物 X、李家华夫饼）的跳过与补货/池持久化；`actGated(String)` 判定瓶装三遗物的幕数门槛 |
-| `TinyHouseCampfirePatch` | `tick()`、`reset()`：小屋子把用过的营火选项置灰，界面与特效结束后用 `CampfireUI.reopen()` 放回营火；常量 `REOPEN_DELAY = 0.3F`、`FORCE_AFTER = 3.0F` |
+| `util.RelicChecks` | `owned(id)`、`inActFour()`、`ignoreHasRelic(id)`（生成 `ExprEditor` 关掉指定遗物的原版 `hasRelic` 分支）、`loseEnergy()`、`keywordSuffix(language)`、`withoutExhaustText(desc, keyword)`、`serpentTurnActive(turn)`、`blackStarActive(kills)`、`sozuLocked(combat, sozu, discarded)` |
+| `util.RelicSave` | `formatCounts(Map)`、`parseCounts(String)`：勺子「去消耗」的存档格式（纯逻辑，便于无图形环境测试） |
+| `patches.RelicSwapPatch` | `replacements()`：45 件遗物的替换表；在 `RelicLibrary.initialize()` 后替换原型/品级列表/颜色列表并带过 `isSeen` |
+| `patches.RelicTierPatch` | `poolFor(id)`、`normalizePools(...)`、`normalizeRelicPools()`：旧存档里棱镜碎片/小屋子的池位置修复 |
+| `patches.ActFourRelicBlockPatch` | `BLOCKED`（27 件清单）、`blocked(id)`：第四幕屏蔽；自己声明 `canSpawn` 的 21 件逐个前缀 |
+| `patches.ShopRelicPatch` | `sellable(id)`：商店只卖自身品级为 SHOP 且 `canSpawn()` 的遗物；池抽取把 `KeepInPool` 与条件遗物留在池里 |
+| `relics.*` | 每件遗物的行为都在自己的类里；`relics.KeepInPool.keepInPool()` 表示"暂时不满足、留在池里" |
 | `ShopPricePatch` | `discounted(RelicTier, int)`：商店折后价；常量 `UNCOMMON_DISCOUNT = 50`、`RARE_DISCOUNT = 100` |
 | `RagnarokXAction` | `energyFor(int)`：X 费的当前取值（含化学物 X），卡面显示与结算共用 |
 | `SadisticNaturePower` | `active()`：玩家是否持有残虐天性，供两处伤害补丁判定 |
 | `BlurDrawPower` | `onCardDrawn(AbstractCard)`：残影的抽牌结算，由主类 `receivePostDraw` 调用 |
+| `relics.MedicalKit` / `relics.BlueCandle` | `onCardDrawn(AbstractCard)`、`processPendingDraws()`：抽到状态/诅咒的延迟处理，由主类 `receivePostDraw` / `receivePostDungeonUpdate` 调用 |
+| `relics.StrangeSpoon` | `mark`、`strip`、`removed`、`onSave`/`onLoad`、`restorePending()`：去消耗的拾取/复制/存档恢复；`SaveData` 是注册的存档字段 |
+| `relics.Matryoshka` | `drawOnShuffle()`：洗牌事件触发，由 `ShuffleTriggerPatch.fire()` 调用 |
+| `relics.BlackBlood` | `reset()`：战斗开始/结束时清空"本次已触发"标记 |
+| `relics.BlackStar` | `onVictory(room)`、`resetRun()`、`sync(relic)`、`currentElites()`、`vanillaElites()`；`SaveData` 是注册的存档字段 |
+| `relics.PrismaticShard` | `StatMigration`：旧存档一次性补基础能量/抽牌量 |
+| `relics.SneckoEye` | `Migration`：旧存档补第 3 个手牌位 |
+| `relics.TinyHouse` | `tick()`、`reset()`：自由营火；常量 `REOPEN_DELAY = 0.3F`、`FORCE_AFTER = 3.0F` |
+| `relics.Cauldron` | `isBrewing()`：大锅打开自己的奖励界面期间，破碎王冠不转换卡牌奖励 |
+| `relics.HandDrill` | `bypass(DamageInfo)`：手钻无视格挡/坚不可摧 |
 
 新 Power（18）：`NextTurnFocus`、`GlassKnifeMark`、`Mark`、`HelloWorldAnyCard`、`ShivMastery`、`FreeSkill`、
 `CreativeAIUpgraded`、`BattleHymnSmite`、`LikeWaterCalm`、`StudyInsight`、`DevotionDraw`、`ScuffleDraw`、
@@ -844,18 +879,20 @@ Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域
 
 | 字段 | 内容 |
 |---|---|
-| `EliteKills` | 黑星的全局精英击杀数；旧存档以原版前三幕击杀数兜底 |
-| `TurnRelicStatsV1` | 一次性迁移：给已持有的棱镜碎片补基础能量/抽牌量，迁完打标记不再重复 |
-| `SpoonNoExhaust` | 勺子"已去掉消耗"的牌，按"卡牌 ID + 升级次数 + misc"记张数，读档后按张数重新应用 |
-| `SneckoHandV1` | 给旧存档的异蛇之眼补上第 3 个手牌位 |
+| `EliteKills` | `relics.BlackStar.SaveData`：黑星的全局精英击杀数；旧存档以原版前三幕击杀数兜底 |
+| `TurnRelicStatsV1` | `relics.PrismaticShard.StatMigration`：一次性迁移，给已持有的棱镜碎片补基础能量/抽牌量，迁完打标记不再重复 |
+| `SpoonNoExhaust` | `relics.StrangeSpoon.SaveData`：勺子"已去掉消耗"的牌，按"卡牌 ID + 升级次数 + misc"记张数，读档后按张数重新应用 |
+| `SneckoHandV1` | `relics.SneckoEye.Migration`：给旧存档的异蛇之眼补上第 3 个手牌位 |
+
+字段键（`makeID(...)`）与数据格式都没变，旧存档可继续读。
 
 另有一项**不走自定义字段**的存档兼容处理：遗物池（`shop_relics` / `boss_relics`）随存档保存，读档时不会按品级重建，
 因此在品级改动之前开局的存档会把棱镜碎片留在商店池（实例已是 BOSS 品级，`getPrice()` 返回 999 金币）、
-把小屋子留在 BOSS 池。`RareRelicFixes.normalizePools`（`AbstractDungeon.loadSave` 的后缀补丁）读档后把
+把小屋子留在 BOSS 池。`RelicTierPatch.normalizePools`（`AbstractDungeon.loadSave` 的后缀补丁）读档后把
 这两件挪回各自品级的池子，插入位置由该局种子决定（存档/读档不会重置遗物池），已持有的遗物丢弃不放回；
 `ShopRelicPatch` 另有品级守卫，商店位置只接受自身品级为商店遗物的 id。新开局本来就按品级建池，不受影响。
 
-原则：**不猜测存档没有保存的信息**（例如旧长蛇戒指是原版还是包装版，存档只有 ID）；
+原则：**不猜测存档没有保存的信息**（例如旧长蛇戒指是原版还是重写版，存档只有 ID）；
 不承诺"先升级、再退回旧版本、再升级"的混用存档。
 
 ### 构建与验证
@@ -866,7 +903,8 @@ $env:JAVA_HOME='<JDK 8 安装目录>'; mvn -B clean package
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 ```
 
-- 产出 Java 8 字节码（`maven.compiler.source/target = 1.8`），输出 `target/anotherspirerework.jar`。
+- 产出 Java 8 字节码（`maven.compiler.source/target = 1.8`），输出 `target/anotherspire.jar`
+  （artifactId 为 `anotherspire`；旧文档里的 `anotherspirerework.jar` 已废弃）。
 - **默认不部署**：`mod.deploy.skip` 默认 `true`，而且 Ant 的 `unless` 判定的是"属性有没有被设置"，
   传 `-Dmod.deploy.skip=false` 同样会**跳过**复制。要部署就手动把 jar 拷贝到游戏 `mods/`，
   再用 Java 8 启动 ModTheSpire，只启用 BaseMod + 本模组。
@@ -877,7 +915,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 |---|---|---|
 | 纯逻辑回归 | `SaturatingMathTest` | 饱和算术与随机边界，不初始化图形环境 |
 | 补丁契约 | `PatchContractTest`（随 `mvn package` 运行） | 用真实依赖 JAR 校验目标方法、locator、字段与 Instrument 后的字节码 |
-| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、130 张唯一替换、卡图尺寸、JAR 条目 |
+| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、130 张唯一卡牌替换、45 件唯一遗物替换、卡图尺寸、JAR 条目 |
 | 真实运行 | ModTheSpire + 游戏内场景 | 补丁组合、动作/UI 时序、卡面观感、存档迁移；**前三层都不能替代它** |
 
 ### 改代码的硬性规则
@@ -889,13 +927,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
    缺了就取不到本地化文本。
 3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
    中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
-4. **替换表必须仍是 130 个唯一实例**（`CardSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
+4. **替换表必须仍是 130 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
+   （`RelicSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
 5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
    必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。
-6. **包装遗物必须转发它取代的原版钩子**；新增遗物行为时先确认原版钩子是取消还是保留。
-7. **条件生成遗物**不满足条件时要留在池中，不能消耗掉本局的一次生成机会。
+6. **遗物与卡牌同一范式：一件遗物一个类。** 在 `relics/<名称>.java` 继承原版遗物类，只覆写要改的钩子；
+   **未覆写的原版钩子就是继承的**，所以不要再写包装类。原版类自己覆写 `updateDescription()` 的遗物，
+   子类必须一并覆写，否则读档时会被原版文案覆盖。
+7. **条件生成遗物**不满足条件时要留在池中，不能消耗掉本局的一次生成机会（`relics.KeepInPool` / `canSpawn()`）。
 8. **补丁优先 Prefix/Postfix/语义 Locator**，`Replace`/`Insert` 只在上面的手段都不行时用；
-   需要绕过原版 `hasRelic` 之类判断时走 `RelicReworkPatch.ignoreRelic`。
+   需要绕过原版 `hasRelic` 之类判断时走 `util.RelicChecks.ignoreHasRelic`。
 9. **中文本地化的 ` NL ` 空格、`#`/`*` 标注与关键词边界不要机械删除**；JSON 能解析不等于卡面渲染正确。
 10. **新内容用命名空间 ID**；刻意替换原版内容可以保留原版 ID，但要在文档说明冲突范围。
 11. 新增延迟工作（需要等动画/界面结束的）沿用现有落点：每帧工作放 `receivePostDungeonUpdate`，
@@ -919,7 +960,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
   放回营火后本处营火是安静的。
 - **疾风连击**从消耗堆/抽牌堆回手用的是本模组自己的 `ReturnCardToHandAction`；手牌已满
   （`BaseMod.MAX_HAND_SIZE`）时它留在原处，不会掉进弃牌堆。
-- **瓶装三遗物**的幕数门槛在**遗物池抽取时**生效，抽到但不满足幕数时它们留在可存档的池里；
+- **瓶装三遗物**的幕数门槛在**遗物池抽取时**生效：抽到但未到第三幕时 `KeepInPool` 让它们留在可存档的池里；
   其余条件仍按原版处理。
+- **遗物文案**：读档时原版会对每个遗物调用 `updateDescription(PlayerClass)`；只有原版类自己覆写了该方法的
+  五件遗物需要在子类里一并覆写，其余遗物的文案在构造函数里由 `getUpdatedDescription()` 设好即可。
+- **同方法的同类型补丁顺序**：祈祷轮与恩洛斯的礼物现在是两个独立的 `setupItemReward` 后缀，
+  精英房里两组额外奖励的排列顺序不保证（只影响显示顺序，不影响奖励内容）。
+- **N'loth 事件**直接 `new NlothsGift()`，不走遗物库；由 `relics.NlothsGift` 内的嵌套仪器补丁换成重写类，
+  这是原版唯一一处绕过 `RelicLibrary.getRelic` 的遗物构造。
 - **残虐天性**的翻倍只作用于敌人的**普通伤害**；敌人身上的虚弱/易伤层数本身不变，改的是它们生效的比例。
   该 power 的 `amount` 固定为 `-1`，buff 图标不画数字；多张仍只留一个图标，`active()` 只看 ID。

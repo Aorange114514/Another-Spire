@@ -206,7 +206,10 @@ verification and maintenance rules, see
 
 ## 2. Relic changes
 
-All relics keep their vanilla IDs and vanilla images. The wrapper class ([ReworkedRelic](src/main/java/anotherspirerework/relics/ReworkedRelic.java)) and the direct-patch paths coexist; for details see
+All relics keep their vanilla IDs and vanilla images. One class per relic, the same pattern as the cards:
+`relics/<RelicName>.java` extends the vanilla relic class and overrides only the hooks that change;
+[RelicSwapPatch](src/main/java/anotherspirerework/patches/RelicSwapPatch.java) replaces the vanilla prototypes
+with those classes after `RelicLibrary.initialize()`, so everything not overridden is inherited. For details see
 [CHANGELOG.md — implementation & maintenance notes (Chinese)](CHANGELOG.md#maintenance).
 
 | Relic | Change |
@@ -228,7 +231,7 @@ All relics keep their vanilla IDs and vanilla images. The wrapper class ([Rework
 | Sacred Bark | Each turn +[E]; lose [E] when you have fewer than 2 potions (empty slots do not count) |
 | Sozu | Each turn +[E]; potions are locked each combat until you voluntarily discard one (drinking/throwing/Fairy in a Bottle does not unlock; no restriction outside combat) |
 | Ring of the Serpent | Replaces Ring of the Snake: draw 2 extra cards in each of the first 3 turns of each combat; the vanilla permanent +1 draw is removed |
-| Girya | Campfire lifting cap 5 times (vanilla 3 times), each time also +1 Strength and +1 Dexterity; the rest-site "Lift" button tooltip is synced to (max +5); wrapper instances do not apply twice |
+| Girya | Campfire lifting cap 5 times (vanilla 3 times), each time also +1 Strength and +1 Dexterity; the rest-site "Lift" button tooltip is synced to (max +5) |
 | Calling Bell | Unique Curse + 5 random relics, with at least 1 Common/Uncommon/Rare each |
 | Black Star | After defeating ≥5 elites this run, +[E] each turn; the relic counter shows the cumulative elite kills this run (uncapped, synced when loading a save) |
 | Ninja Scroll | At the start of each turn, add 1 Shiv to your hand (replaces the vanilla 3 at combat start) |

@@ -9,8 +9,9 @@ import com.megacrit.cardcrawl.shop.StoreRelic;
 /**
  * Shop prices: an Uncommon relic costs 50 less and a Rare relic 100 less than the base game asks.
  *
- * <p>Only the shop's own slot is affected, and the tier read here is the one the relic carries,
- * which is also what {@code RareRelicFixes} rewrote for the two relics whose tier changed.
+ * <p>Only the shop's own slot is affected, and the tier read here is the one the relic carries, which
+ * is also what makes the two tier-changed relics ({@code relics.PrismaticShard},
+ * {@code relics.TinyHouse}) price correctly.
  */
 public class ShopPricePatch {
     public static final int UNCOMMON_DISCOUNT = 50;
