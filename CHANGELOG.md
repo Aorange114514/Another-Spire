@@ -349,7 +349,7 @@ src/main/resources/anotherspirerework/images/powers/
 
 ### 自动验证
 
-`Zulu Java 8` 执行 `mvn clean package`：`SaturatingMath` 30302 项、既有 52+30 阈值回归、
+`Java 8` 执行 `mvn clean package`：`SaturatingMath` 30302 项、既有 52+30 阈值回归、
 **192 个补丁目标**（补丁方法/构造器存在性、`ExprEditor` 注入、插入定位器与字段注入、
 以及实例方法钩子的实例参数绑定全部编译通过）与新增的
 “第二批遗物/卡牌/能力”契约检查全部通过；遗物池修复另有 14 项断言（棱镜碎片离开商店池、小屋子进入商店池、
@@ -455,7 +455,7 @@ EmptyDeckShuffleAction → ShuffleAction → DrawCardAction
 
 - `PatchContractTest` 新增 `powerTitleAndReprogramRegression()`：断言 `Reprogram` 构造函数不再写 `exhaust`、两个 power 暴露 `powerStrings`、选牌 effect 的 `update` 读 `isScreenUp`；洗牌触发的断言要求 `flush` 引用 `addToTop` 与 `DrawCardAction`（时序逻辑已抽到 `flush`，见上一节）。
 - `verify.ps1` 新增：两个 buff 标题必须等于对应卡名、`Reprogram` 描述不得含 `Exhaust`/`消耗`、每个 `extends AbstractPower` 的类都必须声明 `powerStrings` 字段。
-- 本机构建：`mvn -f pom.xml clean package` 在 **Zulu 8** 下 `BUILD SUCCESS`（122 个补丁目标与上述全部断言通过），`verify.ps1 -CheckJar` 通过。注意用 JDK 25 跑 `mvn package` 会在 `postfixBindingRegression()` 的 `CtClass.toClass()` 处抛 `NullPointerException`（javassist 的 `DefineClassHelper` 在新 JDK 上取不到 `defineClass`），与本轮改动无关，换 Java 8 即可。
+- 构建验证：`mvn -f pom.xml clean package` 在 **Java 8** 下 `BUILD SUCCESS`（122 个补丁目标与上述全部断言通过），`verify.ps1 -CheckJar` 通过。注意用 JDK 25 跑 `mvn package` 会在 `postfixBindingRegression()` 的 `CtClass.toClass()` 处抛 `NullPointerException`（javassist 的 `DefineClassHelper` 在新 JDK 上取不到 `defineClass`），与本轮改动无关，换 Java 8 即可。
 - 产物已复制到 `…\SlayTheSpire\mods\anotherspirerework.jar`（pom 的 `mod.deploy.skip=true` 默认不部署）。以下场景仍需游戏内验收：选牌中开／关地图后继续选牌并确认、加入牌组卡牌的外观、一次抽牌跨洗牌时羽化的"先选牌后剩余抽牌"。
 
 ## 根因修复：复制补丁的返回值参数顺序（2026-10-07）
@@ -603,7 +603,7 @@ AnotherSpireRework\src\main\resources\anotherspirerework\images\cards\
 - 第四幕（心脏层）生成限制：需求的27件遗物在 `actNum >= 4` 且非无尽模式时不再生成。不覆盖 `canSpawn` 的6件走 `AbstractRelic` 基类补丁，声明了 `canSpawn` 的21件逐个打前缀补丁，避免基类补丁被子类覆盖绕过。
 - 无色选牌“跳过”：发现、无色药水、工具箱、尼尔里的典籍与外来影响都走 `CardRewardScreen.customCombatOpen`，补丁统一打开跳过键；普通卡牌奖励与观者的“抉择”界面不受影响。
 - 改类型卡牌的原画裁切修复：攻击/技能/能力三种卡框的画窗宽度不同（攻击约16px边饰、技能约20px、能力是更小的椭圆窗），换框后原画会露出来一截或被多切掉一条。上一轮用 `CardArtPatch` 叠加旧卡框来还原裁切，**该做法已在下面的“反馈修复与卡图交接”中撤销**，改由作者提供卡图，代码只负责加载与回退。
-- 自动验证：Zulu Java 8 执行 `mvn clean package`，123个补丁目标（含新遗物、洗牌事件、跳过与卡图加载补丁）通过契约检查，新增卡牌/能力/遗物的动作契约、第四幕27件清单与既有52+30项阈值回归全部通过；`verify.ps1 -CheckJar` 检查双语字段与能量词元、96张唯一替换、7个新卡牌类与全部顶层类已打包。以上均为无图形环境检查。
+- 自动验证：Java 8 执行 `mvn clean package`，123个补丁目标（含新遗物、洗牌事件、跳过与卡图加载补丁）通过契约检查，新增卡牌/能力/遗物的动作契约、第四幕27件清单与既有52+30项阈值回归全部通过；`verify.ps1 -CheckJar` 检查双语字段与能量词元、96张唯一替换、7个新卡牌类与全部顶层类已打包。以上均为无图形环境检查。
 - 需游戏内验收：羽化选牌界面与剩余抽牌的结算顺序、结茧/套娃在深呼吸与重启下的触发次数、星系仪30张选牌界面与卡组写入、奇怪的勺子读档后是否保持无消耗、冻结之眼在打击/防御上的虚无文本与回合结束消耗、医药箱/蓝蜡烛的抽牌连锁、英雄宝典三选一、忍术卷轴手牌满时的处理，以及改类型卡牌的卡面观感。默认不部署；升级前备份存档。
 - 暴雪的机制、费用与集中数值本轮未做修改。
 
@@ -618,7 +618,7 @@ AnotherSpireRework\src\main\resources\anotherspirerework\images\cards\
 - 斗篷与匕首在抽牌堆原位置替换选中牌，不触发消耗，也不改永久牌组；不足指定数量时替换全部，空牌堆不操作。堆栈改按抽牌堆计数并保留原版动态格挡显示。
 - 双语文本、衍生牌预览、89张库替换与资源验证同步更新。验证脚本不再依赖不存在的旧工程。
 - 需游戏内验收：三选一与牌堆选择界面、手牌满时生成、小刀群攻/附毒/精准/乾坤一掷/玻璃刀刃联动、时间吞噬者、心脏限伤、致命伤害格挡及存档读取。默认不部署；更新前备份存档并结束进行中的战斗。
-- 自动验证使用Zulu Java 8执行Maven clean package：算术30302项、既有遗物/回合边界检查、新卡牌动作与升级结构契约及实际JAR补丁接口检查；verify.ps1 -CheckJar检查双语字段/能量词元、89张唯一替换和全部顶层类打包。以上均为无图形环境验证，不等于游戏内实测。
+- 自动验证使用 Java 8 执行 Maven clean package：算术30302项、既有遗物/回合边界检查、新卡牌动作与升级结构契约及实际JAR补丁接口检查；verify.ps1 -CheckJar检查双语字段/能量词元、89张唯一替换和全部顶层类打包。以上均为无图形环境验证，不等于游戏内实测。
 
 ## 回合遗物与添水修复（2026-10-03）
 
@@ -650,7 +650,7 @@ AnotherSpireRework\src\main\resources\anotherspirerework\images\cards\
 - 精巧刺击：非空手牌始终打开可选零张的弃牌界面，不再在手牌不超过三张时自动全弃。
 - 死吧死吧死吧：小刀复制逐张结算后再安排下一张，时间扭曲仍正常计数、结束回合和加力量，但不取消后续复制；目标死亡后停止。
 - 新增陨石打击重做：5费，30伤害，生成3/4个等离子球。
-- 实现 `c:\Users\riced\VS Code\STS modding\requirements.txt` 中19项遗物改动，保留原版ID和图片。
+- 实现 `requirements.txt` 中 19 项遗物改动，保留原版 ID 和图片。
 - 融合之锤随机降级最多四次，每次一级，允许重复选中灼热攻击；不再禁止休息处升级。
 - 化学物X、李家华夫饼不满足条件时留在可存档的商店遗物池中，后续生成时重新检查。
 - 大锅制作药水使用角色可获得药水列表，果汁双权重仅作用于这五瓶药水；通过原版奖励界面领取。
@@ -662,20 +662,23 @@ AnotherSpireRework\src\main\resources\anotherspirerework\images\cards\
 - 邪教徒头套、送货员保持原描述。
 - 遗物本地化按需求原文改写主句，并改用原版遗物标注规范（`#r卡名`、`#g遗物名`、`#y遗物`，区别于卡牌的 `*卡名`）；需求中以 `#` 标注的补充说明（生成条件、果汁双权重、坚不可摧、战斗外药水、一举一力一敏、稀有度构成）不进描述文本。陨石打击文案与原版 `Meteor Strike` 逐字一致，未改动。
 
-本机依赖不在默认Steam目录，可使用：
+依赖不在默认 Steam 目录时，用 `-Dlocal.dependencies` 指向同时包含 `desktop-1.0.jar`、`ModTheSpire.jar` 与 `BaseMod.jar` 的目录：
 
 ```powershell
-mvn -f 'c:\Users\riced\VS Code\STS modding\AnotherSpireRework\pom.xml' '-Dlocal.dependencies=C:/Users/riced/Games/OtherGames/sts mod/dependencies' clean package
-& 'c:\Users\riced\VS Code\STS modding\AnotherSpireRework\scripts\verify.ps1' -CheckJar
+mvn -f pom.xml '-Dlocal.dependencies=<依赖目录>' clean package
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 ```
 
 新增无图形环境的补丁契约检查：使用实际依赖JAR验证目标方法、插入定位器、字段及Instrument产生的字节码。
 这不能替代ModTheSpire启动及游戏内验收。需重点实测时间吞噬者跨12/24张牌、心脏限伤、药水丢弃、商店补货、Boss遗物替换、休息处举重和降级。
 
 
+<a id="maintenance" name="maintenance"></a>
+
 ## 实现与维护参考
 
-> 本节由原 README 的机制说明、验证流程与硬性规则移入，供维护时查阅。改动清单见 [README.md](README.md)。
+> 本节由原 README 的机制说明、验证流程与硬性规则移入，供维护时查阅。改动清单见
+> [README.md](README.md)（中文）与 [README.en.md](README.en.md)（English）。
 
 ### 重写版说明
 
@@ -859,7 +862,7 @@ Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域
 
 ```powershell
 # 必须用 JDK 8；默认的 JDK 25 会让 PatchContractTest 在 javassist 里抛 NPE
-$env:JAVA_HOME='C:/Program Files/Zulu/zulu-8'; mvn -B clean package
+$env:JAVA_HOME='<JDK 8 安装目录>'; mvn -B clean package
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 ```
 
@@ -868,7 +871,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
   传 `-Dmod.deploy.skip=false` 同样会**跳过**复制。要部署就手动把 jar 拷贝到游戏 `mods/`，
   再用 Java 8 启动 ModTheSpire，只启用 BaseMod + 本模组。
 - 代码改动必须重新构建并重启游戏才生效。
-- 本机依赖不在 Steam 目录时，用 `mvn -f pom.xml '-Dlocal.dependencies=<目录>' clean package`。
+- 依赖不在默认 Steam 目录时，用 `mvn -f pom.xml '-Dlocal.dependencies=<目录>' clean package`。
 
 | 层级 | 入口 | 能证明什么 |
 |---|---|---|

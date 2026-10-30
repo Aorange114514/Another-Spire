@@ -1,0 +1,5 @@
+# Generated Maven metadata embeds absolute build-machine paths and usernames,
+# so these directories stay out of the repository even though target/ is tracked.
+/target/maven-status/
+/target/surefire-reports/
+/target/antrun/

@@ -1,16 +1,41 @@
+<a id="top" name="top"></a>
+
 # AnotherSpire Rework
 
-以原版 ID 重写《杀戮尖塔》的卡牌与遗物。mod id `anotherspirerework`，依赖 BaseMod，Java 8。
+**简体中文** | [English](README.en.md)
+
+以原版 ID 重写《杀戮尖塔》的卡牌与遗物。mod id `anotherspirerework`，依赖
+[BaseMod](https://github.com/daviscook477/BaseMod)，运行于 [Java 8](https://adoptium.net/temurin/releases/?version=8) 与
+[ModTheSpire](https://github.com/kiooeht/ModTheSpire)。仓库：
+[github.com/Aorange114514/Another-Spire](https://github.com/Aorange114514/Another-Spire)。
+
 本文件只列改动内容；替换机制、卡图/能力图标规范、存档、构建验证与维护规则见
-[CHANGELOG.md](CHANGELOG.md) 末尾的「实现与维护参考」。
+[CHANGELOG.md 的「实现与维护参考」](CHANGELOG.md#maintenance)。
 
 > 不要同时启用旧的 `AnotherSpire`。两者修改相同的卡牌与方法，包名/modID 不同不代表机制可叠加。
 
+## 目录
+
+- [1. 卡牌改动](#cards)
+  - [铁甲战士（24）](#ironclad)
+  - [静默猎手（31）](#silent)
+  - [故障机器人（28）](#defect)
+  - [观者（30）](#watcher)
+  - [无色（17 张替换 + 噬咬）](#colorless)
+- [2. 遗物改动](#relics)
+  - [不进第四幕（心脏层）的 27 件遗物](#no-act4)
+- [3. 其它机制改动](#mechanics)
+- [实现与维护参考](CHANGELOG.md#maintenance)（构建、验证与维护规则）
+
+<a id="cards" name="cards"></a>
+
 ## 1. 卡牌改动
 
-- `CardSwapPatch.replacements()` 共替换 **130 张**卡牌，全部沿用原版 cardID 与原版图片路径。
-- 噬咬（`Bite`）不走卡库，由 `BitePatch` 单独补丁，不计入 130 张。
+- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) 共替换 **130 张**卡牌，全部沿用原版 cardID 与原版图片路径。
+- 噬咬（`Bite`）不走卡库，由 [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) 单独补丁，不计入 130 张。
 - 费用写「基础（升级后）」；效果括号内为升级后的数值。⚠ 表示类型或稀有度发生变化。
+
+<a id="ironclad" name="ironclad"></a>
 
 ### 铁甲战士（24）
 
@@ -40,6 +65,8 @@
 | 盛怒 | `Seeing Red` | 1（0） | 如果你本回合消耗过牌，获得 [E][E][E] |
 | 地狱之刃 | `Infernal Blade` | 1（0） | 从 3 张随机攻击牌中选择一张加入手牌，本回合耗能变为 0；消耗 |
 | 恶魔形态 | `Demon Form` | 3 | 虚无；你的消耗堆每有一张牌，对敌人造成的伤害 +1（升级后取消虚无） |
+
+<a id="silent" name="silent"></a>
 
 ### 静默猎手（31）
 
@@ -77,6 +104,8 @@
 | 弹跳药瓶 | `Bouncing Flask` | X | 随机给予敌人 6 层中毒 X（X+1）次 |
 | 串刺 | `Skewer` | X | 造成 9（12）点伤害 X 次 |
 
+<a id="defect" name="defect"></a>
+
 ### 故障机器人（28）
 
 | 卡牌 | 原版 ID | 费用 | 效果（升级后） |
@@ -109,6 +138,8 @@
 | 雷霆打击 | `Thunder Strike` | 3 | 你在本场战斗中每生成过一个闪电充能球，生成一个闪电充能球并随机造成一次 3 点伤害；消耗（升级后取消消耗） |
 | 暴风雨 | `Tempest` | X | 生成 X（X+1）个闪电充能球 |
 | 超频 ⚠罕见→普通 | `Steam Power` | 0 | 抽 2（3）张牌；将一张灼伤放入你的弃牌堆（原效果不变） |
+
+<a id="watcher" name="watcher"></a>
 
 ### 观者（30）
 
@@ -145,6 +176,8 @@
 | 立地升天 | `ReachHeaven` | 3 | 造成 15（20）点伤害；如果这张牌杀死了敌人，则进入神格 |
 | 摆手 | `WaveOfTheHand` | 1（0） | 在本回合，你每次切换姿态时，给予所有敌人 2 层虚弱；消耗 |
 
+<a id="colorless" name="colorless"></a>
+
 ### 无色（17 张替换 + 噬咬）
 
 | 卡牌 | 原版 ID | 费用 | 效果（升级后） |
@@ -168,10 +201,12 @@
 | 转化 | `Transmutation` | 1（0） | 消耗所有手牌；每消耗一张牌，将一张随机牌加入你的手牌 |
 | 噬咬 | `Bite` | 1 | 造成 7（9）点伤害；未被格挡的伤害将回复你的生命。 |
 
+<a id="relics" name="relics"></a>
+
 ## 2. 遗物改动
 
-全部沿用原版遗物 ID 与原版图片。包装类（`ReworkedRelic`）与直接补丁两条路径并存，具体机制见
-[CHANGELOG.md](CHANGELOG.md) 末尾的「实现与维护参考」。
+全部沿用原版遗物 ID 与原版图片。包装类（[ReworkedRelic](src/main/java/anotherspirerework/relics/ReworkedRelic.java)）与直接补丁两条路径并存，具体机制见
+[CHANGELOG.md 的「实现与维护参考」](CHANGELOG.md#maintenance)。
 
 | 遗物 | 改动 |
 |---|---|
@@ -219,11 +254,15 @@
 | 恩洛斯的礼物 | 精英额外掉落一组稀有牌奖励；不再提高稀有牌出现率 |
 | 瓶装旋风、瓶装闪电、瓶装火焰 | 原效果不变；第一、二幕被抽到时不消耗池位，第三幕起才可能生成 |
 
+<a id="no-act4" name="no-act4"></a>
+
 ### 不进第四幕（心脏层）的 27 件遗物
 
 白兽雕像、黑石护符、昆虫标本、御守、微笑面具、佛珠手链、古茶具套装、小宝箱、捕梦网、皇家枕头、
 陶瓷小鱼、餐券、地精之角、带骨肉、忍术卷轴、永恒羽毛、送货员、问号牌、颂钵、历石、古钱币、壶铃、
 宁静烟斗、生物样本、羽翼之靴、转经轮、铲子。
+
+<a id="mechanics" name="mechanics"></a>
 
 ## 3. 其它机制改动
 
@@ -234,3 +273,7 @@
 - **界面保护**：浏览牌堆/地图/单卡界面期间，洗牌触发、医药箱·蓝蜡烛的抽牌处理、勺子·星系仪选牌推迟到界面关闭后执行。
 - **商店遗物降价**：罕见遗物 −50、稀有遗物 −100（原版 250 / 300 → 200 / 200）；只影响商店货架。
 - **修复原版 bug（义愤填膺 + 心灵堡垒）**：义愤填膺进入愤怒的姿态变化原本排在出牌结算之后，腐化之心的死亡律动会先于心灵堡垒的格挡结算；现在姿态变化与暴怒一样立即结算，先起防再结算律动。
+
+---
+
+[↑ 回到顶部](#top) · [English version](README.en.md) · [CHANGELOG.md 的「实现与维护参考」](CHANGELOG.md#maintenance)
