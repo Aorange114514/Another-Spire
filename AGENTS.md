@@ -15,6 +15,27 @@ Authoritative context:
 - `requirements.txt` (UTF-8, repository root or its parent directory): card-value spec, not shipped content.
   Some values intentionally diverge; trust the code/README tables.
 
+## Content requirements (from `requirements.txt`)
+
+These general rules apply to every card/relic/mechanic change, including the values and text in this project:
+
+- Prefer the base game's implementation, and reuse an existing buff/power or effect whenever it already
+  expresses the desired behaviour; add a custom power only when the vanilla one cannot be limited to the
+  trigger (for example, Talk to the Hand's `BlockReturnPower` fires on every attack, so it cannot be reused
+  for a Shiv-only mark).
+- Keep derived-card localization linked to the base game the same way the original does: use the vanilla
+  derived-card ID and its keyword form (`*Shiv` / `*小刀` in card text, `#yShiv` / `#y小刀` in power text),
+  and build extra description lines from the vanilla string instead of replacing it.
+- Highlight keywords exactly the way the base game does. In zhs card strings, a keyword must be a separate
+  word (spaces around it) or `*`-prefixed so `GameDictionary` recognises it; power strings use `#y`.
+  Check the vanilla `localization/zhs/{cards,powers,keywords}.json` when unsure.
+- Keep code and comments short, clear and maintainable.
+- Random card-generating cards follow vanilla logic by default: draw from the current character's card pools
+  (`AbstractDungeon.returnTrulyRandomCardInCombat` / `AbstractDungeon.getCard`) unless the card text
+  explicitly says otherwise.
+- If a card differs from the implementation only in numbers, the implementation wins: update
+  `requirements.txt` and the README tables to match the code.
+
 ## Commands
 
 Build and tests **must run on JDK 8**. A newer JDK makes

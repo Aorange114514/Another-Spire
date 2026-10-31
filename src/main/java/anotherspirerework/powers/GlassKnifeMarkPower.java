@@ -7,7 +7,8 @@ import com.megacrit.cardcrawl.powers.AbstractPower;
 
 /**
  * Glass Knife's mark, shown on the enemy with the vanilla "Talk to the Hand" icon.
- * The trigger itself lives in ShivPatch so that only Shiv damage counts.
+ * The mark only records the payout; the Shiv damage actions trigger it on a hit, so blocked hits
+ * still pay. Talk to the Hand's BlockReturnPower fires on every attack, so it cannot be reused here.
  */
 public class GlassKnifeMarkPower extends AbstractPower {
     public static final String POWER_ID = AnotherSpireRework.makeID("GlassKnifeMark");

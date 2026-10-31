@@ -81,7 +81,7 @@ verification and maintenance rules, see
 | Outmaneuver | `Outmaneuver` | 0 | Next turn, gain [E] ([E][E]) |
 | Choke | `Choke` | 1 | Deal 6 damage; whenever you play a card this turn, the enemy loses 3 (5) HP |
 | Riddle With Holes | `Riddle With Holes` | 2 | Deal 3 damage 6 (8) times |
-| Glass Knife | `Glass Knife` | 1 | Deal 4 damage 2 times; whenever this enemy takes damage from a Shiv, gain 3 (5) Block; Exhaust |
+| Glass Knife | `Glass Knife` | 1 | Deal 4 damage 2 times; whenever you attack this enemy with a Shiv, gain 3 (5) Block; Exhaust |
 | A Thousand Cuts | `A Thousand Cuts` | 1 | Whenever you play a card, deal 1 (2) damage to ALL enemies |
 | Unload ⚠Rare→Uncommon, Attack→Power | `Unload` | 1 | Shivs gain Retain; the first Shiv you play each turn deals +9 (12) damage |
 | Masterful Stab ⚠Attack→Skill | `Masterful Stab` | 0 | Discard up to 3 cards; for each card discarded, add a Shiv+ to your hand |

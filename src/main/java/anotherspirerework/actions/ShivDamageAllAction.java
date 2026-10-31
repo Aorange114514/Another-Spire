@@ -5,6 +5,7 @@ import com.megacrit.cardcrawl.actions.common.DamageAllEnemiesAction;
 import com.megacrit.cardcrawl.actions.common.GainBlockAction;
 import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.core.AbstractCreature;
+import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.powers.AbstractPower;
@@ -14,12 +15,12 @@ import java.util.List;
 /**
  * Die Die Die: one Shiv hits every enemy in the same frame (like Cleave) instead of one Shiv per
  * enemy in sequence. The attack effect is still the Shiv's own slash, and Glass Knife pays out for
- * every enemy that really loses health, just like the single-target ShivDamageAction.
+ * every marked enemy the hit lands on, even if Block or Intangible stops the damage.
  */
 public class ShivDamageAllAction extends DamageAllEnemiesAction {
     private final AbstractCreature attacker;
 
-    private int[] healthBefore;
+    private boolean[] hittable;
     private boolean captured;
     private boolean rewarded;
 
@@ -31,8 +32,8 @@ public class ShivDamageAllAction extends DamageAllEnemiesAction {
     @Override
     public void update() {
         if (!captured) {
-            healthBefore = captureHealth();
             captured = true;
+            hittable = captureHittable();
         }
         super.update();
         if (isDone && !rewarded) {
@@ -41,25 +42,29 @@ public class ShivDamageAllAction extends DamageAllEnemiesAction {
         }
     }
 
-    private int[] captureHealth() {
+    /** The enemies the base action is about to hit: alive and not escaping when the hit starts. */
+    private boolean[] captureHittable() {
         List<AbstractMonster> monsters = AbstractDungeon.getCurrRoom().monsters.monsters;
-        int[] health = new int[monsters.size()];
+        boolean[] result = new boolean[monsters.size()];
         for (int i = 0; i < monsters.size(); i++) {
-            health[i] = monsters.get(i).currentHealth;
+            result[i] = !monsters.get(i).isDeadOrEscaped();
         }
-        return health;
+        return result;
     }
 
     private void rewardGlassKnife() {
-        if (attacker == null || healthBefore == null) {
+        if (attacker == null || hittable == null) {
             return;
         }
         List<AbstractMonster> monsters = AbstractDungeon.getCurrRoom().monsters.monsters;
-        for (int i = 0; i < monsters.size() && i < healthBefore.length; i++) {
-            AbstractMonster monster = monsters.get(i);
-            AbstractPower mark = monster.getPower(GlassKnifeMarkPower.POWER_ID);
-            if (mark != null && mark.amount > 0 && monster.currentHealth < healthBefore[i]) {
-                addToTop(new GainBlockAction(attacker, attacker, mark.amount));
+        for (int i = 0; i < monsters.size() && i < hittable.length; i++) {
+            if (!hittable[i]) {
+                continue;
+            }
+            AbstractPower mark = monsters.get(i).getPower(GlassKnifeMarkPower.POWER_ID);
+            if (mark != null && mark.amount > 0) {
+                mark.flash();
+                addToTop(new GainBlockAction(attacker, mark.amount, Settings.FAST_MODE));
             }
         }
     }

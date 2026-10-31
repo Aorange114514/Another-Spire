@@ -16,11 +16,11 @@ public class CripplingPoison extends AbstractCard {
 
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
-    private static final int WEAK_AMOUNT = 3;
+    private static final int WEAK_AMOUNT = 5;
 
     public CripplingPoison() {
         super(ID, cardStrings.NAME, "green/skill/crippling_poison", 3, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.RARE, CardTarget.ALL_ENEMY);
-        this.baseMagicNumber = 12;
+        this.baseMagicNumber = 15;
         this.magicNumber = this.baseMagicNumber;
         this.exhaust = true;
     }

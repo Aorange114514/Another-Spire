@@ -118,7 +118,7 @@
   },
   "${modID}:Glass Knife": {
     "NAME": "Glass Knife",
-    "DESCRIPTION": "Deal !D! damage twice. NL Whenever this enemy takes damage from a *Shiv, gain !M! Block. NL Exhaust."
+    "DESCRIPTION": "Deal !D! damage twice. NL Whenever you attack this enemy with a *Shiv, gain !M! Block. NL Exhaust."
   },
   "${modID}:A Thousand Cuts": {
     "NAME": "A Thousand Cuts",
@@ -314,7 +314,7 @@
   },
   "${modID}:Crippling Poison": {
     "NAME": "Crippling Cloud",
-    "DESCRIPTION": "Apply !M! Poison and 3 Weak to ALL enemies. NL Exhaust."
+    "DESCRIPTION": "Apply !M! Poison and 5 Weak to ALL enemies. NL Exhaust."
   },
   "${modID}:Expertise": {
     "NAME": "Expertise",
