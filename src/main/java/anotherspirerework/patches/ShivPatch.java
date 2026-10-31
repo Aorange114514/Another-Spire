@@ -8,6 +8,7 @@ import anotherspirerework.powers.ShivAllEnemiesPower;
 import anotherspirerework.powers.ShivPoisonPower;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import anotherspirerework.actions.ShivDamageAction;
+import anotherspirerework.actions.ShivDamageAllAction;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.DamageInfo;
@@ -27,24 +28,31 @@ public class ShivPatch {
         // Explicitly prepare mastery before building damage, independent of patch ordering.
         ShivMasteryPatch.Prefix(__instance);
         if (p.hasPower(ShivAllEnemiesPower.POWER_ID)) {
-            int previous = __instance.damage;
-            try {
-                __instance.applyPowers();
-                __instance.calculateCardDamage(null);
-                int index = 0;
-                for (AbstractMonster enemy : AbstractDungeon.getMonsters().monsters) {
-                    if (!enemy.isDeadOrEscaped()) {
-                        __instance.damage = __instance.multiDamage[index];
-                        attack(__instance, p, enemy);
-                    }
-                    index++;
-                }
-            } finally { __instance.damage = previous; }
+            allEnemies(__instance, p);
         } else if (m != null) {
             __instance.calculateCardDamage(m);
             attack(__instance, p, m);
         }
         return SpireReturn.Return(null);
+    }
+
+    /**
+     * Die Die Die: one Shiv hits every enemy in the same frame instead of one Shiv per enemy in
+     * sequence. A single DamageAllEnemiesAction resolves all targets at once (the way Cleave does),
+     * while the attack effect stays the Shiv's own slash. Envenom still applies once per enemy.
+     */
+    private static void allEnemies(Shiv card, AbstractPlayer p) {
+        card.applyPowers();
+        card.calculateCardDamage(null);
+        AbstractDungeon.actionManager.addToBottom(new ShivDamageAllAction(p, card.multiDamage,
+                card.damageTypeForTurn, AbstractGameAction.AttackEffect.SLASH_HORIZONTAL));
+        AbstractPower poison = p.getPower(ShivPoisonPower.POWER_ID);
+        if (poison != null) {
+            for (AbstractMonster enemy : AbstractDungeon.getMonsters().monsters) {
+                AbstractDungeon.actionManager.addToBottom(new ApplyPowerAction(enemy, p,
+                        new PoisonPower(enemy, p, poison.amount), poison.amount));
+            }
+        }
     }
 
     private static void attack(Shiv card, AbstractPlayer p, AbstractMonster m) {

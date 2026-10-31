@@ -90,7 +90,7 @@ verification and maintenance rules, see
 | Storm of Steel | `Storm of Steel` | 2 (1) | Play a copy of every Shiv in your exhaust pile against an enemy |
 | After Image | `After Image` | 1 | Whenever you play a card, gain 1 (2) Block |
 | Dodge and Roll | `Dodge and Roll` | — (Unplayable) | If this card is discarded from your hand, gain 8 (11) Block |
-| Die Die Die ⚠Attack→Power | `Die Die Die` | 2 (1) | Shivs now attack ALL enemies; add 3 Shivs to your hand |
+| Die Die Die ⚠Attack→Power | `Die Die Die` | 2 (1) | Shivs now hit ALL enemies at once; add 3 Shivs to your hand |
 | Envenom | `Envenom` | 1 | Your Shivs apply 1 (2) Poison; add 1 Shiv to your hand |
 | Distraction | `Distraction` | 1 (0) | Choose 1 of 3 random Skill cards to add to your hand; it costs 0 this turn; Exhaust |
 | Cloak and Dagger | `Cloak And Dagger` | 1 | Gain 6 Block; choose 1 (2) cards in your draw pile and transform them into Shivs |
@@ -276,6 +276,8 @@ Peace Pipe, The Specimen, Wing Boots, Prayer Wheel, Shovel.
 - **Shuffle events**: triggered after `EmptyDeckShuffleAction` has finished resolving and the shuffle animation has finished playing; `ShuffleAllAction` (Reboot) also waits for the `PutOnDeckAction` it queues to move the hand onto the draw pile and for the following `ShuffleAction` to really shuffle it (otherwise a card picked by Metamorphosis would be swallowed by that hand move); Stack, Chrysalis, Metamorphosis and Matryoshka rely on it.
 - **UI protection**: while browsing piles / the map / the single-card view, shuffle triggers, the draw handling of Medical Kit and Blue Candle, and the Strange Spoon / Orrery card selection are deferred until the UI closes.
 - **Shop relic price cuts**: Uncommon relics −50, Rare relics −100 (vanilla 250 / 300 → 200 / 200); only affects shop shelves.
+- **Shiv card text**: while Unload is up, a Shiv gains a leading "Retain." line; while Die Die Die is up, its damage line reads "Deal n damage to ALL enemies."; both show when both are up, and the vanilla text returns without them.
+- **Die Die Die resolves at once**: a Shiv now deals its damage to ALL enemies in one simultaneous hit (the way Cleave does) while keeping the Shiv's own attack effect; Envenom and Glass Knife still pay out per enemy.
 - **Vanilla bug fix (Indignation + Mental Fortress)**: Indignation's Stance change into Wrath was originally ordered after card resolution, so the Corrupt Heart's Beat of Death resolved before Mental Fortress's Block; now the Stance change resolves immediately like Tantrum, gaining Block first and then resolving Beat of Death.
 
 ---

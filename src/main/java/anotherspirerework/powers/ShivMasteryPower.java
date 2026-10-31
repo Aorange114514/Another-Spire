@@ -1,6 +1,7 @@
 package anotherspirerework.powers;
 
 import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.patches.ShivDescriptionPatch;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.tempCards.Shiv;
 import com.megacrit.cardcrawl.core.AbstractCreature;
@@ -26,6 +27,9 @@ public class ShivMasteryPower extends AbstractPower {
     /** Reset at the start of every turn, so only the first Shiv of the turn gets the bonus. */
     public boolean shivPlayedThisTurn = false;
 
+    /** onRemove runs before the power leaves the list, so the text refresh has to ignore it. */
+    private boolean beingRemoved;
+
     public ShivMasteryPower(AbstractCreature owner, int amount) {
         this.name = powerStrings.NAME;
         this.ID = POWER_ID;
@@ -41,6 +45,23 @@ public class ShivMasteryPower extends AbstractPower {
     @Override
     public void updateDescription() {
         this.description = powerStrings.DESCRIPTIONS[0] + this.amount + powerStrings.DESCRIPTIONS[1];
+    }
+
+    @Override
+    public void onInitialApplication() {
+        // The constructor runs before the power is in the player's list, so the card text can only
+        // be refreshed once this hook fires.
+        ShivDescriptionPatch.refreshAll();
+    }
+
+    @Override
+    public void onRemove() {
+        this.beingRemoved = true;
+        ShivDescriptionPatch.refreshAll();
+    }
+
+    public boolean isActive() {
+        return !this.beingRemoved;
     }
 
     @Override

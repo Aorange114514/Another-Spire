@@ -112,6 +112,7 @@ public class PatchContractTest {
                 "anotherspirerework.patches.RetainedCardFadeInPatch",
                 "anotherspirerework.patches.ShivCreationPatch",
                 "anotherspirerework.patches.ShivMasteryPatch",
+                "anotherspirerework.patches.ShivDescriptionPatch",
                 "anotherspirerework.patches.TriplePoisonSaturatePatch",
                 "anotherspirerework.patches.SadisticNaturePatch",
                 "anotherspirerework.patches.FlurryOfBlowsPatch",
@@ -194,6 +195,22 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.actions.ShivDamageAction", "update", "update", "com.megacrit.cardcrawl.actions.common.GainBlockAction");
         requireCalls(pool, "anotherspirerework.actions.TransformDrawPileToShivsAction", "transform", "set", "com.megacrit.cardcrawl.cards.tempCards.Shiv");
         requireCalls(pool, "anotherspirerework.patches.ShivPatch", "attack", "anotherspirerework.actions.ShivDamageAction", "com.megacrit.cardcrawl.powers.PoisonPower");
+        // Die Die Die hits all enemies as one simultaneous action (like Cleave), not one action per
+        // enemy, while the damage type and attack effect stay the Shiv's own.
+        require(pool.get("anotherspirerework.actions.ShivDamageAllAction").getSuperclass().getName()
+                        .equals("com.megacrit.cardcrawl.actions.common.DamageAllEnemiesAction"),
+                "Area Shiv must resolve as one DamageAllEnemiesAction");
+        requireCalls(pool, "anotherspirerework.actions.ShivDamageAllAction", "update", "update", "rewardGlassKnife");
+        requireCalls(pool, "anotherspirerework.actions.ShivDamageAllAction", "rewardGlassKnife",
+                "getPower", "com.megacrit.cardcrawl.actions.common.GainBlockAction");
+        requireCalls(pool, "anotherspirerework.patches.ShivPatch", "allEnemies",
+                "anotherspirerework.actions.ShivDamageAllAction",
+                "com.megacrit.cardcrawl.powers.PoisonPower");
+        require(anotherspirerework.patches.ShivDescriptionPatch.variant(false, false) == -1
+                        && anotherspirerework.patches.ShivDescriptionPatch.variant(true, false) == 0
+                        && anotherspirerework.patches.ShivDescriptionPatch.variant(false, true) == 1
+                        && anotherspirerework.patches.ShivDescriptionPatch.variant(true, true) == 2,
+                "Shiv text must follow Unload, Die Die Die, and both");
         System.out.println("PASS: new card class/copy contracts, Shiv targeting field and typed Discovery API");
     }
 

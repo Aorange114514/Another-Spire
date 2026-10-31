@@ -324,6 +324,15 @@
     "NAME": "死吧死吧死吧",
     "DESCRIPTION": "*小刀 现在会攻击所有敌人。 NL 将 3 张 *小刀 加入你的手牌。"
   },
+  "anotherspirerework:Shiv": {
+    "NAME": "小刀",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 消耗 。",
+    "EXTENDED_DESCRIPTION": [
+      "保留 。 NL 造成 !D! 点伤害。 NL 消耗 。",
+      "对所有敌人造成 !D! 点伤害。 NL 消耗 。",
+      "保留 。 NL 对所有敌人造成 !D! 点伤害。 NL 消耗 。"
+    ]
+  },
   "anotherspirerework:Storm of Steel": {
     "NAME": "钢铁风暴",
     "DESCRIPTION": "将你消耗堆中所有 *小刀 的复制对一名敌人打出。",

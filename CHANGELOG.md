@@ -4,6 +4,27 @@
 
 # AnotherSpire Rework
 
+## 第十批：小刀卡面文案与「死吧死吧死吧」同时结算（2026-10-31）
+
+### 小刀卡面文案跟随两个能力
+
+- **现象**：乾坤一掷（`Unload`）让小刀获得保留、死吧死吧死吧（`Die Die Die`）让小刀攻击所有敌人，但小刀卡面始终是原版「造成 n 点伤害。 NL 消耗 。」，玩家看不出这两个能力已经生效。
+- **实现**：新增 `patches.ShivDescriptionPatch`，给 `AbstractCard.initializeDescription` 加前缀：小刀实例的文案改从本模组 `anotherspirerework:Shiv` 条目取——
+  - 仅乾坤一掷：`保留 。 NL 造成 !D! 点伤害。 NL 消耗 。`
+  - 仅死吧死吧死吧：`对所有敌人造成 !D! 点伤害。 NL 消耗 。`
+  - 两者兼有：`保留 。 NL 对所有敌人造成 !D! 点伤害。 NL 消耗 。`
+  伤害数字仍由 `!D!` 在渲染时取值；没有能力时读取原版 `Shiv` 字符串并按原版文案恢复，不覆盖原版本地化。两个能力的 `onInitialApplication` / `onRemove` 都会刷新手牌、抽牌堆、弃牌堆与消耗堆里的所有小刀（新生成的小刀在构造时就会带正确文案）。`onRemove` 在移除动作把能力移出列表之前触发，因此两个能力各带一个 `isActive()` 标记，移除时不再写自己的那一行。
+- **验证**：`PatchContractTest` 增加文案变体映射断言（无/保留/全体/两者 → `-1/0/1/2`）。
+
+### 死吧死吧死吧：所有敌人同时结算
+
+- **之前**：`ShivPatch` 对每个敌人各排一个 `ShivDamageAction`，小刀依次命中，动画与结算都是一个敌人接一个敌人。
+- **现在**：新增 `actions.ShivDamageAllAction`（继承原版 `DamageAllEnemiesAction`），一次 action 对全部敌人同时结算，类似顺劈斩；攻击特效仍传 `AttackEffect.SLASH_HORIZONTAL`（小刀自己的攻击特效），不换成顺劈斩的 `CleaveEffect`。涂毒仍按敌人逐个排 `ApplyPowerAction`（原版 `ApplyPowerAction` 会跳过已死亡的敌人）；玻璃刀刃的格挡奖励改为在该 action 结算完成后，按「实际掉血」的敌人逐个补发，语义与单体 `ShivDamageAction` 一致。
+- **验证**：`PatchContractTest` 断言 `ShivDamageAllAction` 继承 `DamageAllEnemiesAction`、`update` 调用 `rewardGlassKnife`、`rewardGlassKnife` 调用 `getPower` 与 `GainBlockAction`，以及 `ShivPatch.allEnemies` 使用新 action 与 `PoisonPower`。
+
+验证：`mvn -B clean package`（JDK 8）通过（255 个源文件，127 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：持有乾坤一掷/死吧死吧死吧/两者时，手牌、抽牌堆、弃牌堆、消耗堆里的小刀文案；打出死吧死吧死吧后新生成的小刀；多敌人战斗里小刀同时命中全部敌人、只播一次小刀特效；玻璃刀刃与涂毒在这套同时结算下的表现；能力被移除后文案恢复。
+
 ## 第九批：重启 + 羽化：选中的牌被随后洗回抽牌堆（2026-10-31）
 
 ### 重启 + 羽化：先弹选牌、后洗手牌
@@ -893,14 +914,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | `relics.TinyHouse` | `tick()`、`reset()`：自由营火；常量 `REOPEN_DELAY = 0.3F`、`FORCE_AFTER = 3.0F` |
 | `relics.Cauldron` | `isBrewing()`：大锅打开自己的奖励界面期间，破碎王冠不转换卡牌奖励 |
 | `relics.HandDrill` | `bypass(DamageInfo)`：手钻无视格挡/坚不可摧 |
+| `patches.ShivDescriptionPatch` | `refresh(AbstractCard)`、`refreshAll()`、`variant(boolean, boolean)`：乾坤一掷/死吧死吧死吧生效时的小刀卡面文案 |
 
 新 Power（18）：`NextTurnFocus`、`GlassKnifeMark`、`Mark`、`HelloWorldAnyCard`、`ShivMastery`、`FreeSkill`、
 `CreativeAIUpgraded`、`BattleHymnSmite`、`LikeWaterCalm`、`StudyInsight`、`DevotionDraw`、`ScuffleDraw`、
 `ShuffleEnergy`、`ShuffleSeek`、`ShivAllEnemies`、`ShivPoison`、`BlurDraw`、`SadisticNature`； `WaveOfTheHandStancePower`，继承原版 `WaveOfTheHandPower` 并沿用其原版 ID。
 
-新 Action（17）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
+新 Action（18）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
 `PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`ExhaustAllHandAction`、`IncreaseCostAction`、
-`SanctityEnergyAction`、`ShivDamageAction`、`TransformDrawPileToShivsAction`、`BouncingFlaskXAction`、
+`SanctityEnergyAction`、`ShivDamageAction`、`ShivDamageAllAction`、`TransformDrawPileToShivsAction`、`BouncingFlaskXAction`、
 `RagnarokXAction`、`ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、
 `PlayRandomAttackFromDrawPileAction`。
 

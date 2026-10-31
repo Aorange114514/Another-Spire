@@ -1,6 +1,7 @@
 package anotherspirerework.powers;
 
 import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.patches.ShivDescriptionPatch;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -20,6 +21,9 @@ public class ShivAllEnemiesPower extends AbstractPower {
      */
     private static final PowerStrings powerStrings = AnotherSpireRework.getPowerStrings("ShivAllEnemies");
 
+    /** onRemove runs before the power leaves the list, so the text refresh has to ignore it. */
+    private boolean beingRemoved;
+
     public ShivAllEnemiesPower(AbstractCreature owner) {
         this.owner = owner;
         ID = POWER_ID;
@@ -37,10 +41,22 @@ public class ShivAllEnemiesPower extends AbstractPower {
     @Override
     public void stackPower(int stackAmount) { /* Additional copies do not multiply area attacks. */ }
 
+    @Override
     public void onInitialApplication() {
         for (CardGroup group : new CardGroup[]{AbstractDungeon.player.hand, AbstractDungeon.player.drawPile,
                 AbstractDungeon.player.discardPile, AbstractDungeon.player.exhaustPile}) {
             for (AbstractCard card : group.group) if (card instanceof Shiv) card.applyPowers();
         }
+        ShivDescriptionPatch.refreshAll();
+    }
+
+    @Override
+    public void onRemove() {
+        this.beingRemoved = true;
+        ShivDescriptionPatch.refreshAll();
+    }
+
+    public boolean isActive() {
+        return !this.beingRemoved;
     }
 }

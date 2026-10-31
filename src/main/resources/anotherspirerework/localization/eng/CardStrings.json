@@ -324,6 +324,15 @@
     "NAME": "Die Die Die",
     "DESCRIPTION": "*Shivs now attack ALL enemies. NL Add 3 *Shivs into your hand."
   },
+  "${modID}:Shiv": {
+    "NAME": "Shiv",
+    "DESCRIPTION": "Deal !D! damage. NL Exhaust.",
+    "EXTENDED_DESCRIPTION": [
+      "Retain. NL Deal !D! damage. NL Exhaust.",
+      "Deal !D! damage to ALL enemies. NL Exhaust.",
+      "Retain. NL Deal !D! damage to ALL enemies. NL Exhaust."
+    ]
+  },
   "${modID}:Storm of Steel": {
     "NAME": "Storm of Steel",
     "DESCRIPTION": "Play a copy of every *Shiv in your exhaust pile against an enemy.",
