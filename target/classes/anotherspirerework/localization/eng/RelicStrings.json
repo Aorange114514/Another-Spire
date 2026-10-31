@@ -26,7 +26,7 @@
   "anotherspirerework:Inserter": {"NAME":"Inserter","DESCRIPTIONS":["Every #b2 turns, gain #b1 Orb slot and Channel a random Orb."],"FLAVOR":""},
   "anotherspirerework:Matryoshka": {"NAME":"Matryoshka","DESCRIPTIONS":["Whenever you shuffle your draw pile, draw a card."],"FLAVOR":""},
   "anotherspirerework:Astrolabe": {"NAME":"Astrolabe","DESCRIPTIONS":["Upon pickup, choose any number of cards out of #b40 cards of any color to add to your deck.","Choose any number of cards to add to your deck."],"FLAVOR":""},
-  "anotherspirerework:Tiny House": {"NAME":"Tiny House","DESCRIPTIONS":["You may choose any number of options at Rest Sites.","Tiny House!"],"FLAVOR":""},
+  "anotherspirerework:Tiny House": {"NAME":"Tiny House","DESCRIPTIONS":["You may choose any number of options at Rest Sites. (Recall excluded)","Tiny House!"],"FLAVOR":""},
   "anotherspirerework:VioletLotus": {"NAME":"Violet Lotus","DESCRIPTIONS":["Whenever you leave #yCalm, gain an extra [E] and draw #b1 card."],"FLAVOR":""},
   "anotherspirerework:FaceOfCleric": {"NAME":"Face of Cleric","DESCRIPTIONS":["After each combat, gain #b2 Max HP."],"FLAVOR":""},
   "anotherspirerework:Snecko Eye": {"NAME":"Snecko Eye","DESCRIPTIONS":["Draw #b3 additional cards each turn. NL At the start of each combat, gain #yConfusion."],"FLAVOR":""},

@@ -4,6 +4,41 @@
 
 # AnotherSpire Rework
 
+## 第九批：重启 + 羽化：选中的牌被随后洗回抽牌堆（2026-10-31）
+
+### 重启 + 羽化：先弹选牌、后洗手牌
+
+- **现象**：持有「羽化」时打出「重启」，羽化的选牌界面先弹出；选中的牌加入手牌后，「重启」才把手牌洗入抽牌堆，于是选牌没有任何实际效果。弃牌堆为空时必现（例如第一回合手牌里就有重启）。
+- **原因**：`ShuffleAllAction`（重启）只负责弃牌堆：它在第一次 `update` 里把「手牌 → 抽牌堆」的 `PutOnDeckAction` 用 `addToTop` 排进队列，重启随后再排一个 `ShuffleAction`。旧实现只要 `ShuffleAllAction.isDone` 就置 `pendingShuffle`，而它结束的那一帧 `PutOnDeckAction` 还没轮到；弃牌堆为空时没有洗牌动画（`SoulGroup`）可等，`receivePostDungeonUpdate` 里的 `tick()` 当帧就 `fire()`，选牌动作于是插到了 `PutOnDeckAction` 前面。结果「选牌 → 加入手牌」先结算，紧接着 `PutOnDeckAction` 把整只手牌（含刚选中的牌）搬回抽牌堆。弃牌堆非空时只是被洗牌动画挡住，所以此前没暴露。
+- **修复**：`ShuffleTriggerPatch` 把重启的洗牌拆成三步：`ShuffleAllAction` 结束只置 `waitingForHandOnDeck`；`PutOnDeckAction` 结算后再置 `waitingForFinalShuffle`；重启的 `ShuffleAction` 结算后才置 `pendingShuffle`。`flush()` 在这两个标记清空前一律不触发。若某条流程没有补 `ShuffleAction`，紧随其后的 `DrawCardAction` 会把它当作已完成（此时排在它前面的动作都已结算）。
+- **验证**：`PatchContractTest` 新增 `rebootShuffleOrderRegression`——`All.after` 只能写 `waitingForHandOnDeck`、不能直接写 `pendingShuffle`；`HandOnDeck` / `FinalShuffle` 分别挂在 `PutOnDeckAction.update` / `ShuffleAction.update` 上并写各自标记；`flush` 必须同时读这两个标记。
+
+验证：`mvn -B clean package`（JDK 8）通过（253 个源文件，126 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：第一回合（弃牌堆为空）持有羽化打重启，选牌应出现在手牌已洗入抽牌堆之后、且选中的牌留在手里；弃牌堆非空时行为不变；羽化叠加到 2 层时同样只弹一次界面。
+
+## 第八批：小屋子取消选牌恢复「回忆」、星盘放开 HEALING、小屋子文案补注（2026-10-31）
+
+### 小屋子：取消选牌后「回忆」仍置灰
+
+- **现象**：在休息处点「锻造」（抽烟/净化的选牌界面同理）后点取消，营火回来了，但「回忆」按钮仍是灰的、点不了。
+- **原因**：`TinyHouse.arm` 在点任意其它选项时把「回忆」置灰；取消时 `CampfireUI.reopen` 的后缀只退还了刚点的选项（`lastUsed`），没有把「回忆」还回去，于是它一直保持 `usable = false`。
+- **修复**：新增 `recallLockedByArm`，记录「这一次点击是否由本选项锁掉了回忆」。`CancelledChoice` 退还选项时只在本次锁掉的情况下恢复「回忆」；此前已经真正用掉其它选项而锁住的「回忆」不会被取消解锁。`arm`/`tick`/`reset` 同步清理该标记。
+- **验证**：`PatchContractTest` 新增「取消后退还选项与回忆」的断言（`CancelledChoice.after` 至少两次 `usable` 写入）。
+
+### 星盘：允许出现 HEALING 卡
+
+- **之前**：`ChooseDeckCardsEffect.isPickable` 排除带 `AbstractCard.CardTags.HEALING` 的牌，40 张候选里永远没有狂宴、死亡收割、自我修复、许愿、包扎、噬咬等 HEALING 牌。
+- **现在**：不再按该标签过滤。星盘是把选中的牌**加入牌组**、不在战斗内生成；原版 `CardLibrary.getAnyColorCard` 本身不过滤 HEALING，过滤只来自本模组。基础/特殊稀有度、状态与诅咒仍排除。
+- **验证**：`PatchContractTest` 反向断言 `isPickable` 不再调用 `contains`；`verify.ps1` 断言该源码不再出现 `CardTags.HEALING`。
+
+### 本地化
+
+- 小屋子：`你可以在休息处选择任意数量的选项。（不包括回忆）` / `You may choose any number of options at Rest Sites. (Recall excluded)`；中英 key/字段不变，`DESCRIPTIONS[1]` 仍为 flavor。
+- README 中英两张遗物表同步（小屋子补「不包括回忆」，星盘去掉 HEALING 排除）；`verify.ps1` 增加「小屋子描述必须提到回忆」的双语断言。
+
+验证：`mvn -B clean package`（JDK 8）通过（253 个源文件，124 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：真实营火里「锻造→取消」后回忆可点、此前已用过选项的营火里回忆仍灰；星盘 40 张候选里确实能刷出 HEALING 牌并正常加入牌组。
+
 ## 第七批：遗物改为「一件遗物一个类」（2026-10-30）
 
 遗物实现从「包装类 + 分散在原版类上的补丁」改为与卡牌一致的范式：每件被重写的遗物在
@@ -785,9 +820,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 - **溢出饱和**：上限解除后，越界运算饱和到 int 上限而不是翻符号（"超过上限就是上限"）。由
   `util.SaturatingMath` 与 `NoPowerCapPatch`/`NoBlockCapPatch`/`NoEnergyCapPatch`/`TriplePoisonSaturatePatch`
   负责；重刃不再沿用原版"乘上去再除回来"的取巧写法。
-- **洗牌事件**：`EmptyDeckShuffleAction` / `ShuffleAllAction` 结算完成时只标记"待处理"，等 `SoulGroup.isActive()`
-  为 false（洗牌动画播完）且没有界面打开时才触发。堆栈、结茧、羽化、套娃都依赖它。故意不接 `ShuffleAction`，
-  避免同一次洗牌触发两次。
+- **洗牌事件**：`EmptyDeckShuffleAction` 结算完成时标记"待处理"；`ShuffleAllAction`（重启）只搬弃牌堆，还要等它
+  在第一次 `update` 里用 `addToTop` 排入的 `PutOnDeckAction` 把手牌搬进抽牌堆、以及重启随后排的 `ShuffleAction`
+  真正洗牌，才标记完成（`waitingForHandOnDeck` → `waitingForFinalShuffle` → `pendingShuffle`）。之后等
+  `SoulGroup.isActive()` 为 false（洗牌动画播完）且没有界面打开时才触发。堆栈、结茧、羽化、套娃都依赖它。
+  普通 `ShuffleAction`（深呼吸）不接，避免同一次洗牌触发两次；`ShuffleAction` 只在上面的尾段流程里被认。
 - **界面保护（只改时机，不取消效果）**：浏览牌堆/地图/单卡界面期间，洗牌触发、医药箱·蓝蜡烛的抽牌处理、
   勺子·星系仪选牌都推迟到界面关闭后执行。
 - **商店遗物降价**：`ShopPricePatch` 在 `StoreRelic` 构造完成后按遗物自身品级改写价格——罕见 −50、稀有 −100
@@ -813,9 +850,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | 方法 | 用途 |
 |---|---|
 | `fire()` | 先把抽牌堆里的堆栈移到顶部，再触发所有 `DrawPileShuffleListener` 与套娃 |
-| `reset()` | 战斗开始/结束时清空待处理标记 |
+| `reset()` | 战斗开始/结束时清空待处理标记与「等待洗手牌／等待收尾洗牌」标记 |
 | `tick()` | 每帧兜底（由 `receivePostDungeonUpdate` 调用），处理"抽牌先结束、动画还没播完"的路径 |
-| `flush(AbstractGameAction)` | 包级；动画结束且无界面时触发，并把被中断抽牌的剩余张数放回队首 |
+| `flush(AbstractGameAction)` | 包级；三步洗牌流程结束、动画结束且无界面时触发，并把被中断抽牌的剩余张数放回队首 |
 
 选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、
 `enum Choice { REMOVE_EXHAUST, ADD_TO_DECK, ADD_ANY_COLOR }`。它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：
@@ -956,7 +993,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 - **小屋子的自由营火**：每个营火选项用它自己的原版结算，本模组只做两件事——把刚用过的选项置灰
   （每个选项每次营火各一次），以及在该选项的**特效与界面都结束之后**用 `CampfireUI.reopen()` 把营火放回去，
   并把房间标记为完成。等待在 `receivePostDungeonUpdate` 里做，另有 `FORCE_AFTER = 3.0F` 的兜底。
-  在锻造/抽烟/净化的选牌界面点取消会**退还**该选项。已知小瑕疵：休息、举重、挖掘、回忆会淡出营火的循环环境音，
+  在锻造/抽烟/净化的选牌界面点取消会**退还**该选项（点选项时置灰的「回忆」也一并恢复；此前已经用掉其它选项则仍锁定）。已知小瑕疵：休息、举重、挖掘、回忆会淡出营火的循环环境音，
   放回营火后本处营火是安静的。
 - **疾风连击**从消耗堆/抽牌堆回手用的是本模组自己的 `ReturnCardToHandAction`；手牌已满
   （`BaseMod.MAX_HAND_SIZE`）时它留在原处，不会掉进弃牌堆。

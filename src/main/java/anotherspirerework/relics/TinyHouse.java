@@ -58,6 +58,12 @@ public class TinyHouse extends com.megacrit.cardcrawl.relics.TinyHouse {
     /** The Rest Site's Recall button, as soon as one has updated; any other option locks it. */
     private static AbstractCampfireOption recallOption = null;
 
+    /**
+     * True when the pending arm is what locked Recall. Cancelling the pick then hands Recall back;
+     * a Recall locked by an option that was actually used earlier must stay locked.
+     */
+    private static boolean recallLockedByArm = false;
+
     public TinyHouse() {
         super();
         this.tier = AbstractRelic.RelicTier.SHOP;
@@ -102,10 +108,14 @@ public class TinyHouse extends com.megacrit.cardcrawl.relics.TinyHouse {
             // Recall ends the visit the vanilla way: no reopen, the options stay gone.
             pendingReopen = false;
             lastUsed = null;
+            recallLockedByArm = false;
             return;
         }
-        // Recall and the other options are mutually exclusive for Tiny House.
-        if (recallOption != null) {
+        // Recall and the other options are mutually exclusive for Tiny House. Remember whether this
+        // very click is what locks Recall: cancelling the pick must reopen Recall, while a Recall
+        // locked by an option used earlier has to stay locked.
+        recallLockedByArm = recallOption != null && recallOption.usable;
+        if (recallLockedByArm) {
             recallOption.usable = false;
         }
         lastUsed = option;
@@ -122,6 +132,7 @@ public class TinyHouse extends com.megacrit.cardcrawl.relics.TinyHouse {
         lastUsed = null;
         touchedBefore = null;
         recallOption = null;
+        recallLockedByArm = false;
     }
 
     /**
@@ -194,8 +205,9 @@ public class TinyHouse extends com.megacrit.cardcrawl.relics.TinyHouse {
 
     /**
      * Cancelling a choice (the Campfire grid's cancel button calls {@code reopen()} itself) must hand
-     * the option back: nothing was forged or removed, so it was not spent. The reopen this class
-     * performs itself has already cleared {@code pendingReopen}, so it never lands here.
+     * the option back: nothing was forged or removed, so it was not spent, and Recall - which the
+     * click grayed out - becomes clickable again. The reopen this class performs itself has already
+     * cleared {@code pendingReopen}, so it never lands here.
      */
     @SpirePatch(clz = CampfireUI.class, method = "reopen")
     public static class CancelledChoice {
@@ -208,6 +220,13 @@ public class TinyHouse extends com.megacrit.cardcrawl.relics.TinyHouse {
             if (lastUsed != null) {
                 lastUsed.usable = true;
             }
+            // Clicking the option also grayed Recall out; cancelling means nothing was used, so the
+            // Recall button is clickable again. Recall that was already locked by an option used
+            // before this click stays locked.
+            if (recallLockedByArm && recallOption != null) {
+                recallOption.usable = true;
+            }
+            recallLockedByArm = false;
             lastUsed = null;
         }
     }
@@ -242,6 +261,7 @@ public class TinyHouse extends com.megacrit.cardcrawl.relics.TinyHouse {
         pendingReopen = false;
         room.campfireUI.reopen();
         lastUsed = null;
+        recallLockedByArm = false;
         room.phase = AbstractRoom.RoomPhase.COMPLETE;
         AbstractRoom.waitTimer = 0.0F;
     }

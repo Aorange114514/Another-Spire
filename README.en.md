@@ -244,8 +244,8 @@ with those classes after `RelicLibrary.initialize()`, so everything not overridd
 | Frozen Eye | Starter Strikes and Defends gain Ethereal (written on token boundaries, synced with the deck on pickup/loss) |
 | Inserter | Every 2 turns, at the start of the turn gain 1 Orb slot and Channel 1 random Orb |
 | Matryoshka | Draw 1 card when you shuffle (replaces the vanilla extra relic from chests) |
-| Astrolabe | On pickup, choose any number of cards from 40 cards of any color to add to your deck (base, Special, Status, Curse and HEALING excluded) |
-| Tiny House | Changed to a shop relic; at rest sites you can choose any number of options (each option once per campfire; "Recall" is unavailable after using other options, and if you choose "Recall" first the campfire ends as usual); flashes only once on pickup (the vanilla pickup flash), flashes and pulses continuously while at a rest site and stops after leaving |
+| Astrolabe | On pickup, choose any number of cards from 40 cards of any color to add to your deck (base, Special, Status and Curse excluded; HEALING cards are not excluded, since this adds to the deck rather than generating in combat) |
+| Tiny House | Changed to a shop relic; at rest sites you can choose any number of options (Recall excluded; each option once per campfire; "Recall" is unavailable after using other options, and if you choose "Recall" first the campfire ends as usual; cancelling the card picker hands the option back); flashes only once on pickup (the vanilla pickup flash), flashes and pulses continuously while at a rest site and stops after leaving |
 | Violet Lotus | Whenever you leave Calm, draw 1 extra card in addition to the vanilla Energy |
 | Face of Cleric | After each combat, +2 Max HP (vanilla +1) |
 | Snecko Eye | Draw 3 extra cards each turn; gain Confusion at the start of each combat |
@@ -273,7 +273,7 @@ Peace Pipe, The Specimen, Wing Boots, Prayer Wheel, Shovel.
 - **Colorless card choices gain a "Skip"**: Discovery, Colorless Potion, Toolbox, Nilry's Codex, Foreign Influence; normal card rewards and the Watcher's "choose one" screen are unaffected.
 - **Numeric caps removed**: the ±999 caps on Block, Strength/Dexterity/Focus/Shackled, Poison, Energized, Energy and others are relaxed to the int limit.
 - **Overflow saturation**: out-of-range arithmetic saturates to the int limit instead of wrapping sign; Heavy Blade uses saturating multiplication.
-- **Shuffle events**: triggered after `EmptyDeckShuffleAction` / `ShuffleAllAction` has finished resolving and the shuffle animation has finished playing; Stack, Chrysalis, Metamorphosis and Matryoshka rely on it.
+- **Shuffle events**: triggered after `EmptyDeckShuffleAction` has finished resolving and the shuffle animation has finished playing; `ShuffleAllAction` (Reboot) also waits for the `PutOnDeckAction` it queues to move the hand onto the draw pile and for the following `ShuffleAction` to really shuffle it (otherwise a card picked by Metamorphosis would be swallowed by that hand move); Stack, Chrysalis, Metamorphosis and Matryoshka rely on it.
 - **UI protection**: while browsing piles / the map / the single-card view, shuffle triggers, the draw handling of Medical Kit and Blue Candle, and the Strange Spoon / Orrery card selection are deferred until the UI closes.
 - **Shop relic price cuts**: Uncommon relics −50, Rare relics −100 (vanilla 250 / 300 → 200 / 200); only affects shop shelves.
 - **Vanilla bug fix (Indignation + Mental Fortress)**: Indignation's Stance change into Wrath was originally ordered after card resolution, so the Corrupt Heart's Beat of Death resolved before Mental Fortress's Block; now the Stance change resolves immediately like Tantrum, gaining Block first and then resolving Beat of Death.

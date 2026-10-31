@@ -8,6 +8,8 @@ import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.DrawCardAction;
 import com.megacrit.cardcrawl.actions.common.EmptyDeckShuffleAction;
+import com.megacrit.cardcrawl.actions.common.PutOnDeckAction;
+import com.megacrit.cardcrawl.actions.common.ShuffleAction;
 import com.megacrit.cardcrawl.actions.defect.ShuffleAllAction;
 import com.megacrit.cardcrawl.cards.SoulGroup;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
@@ -24,7 +26,15 @@ import java.util.ArrayList;
  * Interrupting it would cut the animation the player expects to see, so the event is deferred:
  *
  * <ol>
- *   <li>EmptyDeckShuffleAction / ShuffleAllAction finishing only marks a shuffle as pending.</li>
+ *   <li>EmptyDeckShuffleAction finishing only marks a shuffle as pending. ShuffleAllAction (Reboot)
+ *       is the same, except that it leaves the hand behind: on its first update it queues a
+ *       PutOnDeckAction that moves the whole hand into the draw pile, and the card playing it -
+ *       Reboot - queues its own ShuffleAction right behind that one. The event waits for the whole
+ *       flow, so {@code waitingForHandOnDeck} and {@code waitingForFinalShuffle} keep it pending
+ *       until the hand is really on the draw pile and the draw pile has really been shuffled.
+ *       Arming the event when ShuffleAllAction ended opened the Metamorphosis picker before
+ *       PutOnDeckAction ran, so the card the player had just picked was moved into the draw pile
+ *       together with the rest of the hand and the pick had no effect.</li>
  *   <li>The card draw that follows waits for {@link SoulGroup#isActive()} to go false - exactly
  *       like the base game already does before drawing - and the event fires right there, after
  *       the animation. That draw is the one the shuffle queued behind itself, so it is put back at
@@ -33,12 +43,21 @@ import java.util.ArrayList;
  *       remaining cards instead of after them.</li>
  * </ol>
  *
- * <p>Both shuffle actions are watched, which also places the event after the hand has been moved
- * back into the draw pile when a card like Reboot combines both steps. ShuffleAction is left alone
- * on purpose: those cards already queue one of the two actions above.
+ * <p>The closing ShuffleAction is only watched while the flow armed by ShuffleAllAction is running:
+ * the plain ShuffleAction that Deep Breath queues after EmptyDeckShuffleAction must not fire a
+ * second event for the same shuffle.
  */
 public class ShuffleTriggerPatch {
-    private static boolean pendingShuffle;
+    // Package private like flush(): a private flag would be reached from the nested patch classes
+    // through a javac synthetic accessor, so the contract test could no longer see which step of
+    // the shuffle flow writes which flag.
+    static boolean pendingShuffle;
+
+    /** ShuffleAllAction is done, but the hand has not been moved onto the draw pile yet. */
+    static boolean waitingForHandOnDeck;
+
+    /** The hand is on the draw pile, but the draw pile has not been shuffled by ShuffleAction yet. */
+    static boolean waitingForFinalShuffle;
 
     /** Cards the interrupted draw still has to draw once the event is over; 0 outside fire(). */
     private static int drawsAfterShuffle;
@@ -74,6 +93,8 @@ public class ShuffleTriggerPatch {
     /** Cleared when a fight starts or ends, so a shuffle that is never followed by a draw expires. */
     public static void reset() {
         pendingShuffle = false;
+        waitingForHandOnDeck = false;
+        waitingForFinalShuffle = false;
     }
 
     @SpirePatch(clz = EmptyDeckShuffleAction.class, method = "update")
@@ -91,6 +112,40 @@ public class ShuffleTriggerPatch {
         @SpirePostfixPatch
         public static void after(ShuffleAllAction __instance) {
             if (__instance.isDone) {
+                // The discard pile is on its way, but the hand is not: ShuffleAllAction queued a
+                // PutOnDeckAction for it on its first update and that action runs next.
+                waitingForHandOnDeck = true;
+            }
+        }
+    }
+
+    /**
+     * The hand -> draw pile half of ShuffleAllAction. Only after this may the shuffle count as
+     * done as far as the hand is concerned: a pick added to the hand before it runs would be
+     * shuffled straight back into the draw pile.
+     */
+    @SpirePatch(clz = PutOnDeckAction.class, method = "update")
+    public static class HandOnDeck {
+        @SpirePostfixPatch
+        public static void after(PutOnDeckAction __instance) {
+            if (__instance.isDone && waitingForHandOnDeck) {
+                waitingForHandOnDeck = false;
+                // Reboot queues its draw pile shuffle right behind the hand move.
+                waitingForFinalShuffle = true;
+            }
+        }
+    }
+
+    /**
+     * The shuffle that really reorders the draw pile, queued by the card behind the hand move.
+     * Deep Breath's ShuffleAction is not part of such a flow and is left alone.
+     */
+    @SpirePatch(clz = ShuffleAction.class, method = "update")
+    public static class FinalShuffle {
+        @SpirePostfixPatch
+        public static void after(ShuffleAction __instance) {
+            if (__instance.isDone && waitingForFinalShuffle) {
+                waitingForFinalShuffle = false;
                 pendingShuffle = true;
             }
         }
@@ -115,6 +170,12 @@ public class ShuffleTriggerPatch {
     public static class Deferred {
         @SpirePrefixPatch
         public static void before(DrawCardAction __instance) {
+            // Every action queued ahead of this draw has already run, so a ShuffleAllAction flow
+            // that queued no closing ShuffleAction cannot be waited for any longer.
+            if (waitingForFinalShuffle) {
+                waitingForFinalShuffle = false;
+                pendingShuffle = true;
+            }
             flush(__instance);
         }
     }
@@ -143,7 +204,10 @@ public class ShuffleTriggerPatch {
      *                    (the queue is idle, or busy with something that is not a draw).
      */
     static void flush(AbstractGameAction interrupted) {
-        if (!pendingShuffle || AbstractDungeon.getCurrRoom() == null
+        if (!pendingShuffle || waitingForHandOnDeck || waitingForFinalShuffle) {
+            return;
+        }
+        if (AbstractDungeon.getCurrRoom() == null
                 || AbstractDungeon.player == null || AbstractDungeon.actionManager == null) {
             return;
         }
@@ -172,4 +236,3 @@ public class ShuffleTriggerPatch {
         fire(pendingDraws);
     }
 }
-

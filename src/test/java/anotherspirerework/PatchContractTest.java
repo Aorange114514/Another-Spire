@@ -75,6 +75,7 @@ public class PatchContractTest {
         thirdRoundRegression(pool);
         fourthRoundRegression(pool);
         fifthRoundRegression(pool);
+        rebootShuffleOrderRegression(pool);
         relicPoolRegression();
         powerTitleAndReprogramRegression(pool);
         postfixBindingRegression();
@@ -500,7 +501,9 @@ public class PatchContractTest {
         // Tiny House opens no picker of its own any more (the check lives in the fourth round below).
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "anyColorChoices",
                 "getAnyColorCard", "makeCopy", "isPickable");
-        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "isPickable", "contains");
+        // Astrolabe adds cards to the deck outside combat, so the healing cards the base game's
+        // in-combat generation excludes are legal offers: the picker must not filter on the tag.
+        requireMissingCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "isPickable", "contains");
         requireCalls(pool, "anotherspirerework.relics.PrayerWheel$ExtraCardReward", "after",
                 "add", "positionRewards");
         requireCalls(pool, "anotherspirerework.relics.NlothsGift$ExtraCardReward", "after",
@@ -725,8 +728,20 @@ public class PatchContractTest {
         requireWrites(pool, "anotherspirerework.relics.TinyHouse", "tick", "phase");
         requireCalls(pool, "anotherspirerework.relics.TinyHouse$MarkUsed", "after", "arm");
         requireCalls(pool, "anotherspirerework.relics.TinyHouse$MarkUsedByTouch", "after", "arm");
-        // Cancelling the grid the option opened hands the option back.
+        // Cancelling the grid the option opened hands the option back - and Recall, which the click
+        // grayed out, comes back with it (two writes). A Recall locked by an earlier used option is
+        // not unlocked by this path.
         requireWrites(pool, "anotherspirerework.relics.TinyHouse$CancelledChoice", "after", "usable");
+        CtClass cancelled = pool.get("anotherspirerework.relics.TinyHouse$CancelledChoice");
+        if (cancelled.isFrozen()) cancelled.defrost();
+        final int[] usableWrites = {0};
+        cancelled.getDeclaredMethod("after").instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess field) {
+                if (field.isWriter() && field.getFieldName().equals("usable")) usableWrites[0]++;
+            }
+        });
+        cancelled.toBytecode();
+        require(usableWrites[0] >= 2, "Cancelling a pick must hand back the option and Recall");
         // Tiny House: silent on pickup, then Courier-style pulse for the whole Rest Site.
         // The pickup keeps the base game's single flash; only our extra one and the vanilla rewards are gone.
         requireMissingCalls(pool, "anotherspirerework.relics.TinyHouse", "onEquip", "flash");
@@ -776,6 +791,72 @@ public class PatchContractTest {
         requireCalls(pool, "com.megacrit.cardcrawl.actions.watcher.IndignationAction", "update", "addToTop");
         System.out.println("PASS: fifth round (Consecrate, Third Eye, Deceive Reality, Stack, Judgement,"
                 + " Reach Heaven, Wave of the Hand, Violence, Indignation stance order)");
+    }
+
+    /**
+     * Reboot + Metamorphosis: the picker must not open before the hand has been moved onto the
+     * draw pile. ShuffleAllAction only moves the discard pile - it queues the PutOnDeckAction for
+     * the hand itself - and Reboot queues the closing ShuffleAction behind that. The event is armed
+     * by those two steps instead of by ShuffleAllAction, and flush() stays pending in between.
+     */
+    private static void rebootShuffleOrderRegression(ClassPool pool) throws Exception {
+        java.util.Set<String> allWrites = fieldsWritten(pool,
+                "anotherspirerework.patches.ShuffleTriggerPatch$All", "after");
+        require(allWrites.contains("waitingForHandOnDeck"),
+                "ShuffleAllAction must wait for its hand -> draw pile step");
+        require(!allWrites.contains("pendingShuffle"),
+                "ShuffleAllAction must not arm the shuffle event by itself");
+        require(fieldsWritten(pool, "anotherspirerework.patches.ShuffleTriggerPatch$HandOnDeck", "after")
+                        .contains("waitingForFinalShuffle"),
+                "The hand move must wait for the closing ShuffleAction");
+        require(fieldsWritten(pool, "anotherspirerework.patches.ShuffleTriggerPatch$FinalShuffle", "after")
+                        .contains("pendingShuffle"),
+                "The closing ShuffleAction must arm the shuffle event");
+        // The hooks are bound to the vanilla actions that carry those two steps.
+        require(patchTarget("anotherspirerework.patches.ShuffleTriggerPatch$HandOnDeck")
+                        == com.megacrit.cardcrawl.actions.common.PutOnDeckAction.class,
+                "The hand move hook must patch PutOnDeckAction");
+        require(patchTarget("anotherspirerework.patches.ShuffleTriggerPatch$FinalShuffle")
+                        == com.megacrit.cardcrawl.actions.common.ShuffleAction.class,
+                "The closing shuffle hook must patch ShuffleAction");
+        // flush() must refuse to fire while either step is still outstanding.
+        CtClass trigger = pool.get("anotherspirerework.patches.ShuffleTriggerPatch");
+        if (trigger.isFrozen()) trigger.defrost();
+        final java.util.Set<String> reads = new java.util.HashSet<>();
+        trigger.getDeclaredMethod("flush",
+                        new CtClass[]{pool.get("com.megacrit.cardcrawl.actions.AbstractGameAction")})
+                .instrument(new ExprEditor() {
+                    public void edit(javassist.expr.FieldAccess field) {
+                        if (field.isReader()) reads.add(field.getFieldName());
+                    }
+                });
+        trigger.toBytecode();
+        require(reads.contains("waitingForHandOnDeck") && reads.contains("waitingForFinalShuffle"),
+                "flush must stay pending until the whole ShuffleAllAction flow is done");
+        System.out.println("PASS: Reboot + Metamorphosis (shuffle event waits for the hand move and "
+                + "the closing shuffle)");
+    }
+
+    /** Every field a method writes, used to pin down which step of a multi-action flow arms what. */
+    private static java.util.Set<String> fieldsWritten(ClassPool pool, String name, String method)
+            throws Exception {
+        CtClass type = pool.get(name);
+        if (type.isFrozen()) type.defrost();
+        final java.util.Set<String> writes = new java.util.HashSet<>();
+        type.getDeclaredMethod(method).instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess field) {
+                if (field.isWriter()) writes.add(field.getFieldName());
+            }
+        });
+        type.toBytecode();
+        return writes;
+    }
+
+    /** The class a nested patch class attaches to, read from its {@link SpirePatch} annotation. */
+    private static Class<?> patchTarget(String name) throws Exception {
+        Class<?> type = Class.forName(name, false, PatchContractTest.class.getClassLoader());
+        SpirePatch patch = type.getAnnotation(SpirePatch.class);
+        return patch == null ? null : patch.clz();
     }
 
     /** Fails when a class that was deleted in this round is still on the classpath. */

@@ -171,7 +171,9 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
 
     /**
      * Distinct cards of any colour for Astrolabe: the rarity is rolled first so every rarity is as
-     * likely to show up, and Basic, Special, Status, Curse and healing cards never are.
+     * likely to show up, and Basic, Special, Status and Curse cards never are. Healing cards are
+     * offered on purpose: this pick adds the card to the deck outside combat, while the HEALING tag
+     * only keeps the base game's in-combat random generation away from them.
      */
     private static CardGroup anyColorChoices() {
         CardGroup group = new CardGroup(CardGroup.CardGroupType.UNSPECIFIED);
@@ -191,10 +193,7 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
         if (card.rarity == AbstractCard.CardRarity.BASIC || card.rarity == AbstractCard.CardRarity.SPECIAL) {
             return false;
         }
-        if (card.type == AbstractCard.CardType.STATUS || card.type == AbstractCard.CardType.CURSE) {
-            return false;
-        }
-        return !card.tags.contains(AbstractCard.CardTags.HEALING);
+        return card.type != AbstractCard.CardType.STATUS && card.type != AbstractCard.CardType.CURSE;
     }
 
     @Override

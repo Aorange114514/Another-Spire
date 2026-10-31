@@ -61,6 +61,7 @@ foreach ($lang in @('eng', 'zhs')) {
     Assert ($null -eq $relics.psobject.Properties['${modID}:Regal Pillow']) "Regal Pillow must keep the vanilla text: $lang"
     $tiny = $relics.psobject.Properties['${modID}:Tiny House'].Value
     Assert ($tiny.DESCRIPTIONS[0] -match 'Rest Site|\u4f11\u606f\u5904') "Tiny House must grant the free campfire: $lang"
+    Assert ($tiny.DESCRIPTIONS[0] -match 'Recall|\u56de\u5fc6') "Tiny House must exclude Recall from the free options: $lang"
 }
 # Every power exposes its strings as a static field named powerStrings: the power list screens read
 # that name by reflection, and a power without it shows an unresolved title.
@@ -119,6 +120,11 @@ foreach ($source in (Get-ChildItem (Join-Path $project 'src\main\java') -Recurse
 $tinyHouse = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\relics\TinyHouse.java') -Raw
 Assert ($tinyHouse -match 'instanceof RecallOption') 'Tiny House must recognise the Recall option'
 Assert ($tinyHouse -match 'recallOption\.usable = false') 'Tiny House must lock Recall once another option is used'
+Assert ($tinyHouse -match 'recallOption\.usable = true') 'Tiny House must hand Recall back when the pick is cancelled'
+# Astrolabe adds the picked cards to the deck outside combat, so a HEALING card is a valid offer:
+# the picker must not filter on that tag (the base game's getAnyColorCard does not filter it either).
+$picker = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\effects\ChooseDeckCardsEffect.java') -Raw
+Assert ($picker -notmatch 'CardTags\.HEALING') 'Astrolabe must not exclude HEALING cards'
 
 # One class per reworked relic: RelicSwapPatch lists the replacements, and each of them is its own
 # file extending the vanilla relic class with its own makeCopy.
