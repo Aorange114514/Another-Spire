@@ -374,8 +374,16 @@
   },
   "${modID}:Cloak And Dagger": {
     "NAME": "Cloak and Dagger",
-    "DESCRIPTION": "Gain !B! Block. NL Choose !M! cards in your draw pile and transform them into *Shivs.",
-    "EXTENDED_DESCRIPTION": ["Choose cards to transform into Shivs."]
+    "DESCRIPTION": "Gain !B! Block. NL Exhaust 1 card. NL Add 1 *Shiv into your hand."
+  },
+  "${modID}:Survivor": {
+    "NAME": "Survivor",
+    "DESCRIPTION": "Gain !B! Block. NL Discard !M! card. NL The discarded card counts as played."
+  },
+  "${modID}:Slice": {
+    "NAME": "Slice",
+    "DESCRIPTION": "Deal !D! damage. NL Add Ethereal to !M! cards in your hand.",
+    "EXTENDED_DESCRIPTION": ["make them Ethereal."]
   },
   "${modID}:Concentrate": {
     "NAME": "Concentrate",

@@ -15,7 +15,7 @@ public class RiddleWithHoles extends AbstractCard {
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public RiddleWithHoles() {
-        super(ID, cardStrings.NAME, "green/attack/riddle_with_holes", 2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.UNCOMMON, CardTarget.ENEMY);
+        super(ID, cardStrings.NAME, "green/attack/riddle_with_holes", 2, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.COMMON, CardTarget.ENEMY);
         this.baseDamage = 3;
         this.baseMagicNumber = 6;
         this.magicNumber = this.baseMagicNumber;

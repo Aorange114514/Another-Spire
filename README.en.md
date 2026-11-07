@@ -19,7 +19,7 @@ verification and maintenance rules, see
 
 - [1. Card changes](#cards)
   - [Ironclad (24)](#ironclad)
-  - [Silent (31)](#silent)
+  - [Silent (33)](#silent)
   - [Defect (28)](#defect)
   - [Watcher (30)](#watcher)
   - [Colorless (17 replacements + Bite)](#colorless)
@@ -32,8 +32,8 @@ verification and maintenance rules, see
 
 ## 1. Card changes
 
-- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) replaces **130 cards** in total, all keeping their vanilla cardIDs and vanilla image paths.
-- Bite (`Bite`) does not go through the card pool; it is patched separately by [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) and is not counted among the 130.
+- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) replaces **132 cards** in total, all keeping their vanilla cardIDs and vanilla image paths.
+- Bite (`Bite`) does not go through the card pool; it is patched separately by [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) and is not counted among the 132.
 - Costs are written as "base (upgraded)"; numbers in parentheses in the effect column are the upgraded values. ⚠ marks a change of card type or rarity.
 
 <a id="ironclad" name="ironclad"></a>
@@ -69,7 +69,7 @@ verification and maintenance rules, see
 
 <a id="silent" name="silent"></a>
 
-### Silent (31)
+### Silent (33)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
@@ -80,7 +80,7 @@ verification and maintenance rules, see
 | Dagger Throw | `Dagger Throw` | 1 | Deal 9 (12) damage; draw 1 (2) cards; discard 1 (2) cards |
 | Outmaneuver | `Outmaneuver` | 0 | Next turn, gain [E] ([E][E]) |
 | Choke | `Choke` | 1 | Deal 6 damage; whenever you play a card this turn, the enemy loses 3 (5) HP |
-| Riddle With Holes | `Riddle With Holes` | 2 | Deal 3 damage 6 (8) times |
+| Riddle With Holes ⚠Uncommon→Common | `Riddle With Holes` | 2 | Deal 3 damage 6 (8) times |
 | Glass Knife | `Glass Knife` | 1 | Deal 4 damage 2 times; whenever you attack this enemy with a Shiv, gain 3 (5) Block; Exhaust |
 | A Thousand Cuts | `A Thousand Cuts` | 1 | Whenever you play a card, deal 1 (2) damage to ALL enemies |
 | Unload ⚠Rare→Uncommon, Attack→Power | `Unload` | 1 | Shivs gain Retain; the first Shiv you play each turn deals +9 (12) damage |
@@ -90,20 +90,24 @@ verification and maintenance rules, see
 | Storm of Steel | `Storm of Steel` | 2 (1) | Play a copy of every Shiv in your exhaust pile against an enemy |
 | After Image | `After Image` | 1 | Whenever you play a card, gain 1 (2) Block |
 | Dodge and Roll | `Dodge and Roll` | — (Unplayable) | If this card is discarded from your hand, gain 8 (11) Block |
+| Survivor | `Survivor` | 2 (1) | Gain 6 Block; discard 1 card, which then counts as played (random target; X reads the current energy and costs none; Powers leave combat after the animation, other cards resolve normally; no Beat of Death or Time Warp; with only 1 card in hand it is discarded without opening the picker) |
+| Slice ⚠Common→Uncommon | `Slice` | 1 | Deal 9 (12) damage; choose 2 cards in your hand and make them Ethereal |
 | Die Die Die ⚠Attack→Power | `Die Die Die` | 2 (1) | Shivs now hit ALL enemies at once; add 3 Shivs to your hand |
 | Envenom | `Envenom` | 1 | Your Shivs apply 1 (2) Poison; add 1 Shiv to your hand |
 | Distraction | `Distraction` | 1 (0) | Choose 1 of 3 random Skill cards to add to your hand; it costs 0 this turn; Exhaust |
-| Cloak and Dagger | `Cloak And Dagger` | 1 | Gain 6 Block; choose 1 (2) cards in your draw pile and transform them into Shivs |
+| Cloak and Dagger ⚠Common→Uncommon | `Cloak And Dagger` | 1 (0) | Gain 2 Block; Exhaust 1 card in your hand; add 1 Shiv into your hand |
 | Concentrate | `Concentrate` | 0 | Discard 3 cards; gain [E][E] ([E][E][E]) |
 | Deadly Poison | `Deadly Poison` | 1 | Apply 7 (9) Poison; Exhaust |
 | Bane ⚠Common→Uncommon | `Bane` | 1 | Deal 8 (10) damage; if the enemy is Poisoned, convert the unblocked damage into Poison |
 | Flying Knee ⚠Common→Uncommon | `Flying Knee` | 1 | Deal 8 (11) damage; if the enemy is Weakened, damage is doubled |
-| Catalyst ⚠Uncommon→Common | `Catalyst` | 1 | Double an enemy's Poison; Exhaust; upgraded gains Retain |
+| Catalyst ⚠Common→Uncommon | `Catalyst` | 1 | Double an enemy's Poison; Exhaust; upgraded gains Retain |
 | Predator ⚠Uncommon→Common | `Predator` | 2 | Deal 15 (18) damage; draw 2 (3) additional cards next turn |
 | Sucker Punch | `Sucker Punch` | 1 | Deal 7 (10) damage; apply 2 Weak |
 | Blur | `Blur` | 1 (0) | After you play this card, gain 1 Block whenever you draw 1 card this turn |
 | Bouncing Flask | `Bouncing Flask` | X | Apply 6 Poison to random enemies X (X+1) times |
 | Skewer | `Skewer` | X | Deal 9 (12) damage X times |
+
+Rarity-only changes (effect and text untouched, so they are not card replacements): All-Out Attack (`All Out Attack`), Dash (`Dash`) and Endless Agony (`Endless Agony`) are now Common.
 
 <a id="defect" name="defect"></a>
 
@@ -186,8 +190,8 @@ verification and maintenance rules, see
 | Purity | `Purity` | 0 | Retain; Exhaust up to 3 (5) cards from your hand; this card still Exhausts when played |
 | Mayhem | `Mayhem` | 1 (0) | Every time you draw 10 cards, gain [E] |
 | Thinking Ahead | `Thinking Ahead` | 0 | Draw 2 (3) cards, then put a card from your hand on top of your draw pile; Exhaust |
-| Secret Technique | `Secret Technique` | 0 | Choose 1 (2) Skill cards from your draw pile and put them into your hand; Exhaust |
-| Secret Weapon | `Secret Weapon` | 0 | Choose 1 (2) Attack cards from your draw pile and put them into your hand; Exhaust |
+| Secret Technique | `Secret Technique` | 0 | Choose 1 (2) Skill cards from your draw pile and put them into your hand; when the draw pile offers no more than that many, take them all without opening the picker; Exhaust |
+| Secret Weapon | `Secret Weapon` | 0 | Choose 1 (2) Attack cards from your draw pile and put them into your hand; when the draw pile offers no more than that many, take them all without opening the picker; Exhaust |
 | Chrysalis ⚠Skill→Power | `Chrysalis` | 2 (1) | Whenever you shuffle your draw pile, gain [E] |
 | Metamorphosis ⚠Skill→Power | `Metamorphosis` | 2 (1) | Whenever you shuffle your draw pile, choose up to 1 card from your draw pile and put it into your hand; multiple stacks become up to n cards, and the buff description and the card-choice prompt show n; if the cards you draw right after the shuffle would empty the draw pile, no card-choice screen is shown |
 | Jack Of All Trades ⚠Skill→Power | `Jack Of All Trades` | 2 (1) | Every time you spend 4 Energy, gain [E] |

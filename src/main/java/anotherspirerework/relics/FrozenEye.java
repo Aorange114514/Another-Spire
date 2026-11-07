@@ -71,12 +71,9 @@ public class FrozenEye extends com.megacrit.cardcrawl.relics.FrozenEye {
 
     /** Marks one card Ethereal, text included, so the keyword is visible on the card. */
     public static void applyFrozenEye(AbstractCard card) {
-        if (!isStrikeOrDefend(card) || card.isEthereal) {
-            return;
+        if (isStrikeOrDefend(card)) {
+            anotherspirerework.util.EtherealMark.apply(card);
         }
-        card.isEthereal = true;
-        card.rawDescription += " NL " + GameDictionary.ETHEREAL.NAMES[0] + keywordSuffix();
-        card.initializeDescription();
     }
 
     public static void removeFrozenEye(AbstractCard card) {

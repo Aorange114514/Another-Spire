@@ -374,8 +374,16 @@
   },
   "anotherspirerework:Cloak And Dagger": {
     "NAME": "斗篷与匕首",
-    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 选择你抽牌堆中的 !M! 张牌，将其变化为 *小刀 。",
-    "EXTENDED_DESCRIPTION": ["选择变化为小刀的牌。"]
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 消耗 1 张牌。 NL 将 1 张 *小刀 加入你的手牌。"
+  },
+  "anotherspirerework:Survivor": {
+    "NAME": "生存者",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 丢弃 !M! 张牌。 NL 丢弃的牌视为打出。"
+  },
+  "anotherspirerework:Slice": {
+    "NAME": "切割",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 选择你手牌中的 !M! 张牌，为其添加 虚无 。",
+    "EXTENDED_DESCRIPTION": ["为其添加虚无。"]
   },
   "anotherspirerework:Concentrate": {
     "NAME": "全神贯注",

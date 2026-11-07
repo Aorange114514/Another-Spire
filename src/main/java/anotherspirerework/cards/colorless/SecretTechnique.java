@@ -1,7 +1,7 @@
 package anotherspirerework.cards.colorless;
 
 import anotherspirerework.AnotherSpireRework;
-import com.megacrit.cardcrawl.actions.unique.SkillFromDeckToHandAction;
+import anotherspirerework.actions.TypeFromDeckToHandAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.localization.CardStrings;
@@ -25,7 +25,7 @@ public class SecretTechnique extends AbstractCard {
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
-        addToBot(new SkillFromDeckToHandAction(this.magicNumber));
+        addToBot(new TypeFromDeckToHandAction(CardType.SKILL, this.magicNumber));
     }
 
     public boolean canUse(AbstractPlayer p, AbstractMonster m) {

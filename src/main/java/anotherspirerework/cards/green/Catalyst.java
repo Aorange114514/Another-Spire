@@ -17,7 +17,7 @@ public class Catalyst extends AbstractCard {
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public Catalyst() {
-        super(ID, cardStrings.NAME, "green/skill/catalyst", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.COMMON, CardTarget.ENEMY);
+        super(ID, cardStrings.NAME, "green/skill/catalyst", 1, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.UNCOMMON, CardTarget.ENEMY);
         this.exhaust = true;
     }
 

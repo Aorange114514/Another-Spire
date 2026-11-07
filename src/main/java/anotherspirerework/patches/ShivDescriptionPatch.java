@@ -3,6 +3,7 @@ package anotherspirerework.patches;
 import anotherspirerework.AnotherSpireRework;
 import anotherspirerework.powers.ShivAllEnemiesPower;
 import anotherspirerework.powers.ShivMasteryPower;
+import anotherspirerework.util.EtherealMark;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -31,7 +32,10 @@ public class ShivDescriptionPatch {
     @SpirePrefixPatch
     public static void Prefix(AbstractCard __instance) {
         if (__instance instanceof Shiv) {
-            __instance.rawDescription = description();
+            // The Shiv text is rebuilt from the variant table on every refresh, so a card that Slice
+            // made Ethereal has to ask for the keyword line here as well.
+            __instance.rawDescription = description()
+                    + (__instance.isEthereal ? EtherealMark.keywordLine() : "");
         }
     }
 

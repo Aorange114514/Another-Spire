@@ -4,6 +4,62 @@
 
 # AnotherSpire Rework
 
+## 第十三批：强制选牌界面在可选牌不足时跳过（2026-11-07）
+
+### 秘密武器 / 秘密技法：界面显示张数，可选牌不多于应选时自动全部取出
+
+- **改动**：从抽牌堆中选择 1（2）张攻击/技能牌时，若抽牌堆中符合条件的牌不多于应选张数，则不再弹出选牌界面，直接全部放入手牌；需要手动选择时，界面标题按实际张数显示「选择n张牌。」，不再沿用原版固定的「选择一张攻击牌。」/「选择一张技能牌。」（升级后实际要选 2 张，原文案与效果不符）。
+- **实现**：新增 `actions.TypeFromDeckToHandAction`，`SecretWeapon` / `SecretTechnique` 的 `use()` 改用它并传入卡牌类型与 `magicNumber`，取代原版 `AttackFromDeckToHandAction` / `SkillFromDeckToHandAction`。筛选、打乱与取牌照原版：`drawPile` 中按类型收集并用 `addToRandomSpot` 排布；`size <= amount` 时逐张走原版单张取牌的动画分支（手牌满 `BaseMod.MAX_HAND_SIZE` 时改入弃牌堆并提示），否则打开 `gridSelectScreen` 并要求选满 `amount` 张。标题取本模组 `UIStrings` 新条目 `DeckToHand`：中文「选择」+张数+「张牌。」，英文按单复数取 `card.`/`cards.`。
+- **兼容**：未升级（1 张）与升级（2 张）走同一动作；抽牌堆没有对应类型时仍由卡牌的 `canUse` 拦截。
+
+### 生存者：手牌不多于应选张数时直接丢弃
+
+- **改动**：手牌数量不多于本次应弃张数（生存者为 1）时，不再弹出手牌选择界面，直接按原逻辑丢弃并结算。
+- **实现**：`actions.DiscardAndPlayAction` 在打开选择屏前判断 `hand.size() <= amount`；成立则遍历手牌副本逐张调用原有的 `discardAndPlay()`（弃牌钩子、随机目标、能力牌 `empower` 等规则不变），随后刷新手牌布局并重算能力。其它强制选牌的牌（投掷匕首、独门技术、全神贯注、斗篷与匕首、深谋远虑等）本来就由原版 `DiscardAction` / `ExhaustAction` / `PutOnDeckAction` 在可选牌不足时自动结算，本次不改。
+
+### 切割：选牌提示去掉重复的「选择」
+
+- **现象**：手牌选择屏会自己拼出「选择 2 张牌来」+ 提示语，而 `AddEtherealToHandAction` 传入的提示语本身又以「选择要添加虚无的手牌。」开头，界面显示成「选择 2 张牌来选择要添加虚无的手牌。」；英文同样出现两个 Choose（「Choose 2 Cards to Choose cards to make Ethereal.」）。
+- **修复**：切割的扩展文案改为动词短语「为其添加虚无。」/「make them Ethereal.」，界面显示「选择 2 张牌来为其添加虚无。」/「Choose 2 Cards to make them Ethereal.」。该扩展文案只被这个选牌动作使用，卡面文案不变。
+
+验证：`mvn -B clean package`（JDK 8）通过（261 个源文件，130 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：秘密武器/技法升级后还剩 3 张以上可选牌时标题显示「选择2张牌。」、只剩 2 张时直接全部取走；生存者手牌只剩 1 张时直接丢弃并结算，不再弹窗；切割选牌提示显示「选择 2 张牌来为其添加虚无。」。
+
+## 第十二批：斗篷与匕首改动手牌、生存者/切割新增、稀有度调整（2026-11-07）
+
+### 斗篷与匕首：改为消耗 1 张手牌并加入小刀
+
+- **改动**：1（0）费，获得 2 点格挡；选择手牌中的 1 张牌消耗；将 1 张小刀加入你的手牌。稀有度普通 → 罕见。
+- **实现**：`use()` 依次执行原版 `GainBlockAction`、`ExhaustAction(1, false, false, false)` 与 `MakeTempCardInHandAction(new Shiv(), 1)`。消耗走原版 `moveToExhaustPile`，照常触发被消耗牌的消耗效果、遗物/能力的 `onExhaust` 与盛怒计数；手牌只有 1 张时原版 `ExhaustAction` 直接消耗、不弹选择屏，手牌为空时只加入小刀。小刀最后加入，因此不会被本次消耗选中；持有主现实（`MasterRealityPower`）时小刀仍升级（`MakeTempCardInHandAction` 内处理）。`actions.TransformHandCardsToShivsAction` 已无调用方，随该改动删除；更早的 `TransformDrawPileToShivsAction` 同样已删除。
+- **升级**：只剩费用 1 → 0（`upgradeBaseCost(0)`），格挡固定 2，消耗与小刀数量不变。
+
+### 生存者：丢弃的牌视为打出
+
+- **改动**：2（1）费，获得 6 点格挡；丢弃 1 张牌，该牌视为打出。仍是初始牌（`BASIC`），稀有度不变。
+- **实现**：新增 `actions.DiscardAndPlayAction`，照原版 `DiscardAction` 弹手牌选择屏；选中的牌先 `triggerOnManualDiscard()`、`GameActionManager.incrementDiscard(false)`，再直接调用该牌的 `use()`（非能力牌在这之前先 `moveToDiscardPile`）：
+  - 走弃牌钩子而不是 `UseCardAction`，所以**不触发死亡律动（Beat of Death），也不计入时间扭曲（Time Warp）**；
+  - 需要目标的牌用 `AbstractDungeon.getRandomMonster()` 随机选敌，`applyPowers()` + `calculateCardDamage()` 后结算；没有存活敌人时跳过；
+  - 群攻牌靠 `applyPowers()` 填好的 `multiDamage` 结算，与被丢弃的牌是否还在手牌无关；
+  - X 费牌按原版自动打出处理（与精炼混沌、浩劫等一致）：`energyOnUse` 取当前能量，`freeToPlayOnce`/`isInAutoplay` 置真，所以 X = 当前能量且不消耗能量（此前 `energyOnUse` 为 0，X 费牌等于没有效果）；化学物X 的 +2 仍由牌自身的 X 费结算添加；
+  - 非能力牌带 消耗 关键词的（`exhaust` 或 `exhaustOnUseOnce`）在按打出结算后移入消耗堆——与 `UseCardAction` 的判定一致，会触发该牌的 `triggerOnExhaust`、遗物/能力的 `onExhaust`，也因此计入盛怒的「本回合消耗过牌」；不带 消耗 的非能力牌留在弃牌堆；
+  - 能力牌走原版 `UseCardAction` 的能力分支（只调用 `hand.empower()`，不触发 `onUseCard`/`onAfterUseCard`）：不进入弃牌堆或其它牌堆，播放原版能力牌打出的 whoosh 动画后移出本场战斗，之后抽不到、也不能再打出；带 消耗 的能力牌同样按原版忽略消耗。此前能力牌会作为普通牌留在弃牌堆，可以被反复抽到并再打一次；
+  - 该牌自身的「被丢弃时」效果（快斩、闪躲翻滚、本能反应等）仍照常触发，之后才按打出结算。
+- **范围**：只有生存者丢弃的那 1 张牌按打出结算；其它弃牌动作（全神贯注、投掷匕首、独门技术、全力攻击等）行为不变。
+
+### 切割：新增
+
+- **改动**：1 费，造成 9（12）点伤害；选择手牌中的 2 张牌，为其添加 虚无 。稀有度普通 → 罕见（原版为普通）。
+- **实现**：新增 `actions.AddEtherealToHandAction` 与 `util.EtherealMark`。`EtherealMark` 置 `isEthereal = true` 并把本地化的 虚无 关键词行追加到 `rawDescription` 后 `initializeDescription()`；关键词必须是独立词（中文用「 。」分隔），这条规则原本只写在冰封之眼里，现在提取成 `EtherealMark`，冰封之眼改为委托它，行为不变。小刀的文案由 `ShivDescriptionPatch` 每次重建，那处 prefix 也改成在 `isEthereal` 时补上关键词行，否则被加上 虚无 的小刀看不到关键词。选中的牌在添加 虚无 后用 `hand.addToTop()` 放回手牌——原版选牌屏会把牌移出 `hand` 放进 `selectedCards`，不手动归还就会在关闭界面清空 `selectedCards` 时直接消失。手牌不足 2 张时按其数量全部添加。
+
+### 稀有度调整
+
+- `cards/green/Catalyst`：普通 → 罕见；`cards/green/RiddleWithHoles`：罕见 → 普通。
+- 新增 `patches.CardRarityPatch`：全力攻击（`AllOutAttack`）、冲刺（`Dash`）、无尽苦痛（`EndlessAgony`）在构造函数 postfix 里把 `rarity` 改成普通。这三张不改效果，因此不进 `CardSwapPatch`；卡池、商店价格与图鉴都读原型的 `rarity` 字段，所以不需要重建卡池。
+- 替换表 130 → **132**（生存者、切割），`verify.ps1`、README 中英与本文的硬规则同步更新。
+
+验证：`mvn -B clean package`（JDK 8）通过（260 个源文件，130 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：斗篷与匕首的消耗选牌界面（手牌 1 张时直接消耗）、消耗触发 onExhaust/盛怒与之后小刀的位置/牌面；生存者丢弃攻击牌、技能牌、能力牌、X 费牌时的随机目标与结算顺序，X 费牌（金属化、弹跳药瓶、串刺、旋风斩、诸神黄昏等）按自动打出规则结算（X=当前能量，有化学物X 时再加 2）且不扣能量，能力牌在丢弃后是否播放原版能力牌打出动画并从战斗中移除（弃牌堆里没有、之后抽不到），丢弃时死亡律动与时间扭曲确实不计数，非能力牌带 消耗 时移入消耗堆并触发遗物/能力 onExhaust、盛怒计数，敌人全灭后再丢弃指向牌不报错；切割选中的牌回到手牌（而不是消失）、附加的 虚无 在卡面是否高亮、回合结束是否被消耗；三张稀有度牌在卡池、商店与图鉴中的显示。
+
 ## 第十一批：玻璃刀刃改为小刀命中即获得格挡（2026-10-31）
 
 ### 玻璃刀刃：被格挡的小刀命中也触发
@@ -929,11 +985,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 `CreativeAIUpgraded`、`BattleHymnSmite`、`LikeWaterCalm`、`StudyInsight`、`DevotionDraw`、`ScuffleDraw`、
 `ShuffleEnergy`、`ShuffleSeek`、`ShivAllEnemies`、`ShivPoison`、`BlurDraw`、`SadisticNature`； `WaveOfTheHandStancePower`，继承原版 `WaveOfTheHandPower` 并沿用其原版 ID。
 
-新 Action（18）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
+新 Action（20）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
 `PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`ExhaustAllHandAction`、`IncreaseCostAction`、
-`SanctityEnergyAction`、`ShivDamageAction`、`ShivDamageAllAction`、`TransformDrawPileToShivsAction`、`BouncingFlaskXAction`、
-`RagnarokXAction`、`ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、
-`PlayRandomAttackFromDrawPileAction`。
+`SanctityEnergyAction`、`ShivDamageAction`、`ShivDamageAllAction`、`BouncingFlaskXAction`、`RagnarokXAction`、
+`ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、`PlayRandomAttackFromDrawPileAction`、
+`DiscardAndPlayAction`、`AddEtherealToHandAction`、`TypeFromDeckToHandAction`。
 
 Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域，不需要额外美术；
 `Entrench` 刻意复用原版 `NextTurnBlockPower`。
@@ -983,7 +1039,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 |---|---|---|
 | 纯逻辑回归 | `SaturatingMathTest` | 饱和算术与随机边界，不初始化图形环境 |
 | 补丁契约 | `PatchContractTest`（随 `mvn package` 运行） | 用真实依赖 JAR 校验目标方法、locator、字段与 Instrument 后的字节码 |
-| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、130 张唯一卡牌替换、45 件唯一遗物替换、卡图尺寸、JAR 条目 |
+| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、132 张唯一卡牌替换、45 件唯一遗物替换、卡图尺寸、JAR 条目 |
 | 真实运行 | ModTheSpire + 游戏内场景 | 补丁组合、动作/UI 时序、卡面观感、存档迁移；**前三层都不能替代它** |
 
 ### 改代码的硬性规则
@@ -995,7 +1051,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
    缺了就取不到本地化文本。
 3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
    中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
-4. **替换表必须仍是 130 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
+4. **替换表必须仍是 132 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
    （`RelicSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
 5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
    必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。

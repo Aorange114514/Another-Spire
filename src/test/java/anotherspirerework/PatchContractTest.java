@@ -102,6 +102,7 @@ public class PatchContractTest {
                 "anotherspirerework.patches.PowerArtLoaderPatch",
                 "anotherspirerework.patches.BitePatch",
                 "anotherspirerework.patches.CardSwapPatch",
+                "anotherspirerework.patches.CardRarityPatch",
                 "anotherspirerework.patches.ExhaustTracker",
                 "anotherspirerework.patches.FreeSkillCardPatch",
                 "anotherspirerework.patches.MarkAttackPatch",
@@ -172,7 +173,7 @@ public class PatchContractTest {
                 .getDeclaredConstructor(new CtClass[]{pool.get("com.megacrit.cardcrawl.cards.AbstractCard$CardType"), CtClass.intType}) != null,
                 "Typed Discovery constructor");
         for (String name : new String[]{"red.InfernalBlade", "green.Distraction", "green.Concentrate",
-                "green.CloakAndDagger", "green.Envenom", "green.StormOfSteel", "blue.Stack"}) {
+                "green.CloakAndDagger", "green.Survivor", "green.Slice", "green.Envenom", "green.StormOfSteel", "blue.Stack"}) {
             CtClass card = pool.get("anotherspirerework.cards." + name);
             require(card.getSuperclass().getName().equals("com.megacrit.cardcrawl.cards.AbstractCard"), "Card superclass: " + name);
             require(card.getDeclaredMethod("makeCopy") != null, "Card copy: " + name);
@@ -193,7 +194,62 @@ public class PatchContractTest {
         require(ironWaveActions.indexOf("com.megacrit.cardcrawl.actions.common.GainBlockAction")
                 < ironWaveActions.indexOf("com.megacrit.cardcrawl.actions.common.DamageAction"), "Iron Wave must gain Block before dealing damage");
         requireCalls(pool, "anotherspirerework.actions.ShivDamageAction", "update", "update", "com.megacrit.cardcrawl.actions.common.GainBlockAction");
-        requireCalls(pool, "anotherspirerework.actions.TransformDrawPileToShivsAction", "transform", "set", "com.megacrit.cardcrawl.cards.tempCards.Shiv");
+        // Cloak and Dagger gains Block, exhausts one chosen card, then adds a Shiv. The Shiv has to
+        // arrive last: a Shiv added before the exhaust could be the card that gets exhausted.
+        final java.util.List<String> cloakUse = new java.util.ArrayList<>();
+        CtClass cloak = pool.get("anotherspirerework.cards.green.CloakAndDagger");
+        if (cloak.isFrozen()) cloak.defrost();
+        cloak.getDeclaredMethod("use").instrument(new ExprEditor() {
+            public void edit(javassist.expr.NewExpr expr) { cloakUse.add(expr.getClassName()); }
+        });
+        require(cloakUse.contains("com.megacrit.cardcrawl.actions.common.GainBlockAction"), "Cloak and Dagger loses its Block");
+        int exhaustAt = cloakUse.indexOf("com.megacrit.cardcrawl.actions.common.ExhaustAction");
+        int shivAt = cloakUse.indexOf("com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction");
+        require(exhaustAt >= 0, "Cloak and Dagger must exhaust a card");
+        require(shivAt > exhaustAt, "Cloak and Dagger must add the Shiv after the exhaust");
+        cloak.toBytecode();
+        requireCalls(pool, "anotherspirerework.cards.green.CloakAndDagger", "upgrade", "upgradeBaseCost");
+        // Survivor: the discarded card acts as if played, through the discard hook rather than a
+        // real play, so Beat of Death and Time Warp never see it.
+        requireCalls(pool, "anotherspirerework.cards.green.Survivor", "use",
+                "com.megacrit.cardcrawl.actions.common.GainBlockAction", "anotherspirerework.actions.DiscardAndPlayAction");
+        // The picker is skipped when the hand cannot offer more than the requested discard count.
+        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "update",
+                "discardAndPlay", "open");
+        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "discardAndPlay",
+                "moveToDiscardPile", "triggerOnManualDiscard", "incrementDiscard", "play", "moveToExhaustPile");
+        // A Power must leave the combat after the vanilla power animation instead of staying in the
+        // discard pile, where it could be drawn and played again.
+        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "discardAndPlay", "empower");
+        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "play",
+                "getRandomMonster", "applyPowers", "calculateCardDamage", "use");
+        // A discarded X-cost card has to auto-play like Distilled Chaos or Havoc: X reads the
+        // current energy, no energy is spent, and Chemical X's +2 still comes from the card itself.
+        final java.util.Set<String> autoplayWrites = new java.util.HashSet<>();
+        CtClass discardAction = pool.get("anotherspirerework.actions.DiscardAndPlayAction");
+        if (discardAction.isFrozen()) discardAction.defrost();
+        discardAction.getDeclaredMethod("play").instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess access) {
+                if (access.isWriter()) autoplayWrites.add(access.getFieldName());
+            }
+        });
+        for (String field : new String[]{"energyOnUse", "freeToPlayOnce", "isInAutoplay"}) {
+            require(autoplayWrites.contains(field),
+                    "Discarded X-cost card must auto-play: play() -> " + field);
+        }
+        discardAction.toBytecode();
+        requireCalls(pool, "anotherspirerework.cards.green.Slice", "use",
+                "com.megacrit.cardcrawl.actions.common.DamageAction", "anotherspirerework.actions.AddEtherealToHandAction");
+        requireCalls(pool, "anotherspirerework.actions.AddEtherealToHandAction", "update", "apply", "addToTop");
+        // The Ethereal keyword has to stay its own word so the parser can highlight it, and a Shiv
+        // rebuilds its own text, so it asks for the keyword line as well.
+        requireCalls(pool, "anotherspirerework.util.EtherealMark", "keywordLine", "keywordSuffix");
+        requireCalls(pool, "anotherspirerework.util.EtherealMark", "apply", "keywordLine", "initializeDescription");
+        requireCalls(pool, "anotherspirerework.patches.ShivDescriptionPatch", "Prefix", "keywordLine");
+        // Rarity-only reworks touch the prototype the pools read; nothing else moves.
+        requireCalls(pool, "anotherspirerework.patches.CardRarityPatch$AllOutAttackRarity", "after", "makeCommon");
+        requireCalls(pool, "anotherspirerework.patches.CardRarityPatch$DashRarity", "after", "makeCommon");
+        requireCalls(pool, "anotherspirerework.patches.CardRarityPatch$EndlessAgonyRarity", "after", "makeCommon");
         requireCalls(pool, "anotherspirerework.patches.ShivPatch", "attack", "anotherspirerework.actions.ShivDamageAction", "com.megacrit.cardcrawl.powers.PoisonPower");
         // Die Die Die hits all enemies as one simultaneous action (like Cleave), not one action per
         // enemy, while the damage type and attack effect stay the Shiv's own.
@@ -223,9 +279,13 @@ public class PatchContractTest {
                 "com.megacrit.cardcrawl.actions.common.DrawCardAction",
                 "com.megacrit.cardcrawl.actions.common.PutOnDeckAction");
         requireCalls(pool, "anotherspirerework.cards.colorless.SecretTechnique", "use",
-                "com.megacrit.cardcrawl.actions.unique.SkillFromDeckToHandAction");
+                "anotherspirerework.actions.TypeFromDeckToHandAction");
         requireCalls(pool, "anotherspirerework.cards.colorless.SecretWeapon", "use",
-                "com.megacrit.cardcrawl.actions.unique.AttackFromDeckToHandAction");
+                "anotherspirerework.actions.TypeFromDeckToHandAction");
+        // No picker when the draw pile cannot offer more than the requested count; the header
+        // carries the count instead of the base game's fixed "choose one".
+        requireCalls(pool, "anotherspirerework.actions.TypeFromDeckToHandAction", "update",
+                "open", "prompt", "size", "take");
         requireCalls(pool, "anotherspirerework.cards.colorless.Mayhem", "use",
                 "anotherspirerework.powers.ScuffleDrawPower");
         requireCalls(pool, "anotherspirerework.cards.colorless.Chrysalis", "use",
@@ -299,8 +359,9 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.patches.CardArtLoaderPatch", "load", "internal", "exists");
         requireCalls(pool, "anotherspirerework.patches.CardArtLoaderPatch$Face", "before", "draw");
         requireCalls(pool, "anotherspirerework.patches.CardArtLoaderPatch$Popup", "before", "draw");
-        // Frozen Eye's keyword has to stay its own word so the parser can highlight it.
-        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "applyFrozenEye", "keywordSuffix");
+        // Frozen Eye's keyword has to stay its own word so the parser can highlight it (the rule
+        // itself now lives in EtherealMark, which Slice reuses).
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "applyFrozenEye", "apply");
 
         // Art file names: both the card ID spelling and the vanilla asset spelling are accepted.
         java.util.List<String> artNames = anotherspirerework.patches.CardArtLoaderPatch
