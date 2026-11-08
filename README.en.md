@@ -245,7 +245,7 @@ with those classes after `RelicLibrary.initialize()`, so everything not overridd
 | Blue Candle | When you draw a Curse card, Exhaust it; Curse cards can be played and Exhaust, and playing one costs 1 HP |
 | Strange Spoon | On pickup, choose up to 2 cards in your deck to remove Exhaust from (replaces the vanilla 50% no-Exhaust chance); the record persists across saves |
 | Orrery | On pickup, choose any number of cards from 10 Common/10 Uncommon/10 Rare to add to your deck (replaces the vanilla 4 card rewards) |
-| Frozen Eye | Starter Strikes and Defends gain Ethereal (written on token boundaries, synced with the deck on pickup/loss) |
+| Frozen Eye | In combat, your starter Strikes and Defends gain Ethereal (combat copies only; the saved deck is untouched) |
 | Inserter | Every 2 turns, at the start of the turn gain 1 Orb slot and Channel 1 random Orb |
 | Matryoshka | Draw 1 card when you shuffle (replaces the vanilla extra relic from chests) |
 | Astrolabe | On pickup, choose any number of cards from 40 cards of any color to add to your deck (base, Special, Status and Curse excluded; HEALING cards are not excluded, since this adds to the deck rather than generating in combat) |

@@ -119,6 +119,9 @@ public class PatchContractTest {
                 "anotherspirerework.patches.FlurryOfBlowsPatch",
                 "anotherspirerework.patches.ShopPricePatch",
                 "anotherspirerework.patches.IndignationStancePatch",
+                "anotherspirerework.relics.FrozenEye$CombatStart",
+                "anotherspirerework.relics.FrozenEye$NewCards",
+                "anotherspirerework.relics.FrozenEye$EndOfTurn",
                 "anotherspirerework.effects.ChooseDeckCardsEffect"));
         java.io.File relicDir = new java.io.File("target/classes/anotherspirerework/relics");
         java.io.File[] files = relicDir.listFiles();
@@ -245,6 +248,11 @@ public class PatchContractTest {
         // rebuilds its own text, so it asks for the keyword line as well.
         requireCalls(pool, "anotherspirerework.util.EtherealMark", "keywordLine", "keywordSuffix");
         requireCalls(pool, "anotherspirerework.util.EtherealMark", "apply", "keywordLine", "initializeDescription");
+        // Frozen Eye only ever touches the combat copies: the saved deck stays untouched, so the
+        // marking happens at battle start (and for cards a combat effect makes later).
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye$CombatStart", "after", "markCombatCards");
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye$NewCards", "after", "inCombat", "applyFrozenEye");
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "markCombatCards", "applyFrozenEye");
         requireCalls(pool, "anotherspirerework.patches.ShivDescriptionPatch", "Prefix", "keywordLine");
         // Rarity-only reworks touch the prototype the pools read; nothing else moves.
         requireCalls(pool, "anotherspirerework.patches.CardRarityPatch$AllOutAttackRarity", "after", "makeCommon");
@@ -1155,6 +1163,15 @@ public class PatchContractTest {
         requireConstant(pool, "anotherspirerework.relics.SacredBark", "MIN_POTIONS", 2);
         requireCalls(pool, "anotherspirerework.relics.VelvetChoker", "atTurnStart", "loseEnergy");
         requireCalls(pool, "anotherspirerework.relics.SacredBark", "atTurnStart", "loseEnergy");
+        // Ectoplasm pays the Gold and grants the energy in one action: a gain that was only queued
+        // could be dropped after the Gold had already been taken.
+        requireConstant(pool, "anotherspirerework.relics.Ectoplasm", "GOLD_COST", 5);
+        requireCalls(pool, "anotherspirerework.relics.Ectoplasm", "atTurnStart",
+                "anotherspirerework.relics.Ectoplasm$PayForEnergy");
+        requireCalls(pool, "anotherspirerework.relics.Ectoplasm$PayForEnergy", "update",
+                "loseGold", "gainEnergy", "flash");
+        requireCalls(pool, "anotherspirerework.relics.Ectoplasm$PayForEnergy", "gainEnergy",
+                "gainEnergy", "updateEnergyGain", "triggerOnGainEnergy");
         // Mark of Pain puts its Wounds into the discard pile.
         requireCalls(pool, "anotherspirerework.relics.MarkOfPain", "atBattleStart",
                 "com.megacrit.cardcrawl.actions.common.MakeTempCardInDiscardAction");

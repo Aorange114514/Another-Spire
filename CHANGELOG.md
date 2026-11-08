@@ -4,6 +4,49 @@
 
 # AnotherSpire Rework
 
+## 第十五批：灵体外质改为扣钱与加费同一步结算（2026-11-07）
+
+### 现象
+
+持有灵体外质时，有时金币照扣（每回合 5 金币），当回合能量却没有增加；据报告，在一次「付不起 5 金币」的回合之后尤其像是不再加费。
+
+### 原因
+
+`atTurnStart` 先同步调用 `loseGold(5)`，再用 `addToBot(new GainEnergyAction(1))` 把加费排进动作队列。扣钱立即发生，加费要等队列轮到它：两者不是一步，队列里排在它前面的动作一旦结束战斗（`DamageAction` 等会调用 `clearPostCombatActions`，其中只保留治疗、格挡、出牌与伤害动作，`GainEnergyAction` 会被清掉），或者队列被读档清空，就留下「钱扣了、费没加」。此外该遗物此前没有 `flash()`，即使结算了也看不出来。
+
+### 修复
+
+- 新增嵌套动作 `relics/Ectoplasm$PayForEnergy`：在同一个 `update()` 里完成「金币够 5 → 扣 5 → 立刻加 1 能量」。加费按 `GainEnergyAction` 的三步（`player.gainEnergy`、`actionManager.updateEnergyGain`、手牌 `triggerOnGainEnergy`）原样执行，不再等待后续动作。
+- `atTurnStart()` 只负责把该动作排入队列；金币在动作执行时判定，不足 5 就什么都不做，不会出现只扣钱的情况。
+- 触发时调用 `flash()`，玩家能看见遗物确实结算了。
+- 契约测试同步：检查 `GOLD_COST = 5`、`atTurnStart → PayForEnergy`、`update → loseGold/gainEnergy/flash`、`gainEnergy → gainEnergy/updateEnergyGain/triggerOnGainEnergy`。
+
+验证：`mvn -B clean package`（JDK 8）通过（261 个源文件，134 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：金币至少 5 的回合开始扣 5 金币、能量比上限多 1（如 4/3）并且遗物闪光；金币不足 5 的回合既不扣钱也不加费；长战斗或处决回合不再出现「只扣钱」。
+
+## 第十四批：冻结之眼改为只标记战斗中的打击/防御（2026-11-07）
+
+### 现象
+
+持有冻结之眼时，读档继续本局后，牌组查看与战斗中的初始打击/防御卡面都不显示「虚无」，但回合结束时仍会被消耗；同一牌组里的灵体（Apparition）等原生虚无牌文字正常。
+
+### 原因
+
+虚无原本在“拾取遗物”和“构造卡牌”这两个一次性时机写进卡面。读档时 `CardCrawlGame.loadPlayerSave` 先重建牌组（`masterDeck` 里的卡先构造），再用 `instantObtain(..., callOnEquip = false)` 还原遗物：牌组里的打击/防御构造时遗物还不存在，还原遗物又不会触发 `onEquip()`，两条写入路径都不满足，牌组里没有任何一步补上文字；这类写在牌组里的运行时状态本身也不会进存档。
+
+### 修复
+
+改为只在战斗内生效，牌组保持原样，不再需要读档补偿：
+
+- `relics/FrozenEye$CombatStart`：`AbstractPlayer.preBattlePrep()` 之后，把本场战斗各牌堆（抽牌堆/手牌/弃牌堆/消耗堆）里的初始打击、防御标记为虚无并补上关键词行。战斗牌都是开战时从牌组复制出来的，标记这些复制品即可。
+- `relics/FrozenEye$NewCards`：战斗中新建的打击/防御（例如随机攻击牌生成）同样补标记；战斗外构造的牌不再被改动，牌组查看也不会出现“读档后就消失”的文字。
+- `relics/FrozenEye$EndOfTurn`：保留兜底，漏标记的牌仍在回合结束时被消耗。
+- 删除遗物拾取/失去时的牌组文本同步（`onEquip`/`onUnequip`、`markEverywhere`、`removeFrozenEye`）以及上一版新增的读档同步与描述重建补丁；`util/EtherealMark` 回到“标记 + 补关键词行 + 刷新文本”。
+- 契约测试同步：补丁目标加入 `FrozenEye$CombatStart`，并检查开战标记、战斗内构造、回合结束兜底三条调用链。
+
+验证：`mvn -B clean package`（JDK 8）通过；`verify.ps1 -CheckJar` 通过。
+仍需游戏内验收：商店买到冻结之眼后存档退出→继续，下一场战斗的打击/防御都显示「虚无」并在回合结束被消耗；牌组查看不再显示「虚无」（设计如此，牌组不被写入）；失去遗物后下一场战斗不再生效；连续读档不出现两行「虚无」或重复消耗。
+
 ## 第十三批：强制选牌界面在可选牌不足时跳过（2026-11-07）
 
 ### 秘密武器 / 秘密技法：界面显示张数，可选牌不多于应选时自动全部取出

@@ -14,6 +14,7 @@ public final class EtherealMark {
         return " NL " + GameDictionary.ETHEREAL.NAMES[0] + RelicChecks.keywordSuffix(Settings.language.name());
     }
 
+    /** Marks one combat card and refreshes its text; a card that is already Ethereal is left alone. */
     public static void apply(AbstractCard card) {
         if (card == null || card.isEthereal) {
             return;

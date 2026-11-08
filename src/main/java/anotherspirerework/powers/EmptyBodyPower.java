@@ -29,7 +29,7 @@ public class EmptyBodyPower extends AbstractPower {
         this.amount = amount;
         this.type = PowerType.BUFF;
         updateDescription();
-        loadRegion("no_stance");
+        loadRegion("channel");
     }
 
     @Override
