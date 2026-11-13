@@ -96,8 +96,7 @@
   },
   "${modID}:Quick Slash": {
     "NAME": "Quick Slash",
-    "DESCRIPTION": "Unplayable. NL If this card is discarded from your hand, deal !D! damage to ALL enemies.",
-    "EXTENDED_DESCRIPTION": ["Unplayable."]
+    "DESCRIPTION": "Sly. NL Deal !D! damage to ALL enemies."
   },
   "${modID}:Dagger Throw": {
     "NAME": "Dagger Throw",
@@ -344,8 +343,7 @@
   },
   "${modID}:Dodge and Roll": {
     "NAME": "Dodge and Roll",
-    "DESCRIPTION": "Unplayable. NL If this card is discarded from your hand, gain !B! Block.",
-    "EXTENDED_DESCRIPTION": ["Unplayable."]
+    "DESCRIPTION": "Sly. NL Gain !B! Block 2 times."
   },
   "${modID}:Sanctity": {
     "NAME": "Sanctity",
@@ -378,7 +376,25 @@
   },
   "${modID}:Survivor": {
     "NAME": "Survivor",
-    "DESCRIPTION": "Gain !B! Block. NL Discard !M! card. NL The discarded card counts as played."
+    "DESCRIPTION": "Gain !B! Block. NL Choose a card in your hand; it gains Sly for this combat.",
+    "EXTENDED_DESCRIPTION": ["make it Sly."]
+  },
+  "${modID}:Reflex": {
+    "NAME": "Reflex",
+    "DESCRIPTION": "Sly. NL Draw !M! cards."
+  },
+  "${modID}:Tactician": {
+    "NAME": "Tactician",
+    "DESCRIPTION": "Sly. NL Gain [G].",
+    "UPGRADE_DESCRIPTION": "Sly. NL Gain [G] [G]."
+  },
+  "${modID}:Underhanded Strike": {
+    "NAME": "Sneaky Strike",
+    "DESCRIPTION": "Sly. NL Deal !D! damage to the enemy with the lowest HP."
+  },
+  "${modID}:Tools of the Trade": {
+    "NAME": "Tools of the Trade",
+    "DESCRIPTION": "Skill cards you play gain Sly."
   },
   "${modID}:Slice": {
     "NAME": "Slice",

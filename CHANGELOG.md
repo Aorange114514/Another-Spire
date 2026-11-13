@@ -4,6 +4,125 @@
 
 # AnotherSpire Rework
 
+## 修复：隐秘打击打出时仍要求选择目标（2026-11-13 深夜）
+
+### 现象
+
+隐秘打击的卡面写「对生命值最低的敌人造成伤害」，但实际打出时仍要先点一个敌人，点了以后效果又不按选择结算。
+
+### 原因
+
+`cards/green/SneakyStrike` 的构造器用了 `CardTarget.ENEMY`，原版据此在出牌前要求玩家指定目标；而 `use()` 自己用 `weakestMonster()` 挑生命值最低的敌人，玩家的选择被忽略。
+
+### 修复
+
+- 目标改为 `CardTarget.ALL_ENEMY`：原版里不要求选目标的攻击牌（回旋镖等）都用它，打出时 `useCard()` 传入 `null` 目标，`use()` 仍按最低生命值自行选敌。
+- `PatchContractTest` 断言该卡构造器读取 `CardTarget.ALL_ENEMY`，防止以后又退回需要选目标的 `ENEMY`。
+
+验证：`mvn -B clean package`（JDK 8）通过（270 个源文件，138 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+
+仍需游戏内验收：手牌中的隐秘打击不再要求选择目标、可直接打出；伤害确实落在生命值最低的敌人；被奇巧丢弃自动打出时目标与伤害不变。
+
+## 修复：奇巧丢弃能力牌时「飞入角色」动画被打断（2026-11-13 深夜）
+
+### 现象
+
+奇巧能力牌被丢弃时，卡牌先飞向弃牌堆，半路被 `empower` 动画接管，出现两段动画互相拉扯／卡顿。
+
+### 原因
+
+奇巧在 `AbstractCard.triggerOnManualDiscard()` 触发，而原版 `DiscardAction` 在此之前已经调用 `moveToDiscardPile()`：卡牌已加入弃牌堆，并启动了一个飞向弃牌堆的 `Soul`。`SlyPlayAction` 随后把牌从弃牌堆移除并 `hand.empower()`，但旧的弃牌 `Soul` 仍在更新；它发现卡牌不在弃牌堆后会判定完成并 `teleportToDiscardPile()`，于是两个 `Soul` 同时驱动同一张牌。
+
+### 修复
+
+`patches/SlyPatch$Discard` 对能力牌同步处理：
+
+- `souls.remove(card)` 取消刚启动的弃牌 `Soul`；
+- 从 `discardPile` 移除（能力牌本来就不该进入弃牌堆）；
+- `lighten(true)` 撤销 `moveToDiscardPile` 的变暗；
+- 同步调用 `actions/SlyPlayAction.playNow(card)`，让 `hand.empower()` 立即从手牌位置开始唯一的「飞入角色」动画。
+
+普通攻击／技能牌仍排队结算，原有弃牌动画不变。`PatchContractTest` 增加 `playNow`、`remove`、`lighten` 断言，原有的 `empower`／`moveToExhaustPile` 等自动打出契约不变。
+
+验证：`mvn -B clean package`（JDK 8）通过（138 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+
+仍需游戏内验收：给能力牌打上奇巧后丢弃，是否恢复为单段「飞入角色后消失」；普通攻击／技能牌的弃牌与结算不受影响。
+
+## 新增关键词「奇巧」与猎手弃牌牌重做（2026-11-13 晚）
+
+### 关键词
+
+- 新增关键词「奇巧（`Sly`）」：当这张牌从你的手牌中被丢弃时，触发此牌的效果。关键词写入中英 `Keywords.json`，并在 `AnotherSpireRework.loadKeywords` 里同时按普通词注册进 `GameDictionary`，卡面文本直接用「奇巧 / Sly」就能高亮并显示提示。
+- `util/SlyMark` 负责加关键词：标记记在卡牌实例上（`SpireField`），关键词行写在 `rawDescription` 第一行；文本被重建时由 `patches/SlyPatch$Description` 补齐。冻结之眼给打击/防御加的「虚无」也改到第一行（`util/EtherealMark`），小刀重建文本时同样把两个关键词行都补在最前面。
+
+### 卡牌（猎手）
+
+- 生存者：1（0）费，获得 6 点格挡；选择 1 张手牌，使其在本场战斗中获得 奇巧（`actions/ApplySlyAction`）。
+- 快斩：3 费，奇巧；对所有敌人造成 8（11）点伤害。
+- 闪躲翻滚：3 费，奇巧；获得 4（5）点格挡 2 次。
+- 本能反应（`Reflex`）：3 费，奇巧；抽 2（3）张牌。
+- 战术大师（`Tactician`）：3 费，奇巧；获得 [E]（[E][E]）。
+- 隐秘打击（`Underhanded Strike`）：3 费，奇巧；对生命值最低的敌人造成 16（20）点伤害，攻击特效改用观者的打击（`BLUNT_LIGHT`）。
+- 必备工具（`Tools of the Trade`）：2（1）费能力牌；你打出的技能牌在本场战斗中获得 奇巧（`powers/SlyToolsPower`）。
+
+### 实现
+
+- `patches/SlyPatch$Discard`：`triggerOnManualDiscard()` 之后，带奇巧的牌排队 `actions/SlyPlayAction`。结算按自动打出：不耗能、单体随机目标、群体按每个敌人重算、X 取当前能量、能力牌移出战斗、带「消耗」的进消耗堆；不触发死亡律动与时间扭曲。费用 -2（不能被打出）的牌不执行 `use()`。
+- 删除 `actions/DiscardAndPlayAction`（生存者不再丢弃），它的自动打出逻辑移入 `SlyPlayAction`。
+- `CardSwapPatch` 替换表 132 → **136**（新增 本能反应、战术大师、隐秘打击、必备工具）；`verify.ps1`、README 中英、AGENTS 与本文的硬规则同步更新。
+
+验证：`mvn -B clean package`（JDK 8）通过（138 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换）。
+
+仍需游戏内验收：奇巧在丢弃时按自动打出结算的时机与数字；生存者选牌后关键词是否出现在第一行并在重新抽到时保留；必备工具把打出的技能牌标记后，回收再丢弃是否触发；隐秘打击对最低生命敌人的目标与「咚咚咚」特效；冻结之眼与小刀的第一行关键词排版。
+
+## 修复：生存者丢弃不能被打出的牌时重复结算（2026-11-13）
+
+### 现象
+
+生存者丢弃 本能反应+（`Reflex`）时抽出 6 张牌，而卡面写的是 3 张。
+
+### 原因
+
+「丢弃的牌视为打出」对每张牌先执行丢弃钩子 `triggerOnManualDiscard()`（本能反应抽 3 张），再调用该牌的 `use()`。原版 `Reflex` 是「不能被打出」的牌（费用 -2），它的 `use()` 是随机打出时的兜底，内容同样是抽 `magicNumber` 张；两条结算叠加就是 3 + 3 = 6。
+
+原版生存者只会丢弃、不会调用 `use()`，所以原版不会复现；这是模组「视为打出」改动的结算问题。
+
+### 修复
+
+- `actions/DiscardAndPlayAction.discardAndPlay()`：丢弃钩子与 `incrementDiscard` 照旧执行；之后若牌的费用为 -2（不能被打出），只保留丢弃钩子的结算并直接返回，不再调用 `use()`。快斩、闪躲翻滚、战术大师等同样不能被打出的牌，效果本来就写在丢弃钩子里，行为不变。
+- `PatchContractTest` 补充断言：`discardAndPlay` 必须读取 `cost`，防止以后去掉这个判断。
+
+验证：`mvn -B clean package`（JDK 8）通过（261 个源文件，136 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+
+仍需游戏内验收：生存者丢弃 本能反应+ 只抽 3 张；丢弃 快斩、闪躲翻滚、战术大师以及状态/诅咒牌时，结算与之前一致。
+
+## 修复：生存者丢弃的群体牌按每个敌人的易伤/缓慢结算（2026-11-13）
+
+### 现象
+
+生存者丢弃的牌按「丢弃时卡面上的数字」结算：敌人身上的易伤、缓慢等目标状态（正常打出时把牌拖到敌人身上、卡面数字才会变化的那类修正）不起作用，群体攻击尤其明显。
+
+### 原因
+
+卡面数字来自 `AbstractCard.applyPowers()`，只含玩家侧修正（力量、虚弱、姿态、遗物等）。目标侧的修正走 `AbstractCard.calculateCardDamage(target)`：每个目标的能力用自己的 `atDamageReceive` / `atDamageFinalReceive` 改写伤害，易伤 ×1.5、缓慢每层 +10% 都在这里。原版 `AbstractPlayer.useCard()` 在 `use()` 前按真正目标调用一次 `calculateCardDamage`；群体牌的目标是 null，会走多目标分支，把每个敌人的修正写进 `multiDamage`。
+
+生存者的 `DiscardAndPlayAction` 只对 `CardTarget.ENEMY` 调用了 `calculateCardDamage(随机敌人)`，其余牌只有 `applyPowers()`，所以群体牌的 `multiDamage` 里没有目标侧修正。单体攻击此前已经是按随机敌人重算的，不受影响。
+
+### 修复
+
+- `actions/DiscardAndPlayAction.play()`：`CardTarget.ALL_ENEMY` 的牌在 `applyPowers()` 之后补一次 `calculateCardDamage(null)`，与原版 `useCard()` 对群体牌的处理一致。
+- `cards/green/QuickSlash.triggerOnManualDiscard()`：快斩的丢弃群体伤害改用 `calculateCardDamage(null)`，否则它的 `multiDamage` 同样只有玩家侧修正。
+- `PatchContractTest`：断言 `play` 读取 `ALL_ENEMY`；快斩的丢弃钩子调用 `calculateCardDamage` 且不再只调 `applyPowers`。
+
+验证：`mvn -B clean package`（JDK 8）通过（261 个源文件，136 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+
+仍需游戏内验收：顺劈斩、匕首雨、旋风斩等群体牌丢弃时，对易伤/缓慢敌人按各自状态结算（数字与拖出时一致）；单体攻击与未受状态影响的敌人不变；快斩丢弃伤害按每个敌人结算。
+
+### 遗留限制
+
+- 随机目标的牌（飞剑回旋镖、狂乱撕扯等）在 `use()` 内部挑目标，出牌前只能算一个数，与原版相同；要做到逐次命中各自结算得拦截伤害管线，代价大，也容易把普通出牌的修正算两遍。
+- 「视为打出」绕过了 `UseCardAction`（为了不触发死亡律动/时间扭曲），所以「打出牌之后」的能力钩子（例如缓慢层数 +1）不会因为这张牌触发；这里修的是伤害按敌人当前状态结算，不是缓慢层数增长。
+
 ## 第十五批：灵体外质改为扣钱与加费同一步结算（2026-11-07）
 
 ### 现象
@@ -23,6 +142,37 @@
 
 验证：`mvn -B clean package`（JDK 8）通过（261 个源文件，134 个补丁目标，`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
 仍需游戏内验收：金币至少 5 的回合开始扣 5 金币、能量比上限多 1（如 4/3）并且遗物闪光；金币不足 5 的回合既不扣钱也不加费；长战斗或处决回合不再出现「只扣钱」。
+
+## 第十六批：冻结之眼的虚无改为跟随卡面文本构建，并让战斗中的牌组查看同步显示（2026-11-08）
+
+### 现象
+
+持有冻结之眼进入战斗后，打击／防御的卡面仍然看不到「虚无」，战斗中的牌组查看同样没有这一行；回合结束时它们依旧会被消耗。
+
+### 原因
+
+- 关键词只在开战那一刻被追加一次到 `rawDescription`。卡面文本只要被重建过一次（查看牌堆／牌组、重新构建描述的界面、战斗中新造的副本），这次追加就不会再出现在卡面上——小刀的文案由 `ShivDescriptionPatch` 每次在 `initializeDescription` 里重建，而打击／防御只做了一次性写入。
+- 玩家牌组（`masterDeck`）从第十四批起完全不被写入，所以战斗中打开的牌组查看永远看不到关键词。
+
+### 修复
+
+- `util/EtherealMark` 的三个操作改成幂等，重复调用不会出现两行关键词：
+  - `ensure` 只写入 `isEthereal` 与关键词行、不刷新文本，供正在构建卡面的调用方使用；
+  - `apply` = `ensure` + 刷新文本（开战扫描、战斗中新造的牌、切割）；
+  - `show` / `hide` 只在文本里加／去关键词行，供牌组查看使用。
+- `relics/FrozenEye$Description`：给 `AbstractCard.initializeDescription` 加前缀，战斗内持有冻结之眼时，所有打击／防御在构建卡面文本前都会补上关键词行；牌组里的牌排除在外（它们只显示文本，不被标记为虚无）。
+- `relics/FrozenEye` 新增 `atBattleStart()`：标记各牌堆（与 `preBattlePrep` 补丁重复，但幂等），并让牌组里的打击／防御在战斗期间显示关键词；新增 `onVictory()`：战斗结束把牌组恢复原样。牌组只写文本、不置 `isEthereal`，而存档只保存卡牌 ID、升级次数与 `misc`，所以运行时文本不会进存档，读档也不会重复。
+- 保留开战扫描、战斗中新造牌的构造补丁与回合结束兜底。
+
+### 验证
+
+主类与测试类由本机 Maven 编译，两个测试类用《杀戮尖塔》自带的 Java 8 运行：`SaturatingMathTest`（30302 项）与 `PatchContractTest`（136 个补丁目标，含新增的 `FrozenEye$Description` 与冻结之眼／`EtherealMark` 调用链断言）全部通过；`scripts/verify.ps1 -CheckJar` 通过（132 个唯一替换等）。
+
+本机现在没有 JDK 8 的 `javac`，`mvn package` 的 antrun 测试步骤在新 JDK 上会因 javassist 的已知限制失败（见 AGENTS.md），因此打包时用 `-Dmaven.antrun.skip=true`，再按 antrun 同样的替换补上 `ModTheSpire.json` 的描述。
+
+### 仍需游戏内验收
+
+战斗中的手牌、抽牌堆查看与牌组查看三处打击／防御都显示「虚无」；回合结束被消耗；战斗结束后牌组查看不再显示；连续读档不出现两行「虚无」；失去冻结之眼后下一场战斗不再生效。
 
 ## 第十四批：冻结之眼改为只标记战斗中的打击/防御（2026-11-07）
 
@@ -867,10 +1017,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 ### 重写版说明
 
-原工程保留在相邻的 AnotherSpire 目录。此工程使用独立包名、资源目录和 mod ID `anotherspirerework`，
-但原版卡牌 ID 与效果保持原实现的基线。**不要同时启用 AnotherSpire 和此版本**：两者修改相同卡牌和方法，
-独立 ID 不代表机制可叠加。切换版本前结束当前战斗并备份存档；新 Power 的命名空间不同，
-不承诺迁移进行中的战斗。
+工程使用独立包名、资源目录和 mod ID `anotherspirerework`，原版卡牌 ID 与效果沿用原有基线。
 
 实际重构：集中卡牌替换表、独立饱和算术工具、临时伤害/力量的 finally 恢复、语言大小写转换独立于系统区域设置、
 追踪状态重置，以及移除未使用的 StSLib 构建依赖。复杂补丁及各卡牌机制保留原实现。
@@ -1001,7 +1148,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | 类 | 方法 |
 |---|---|
 | `ExhaustTracker` | `onCardExhausted()`、`exhaustedThisTurn()`、`reset()`（燃愿判断本回合是否消耗过牌） |
-| `util.RelicChecks` | `owned(id)`、`inActFour()`、`ignoreHasRelic(id)`（生成 `ExprEditor` 关掉指定遗物的原版 `hasRelic` 分支）、`loseEnergy()`、`keywordSuffix(language)`、`withoutExhaustText(desc, keyword)`、`serpentTurnActive(turn)`、`blackStarActive(kills)`、`sozuLocked(combat, sozu, discarded)` |
+| `util.RelicChecks` | `owned(id)`、`inActFour()`、`ignoreHasRelic(id)`（生成 `ExprEditor` 关掉指定遗物的原版 `hasRelic` 分支）、`loseEnergy()`、`isCjk(language)`、`keywordSuffix(language)`、`withoutExhaustText(desc, keyword)`、`serpentTurnActive(turn)`、`blackStarActive(kills)`、`sozuLocked(combat, sozu, discarded)` |
+| `util.SlyMark` / `patches.SlyPatch` | `keywordLine()`、`isSly(card)`、`mark(card)`、`apply(card)`、`ensure(card)`：奇巧标记与第一行关键词；`SlyPatch$Discard` 在手动丢弃后排队 `SlyPlayAction`，`SlyPatch$Description` 在文本重建时补关键词行 |
 | `util.RelicSave` | `formatCounts(Map)`、`parseCounts(String)`：勺子「去消耗」的存档格式（纯逻辑，便于无图形环境测试） |
 | `patches.RelicSwapPatch` | `replacements()`：45 件遗物的替换表；在 `RelicLibrary.initialize()` 后替换原型/品级列表/颜色列表并带过 `isSeen` |
 | `patches.RelicTierPatch` | `poolFor(id)`、`normalizePools(...)`、`normalizeRelicPools()`：旧存档里棱镜碎片/小屋子的池位置修复 |
@@ -1024,15 +1172,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | `relics.HandDrill` | `bypass(DamageInfo)`：手钻无视格挡/坚不可摧 |
 | `patches.ShivDescriptionPatch` | `refresh(AbstractCard)`、`refreshAll()`、`variant(boolean, boolean)`：乾坤一掷/死吧死吧死吧生效时的小刀卡面文案 |
 
-新 Power（18）：`NextTurnFocus`、`GlassKnifeMark`、`Mark`、`HelloWorldAnyCard`、`ShivMastery`、`FreeSkill`、
+新 Power（19）：`NextTurnFocus`、`GlassKnifeMark`、`Mark`、`HelloWorldAnyCard`、`ShivMastery`、`FreeSkill`、
 `CreativeAIUpgraded`、`BattleHymnSmite`、`LikeWaterCalm`、`StudyInsight`、`DevotionDraw`、`ScuffleDraw`、
-`ShuffleEnergy`、`ShuffleSeek`、`ShivAllEnemies`、`ShivPoison`、`BlurDraw`、`SadisticNature`； `WaveOfTheHandStancePower`，继承原版 `WaveOfTheHandPower` 并沿用其原版 ID。
+`ShuffleEnergy`、`ShuffleSeek`、`ShivAllEnemies`、`ShivPoison`、`BlurDraw`、`SadisticNature`、`SlyTools`； `WaveOfTheHandStancePower`，继承原版 `WaveOfTheHandPower` 并沿用其原版 ID。
 
-新 Action（20）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
+新 Action（21）：`WhirlwindXAction`、`MultiCastXAction`、`GashClawAction`、`DiscardForShivsAction`、
 `PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`ExhaustAllHandAction`、`IncreaseCostAction`、
 `SanctityEnergyAction`、`ShivDamageAction`、`ShivDamageAllAction`、`BouncingFlaskXAction`、`RagnarokXAction`、
 `ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、`PlayRandomAttackFromDrawPileAction`、
-`DiscardAndPlayAction`、`AddEtherealToHandAction`、`TypeFromDeckToHandAction`。
+`SlyPlayAction`、`AddEtherealToHandAction`、`ApplySlyAction`、`TypeFromDeckToHandAction`。
 
 Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域，不需要额外美术；
 `Entrench` 刻意复用原版 `NextTurnBlockPower`。
@@ -1082,7 +1230,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 |---|---|---|
 | 纯逻辑回归 | `SaturatingMathTest` | 饱和算术与随机边界，不初始化图形环境 |
 | 补丁契约 | `PatchContractTest`（随 `mvn package` 运行） | 用真实依赖 JAR 校验目标方法、locator、字段与 Instrument 后的字节码 |
-| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、132 张唯一卡牌替换、45 件唯一遗物替换、卡图尺寸、JAR 条目 |
+| 资源与打包 | `scripts/verify.ps1 -CheckJar` | JSON、双语键与 `!D!`/`[E]` 词元、136 张唯一卡牌替换、45 件唯一遗物替换、卡图尺寸、JAR 条目 |
 | 真实运行 | ModTheSpire + 游戏内场景 | 补丁组合、动作/UI 时序、卡面观感、存档迁移；**前三层都不能替代它** |
 
 ### 改代码的硬性规则
@@ -1094,7 +1242,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
    缺了就取不到本地化文本。
 3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
    中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
-4. **替换表必须仍是 132 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
+4. **替换表必须仍是 136 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
    （`RelicSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
 5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
    必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。
@@ -1111,6 +1259,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 12. **「消耗」标志必须与中英文本一致**：带消耗的牌两种语言都要写「消耗 / Exhaust」，
     不消耗的牌一处都不能出现（`verify.ps1` 都有断言）。带 `UPGRADE_DESCRIPTION` 的卡在 `upgrade()` 里要显式
     `rawDescription = cardStrings.UPGRADE_DESCRIPTION; initializeDescription();`——引擎不会自动应用它。
+13. **运行时往卡面加关键词（虚无、奇巧）不要只写一次 `rawDescription`**：卡面文本会被重建（查看牌堆／牌组、
+    战斗中新造的副本、升级等），写一次就会丢。虚无走幂等的 `util.EtherealMark`，奇巧走 `util.SlyMark`，并在
+    `AbstractCard.initializeDescription` 前缀里补齐（`relics.FrozenEye$Description`、`patches.SlyPatch$Description`）；给牌组里的牌只加文本、
+    不置标记，战斗结束再还原（`FrozenEye.onVictory`）。
 
 ### 已知取舍
 

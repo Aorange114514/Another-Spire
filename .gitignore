@@ -3,3 +3,6 @@
 /target/maven-status/
 /target/surefire-reports/
 /target/antrun/
+
+# Local agent guidance: keep it out of the public repository.
+/AGENTS.md

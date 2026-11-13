@@ -29,14 +29,18 @@ public final class RelicChecks {
         return !Settings.isEndless && AbstractDungeon.actNum >= 4;
     }
 
+    /** The languages where a keyword has to be its own word instead of carrying the full stop. */
+    public static boolean isCjk(String languageName) {
+        return languageName.equals("ZHS") || languageName.equals("ZHT") || languageName.equals("JPN");
+    }
+
     /**
      * The Ethereal keyword has to be its own word: the description parser splits on spaces, so a
      * Chinese "虚无。" would be treated as one unknown word and never highlighted. Latin text is fine
      * with the period attached, the parser strips punctuation from the end of a word there.
      */
     public static String keywordSuffix(String languageName) {
-        return languageName.equals("ZHS") || languageName.equals("ZHT") || languageName.equals("JPN")
-                ? " 。" : ".";
+        return isCjk(languageName) ? " 。" : ".";
     }
 
     /**

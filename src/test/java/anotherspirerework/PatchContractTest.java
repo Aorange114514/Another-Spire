@@ -106,6 +106,8 @@ public class PatchContractTest {
                 "anotherspirerework.patches.ExhaustTracker",
                 "anotherspirerework.patches.FreeSkillCardPatch",
                 "anotherspirerework.patches.MarkAttackPatch",
+                "anotherspirerework.patches.SlyPatch",
+                "anotherspirerework.patches.SlyFieldPatch",
                 "anotherspirerework.patches.NoBlockCapPatch",
                 "anotherspirerework.patches.NoEnergyCapPatch",
                 "anotherspirerework.patches.NoPowerCapPatch",
@@ -120,6 +122,7 @@ public class PatchContractTest {
                 "anotherspirerework.patches.ShopPricePatch",
                 "anotherspirerework.patches.IndignationStancePatch",
                 "anotherspirerework.relics.FrozenEye$CombatStart",
+                "anotherspirerework.relics.FrozenEye$Description",
                 "anotherspirerework.relics.FrozenEye$NewCards",
                 "anotherspirerework.relics.FrozenEye$EndOfTurn",
                 "anotherspirerework.effects.ChooseDeckCardsEffect"));
@@ -176,7 +179,8 @@ public class PatchContractTest {
                 .getDeclaredConstructor(new CtClass[]{pool.get("com.megacrit.cardcrawl.cards.AbstractCard$CardType"), CtClass.intType}) != null,
                 "Typed Discovery constructor");
         for (String name : new String[]{"red.InfernalBlade", "green.Distraction", "green.Concentrate",
-                "green.CloakAndDagger", "green.Survivor", "green.Slice", "green.Envenom", "green.StormOfSteel", "blue.Stack"}) {
+                "green.CloakAndDagger", "green.Survivor", "green.Slice", "green.Envenom", "green.StormOfSteel", "blue.Stack",
+                "green.Reflex", "green.Tactician", "green.SneakyStrike", "green.ToolsOfTheTrade"}) {
             CtClass card = pool.get("anotherspirerework.cards." + name);
             require(card.getSuperclass().getName().equals("com.megacrit.cardcrawl.cards.AbstractCard"), "Card superclass: " + name);
             require(card.getDeclaredMethod("makeCopy") != null, "Card copy: " + name);
@@ -212,44 +216,89 @@ public class PatchContractTest {
         require(shivAt > exhaustAt, "Cloak and Dagger must add the Shiv after the exhaust");
         cloak.toBytecode();
         requireCalls(pool, "anotherspirerework.cards.green.CloakAndDagger", "upgrade", "upgradeBaseCost");
-        // Survivor: the discarded card acts as if played, through the discard hook rather than a
-        // real play, so Beat of Death and Time Warp never see it.
+        // Survivor hands out Sly; the picker is skipped when the hand has nothing to offer.
         requireCalls(pool, "anotherspirerework.cards.green.Survivor", "use",
-                "com.megacrit.cardcrawl.actions.common.GainBlockAction", "anotherspirerework.actions.DiscardAndPlayAction");
-        // The picker is skipped when the hand cannot offer more than the requested discard count.
-        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "update",
-                "discardAndPlay", "open");
-        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "discardAndPlay",
-                "moveToDiscardPile", "triggerOnManualDiscard", "incrementDiscard", "play", "moveToExhaustPile");
-        // A Power must leave the combat after the vanilla power animation instead of staying in the
-        // discard pile, where it could be drawn and played again.
-        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "discardAndPlay", "empower");
-        requireCalls(pool, "anotherspirerework.actions.DiscardAndPlayAction", "play",
-                "getRandomMonster", "applyPowers", "calculateCardDamage", "use");
-        // A discarded X-cost card has to auto-play like Distilled Chaos or Havoc: X reads the
-        // current energy, no energy is spent, and Chemical X's +2 still comes from the card itself.
+                "com.megacrit.cardcrawl.actions.common.GainBlockAction", "anotherspirerework.actions.ApplySlyAction");
+        requireCalls(pool, "anotherspirerework.actions.ApplySlyAction", "update",
+                "open", "apply", "addToTop");
+        // Sly resolves the card's own effect after the discard, through use() rather than a real
+        // play, so Beat of Death and Time Warp never see it. A Power cannot wait: its discard flight
+        // is cancelled and the empower animation is started in the same hook.
+        requireCalls(pool, "anotherspirerework.patches.SlyPatch$Discard", "after",
+                "isSly", "inCombat", "addToBottom", "playNow", "remove", "lighten");
+        requireCalls(pool, "anotherspirerework.actions.SlyPlayAction", "playNow", "update");
+        requireCalls(pool, "anotherspirerework.actions.SlyPlayAction", "play",
+                "getRandomMonster", "applyPowers", "calculateCardDamage", "use",
+                "moveToExhaustPile", "empower");
+        // An Unplayable card (cost -2) has no play channel, so a Sly mark on one does nothing.
+        // A discarded X-cost card auto-plays like Distilled Chaos or Havoc: X reads the current
+        // energy, no energy is spent, and Chemical X's +2 still comes from the card itself.
+        final java.util.Set<String> playReads = new java.util.HashSet<>();
         final java.util.Set<String> autoplayWrites = new java.util.HashSet<>();
-        CtClass discardAction = pool.get("anotherspirerework.actions.DiscardAndPlayAction");
-        if (discardAction.isFrozen()) discardAction.defrost();
-        discardAction.getDeclaredMethod("play").instrument(new ExprEditor() {
+        CtClass slyPlay = pool.get("anotherspirerework.actions.SlyPlayAction");
+        if (slyPlay.isFrozen()) slyPlay.defrost();
+        slyPlay.getDeclaredMethod("play").instrument(new ExprEditor() {
             public void edit(javassist.expr.FieldAccess access) {
-                if (access.isWriter()) autoplayWrites.add(access.getFieldName());
+                if (access.isWriter()) {
+                    autoplayWrites.add(access.getFieldName());
+                } else {
+                    playReads.add(access.getFieldName());
+                }
             }
         });
+        require(playReads.contains("cost"), "Sly must not play an Unplayable card");
         for (String field : new String[]{"energyOnUse", "freeToPlayOnce", "isInAutoplay"}) {
             require(autoplayWrites.contains(field),
-                    "Discarded X-cost card must auto-play: play() -> " + field);
+                    "A discarded Sly card must auto-play: play() -> " + field);
         }
-        discardAction.toBytecode();
+        // An ALL_ENEMY card has no target, so its target-side modifiers (Vulnerable/Slow) only come
+        // from the null-target recalculation that fills multiDamage.
+        require(playReads.contains("ALL_ENEMY"), "Sly must recalculate ALL_ENEMY damage");
+        slyPlay.toBytecode();
+        // Quick Slash's own effect is the area attack; the keyword supplies the discard channel.
+        requireCalls(pool, "anotherspirerework.cards.green.QuickSlash", "use",
+                "com.megacrit.cardcrawl.actions.common.DamageAllEnemiesAction");
+        // Sneaky Strike picks the weakest enemy the way the Dark orb does.
+        requireCalls(pool, "anotherspirerework.cards.green.SneakyStrike", "use",
+                "calculateCardDamage", "com.megacrit.cardcrawl.actions.common.DamageAction");
+        // It picks that enemy itself, so playing it must not ask for a target: an ENEMY target would
+        // make the player choose one and then ignore the choice.
+        CtClass sneaky = pool.get("anotherspirerework.cards.green.SneakyStrike");
+        if (sneaky.isFrozen()) sneaky.defrost();
+        final boolean[] picksOwnTarget = {false};
+        sneaky.getDeclaredConstructor(new CtClass[0]).instrument(new ExprEditor() {
+            public void edit(javassist.expr.FieldAccess access) {
+                if (access.getFieldName().equals("ALL_ENEMY")
+                        && access.getClassName().endsWith("AbstractCard$CardTarget")) {
+                    picksOwnTarget[0] = true;
+                }
+            }
+        });
+        require(picksOwnTarget[0], "Sneaky Strike must be ALL_ENEMY: it chooses the weakest enemy itself");
+        sneaky.toBytecode();
+        // The Sly keyword line lives at the top of the text and survives a rebuild.
+        requireCalls(pool, "anotherspirerework.util.SlyMark", "keywordLine", "keywordName", "chinese");
+        requireCalls(pool, "anotherspirerework.util.SlyMark", "apply", "ensure", "initializeDescription");
+        requireCalls(pool, "anotherspirerework.patches.SlyPatch$Description", "before",
+                "isSly", "showsKeyword", "keywordLine");
+        requireCalls(pool, "anotherspirerework.powers.SlyToolsPower", "onPlayCard", "apply");
         requireCalls(pool, "anotherspirerework.cards.green.Slice", "use",
                 "com.megacrit.cardcrawl.actions.common.DamageAction", "anotherspirerework.actions.AddEtherealToHandAction");
         requireCalls(pool, "anotherspirerework.actions.AddEtherealToHandAction", "update", "apply", "addToTop");
         // The Ethereal keyword has to stay its own word so the parser can highlight it, and a Shiv
         // rebuilds its own text, so it asks for the keyword line as well.
         requireCalls(pool, "anotherspirerework.util.EtherealMark", "keywordLine", "keywordSuffix");
-        requireCalls(pool, "anotherspirerework.util.EtherealMark", "apply", "keywordLine", "initializeDescription");
-        // Frozen Eye only ever touches the combat copies: the saved deck stays untouched, so the
-        // marking happens at battle start (and for cards a combat effect makes later).
+        requireCalls(pool, "anotherspirerework.util.EtherealMark", "apply", "ensure", "initializeDescription");
+        requireCalls(pool, "anotherspirerework.util.EtherealMark", "show", "initializeDescription");
+        requireCalls(pool, "anotherspirerework.util.EtherealMark", "hide", "initializeDescription");
+        // Frozen Eye only ever marks the fight's copies; the deck merely shows the text while the
+        // fight is on. The keyword is written into the description at text-build time as well, so a
+        // rebuilt card cannot be shown without it.
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "atBattleStart", "markCombatCards", "showInDeck");
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "onVictory", "showInDeck");
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye", "showInDeck", "show", "hide");
+        requireCalls(pool, "anotherspirerework.relics.FrozenEye$Description", "before",
+                "inCombat", "isStrikeOrDefend", "inMasterDeck", "ensure");
         requireCalls(pool, "anotherspirerework.relics.FrozenEye$CombatStart", "after", "markCombatCards");
         requireCalls(pool, "anotherspirerework.relics.FrozenEye$NewCards", "after", "inCombat", "applyFrozenEye");
         requireCalls(pool, "anotherspirerework.relics.FrozenEye", "markCombatCards", "applyFrozenEye");
@@ -438,7 +487,8 @@ public class PatchContractTest {
         for (String name : new String[]{"anotherspirerework.powers.ShivPoisonPower",
                 "anotherspirerework.powers.ShivAllEnemiesPower",
                 "anotherspirerework.powers.BlurDrawPower",
-                "anotherspirerework.powers.SadisticNaturePower"}) {
+                "anotherspirerework.powers.SadisticNaturePower",
+                "anotherspirerework.powers.SlyToolsPower"}) {
             CtClass power = pool.get(name);
             try {
                 require(power.getDeclaredField("powerStrings").getType().getName()
@@ -991,6 +1041,10 @@ public class PatchContractTest {
                 {"anotherspirerework.cards.green.SuckerPunch", "Sucker Punch"},
                 {"anotherspirerework.cards.green.Blur", "Blur"},
                 {"anotherspirerework.cards.green.BouncingFlask", "Bouncing Flask"},
+                {"anotherspirerework.cards.green.Reflex", "Reflex"},
+                {"anotherspirerework.cards.green.Tactician", "Tactician"},
+                {"anotherspirerework.cards.green.SneakyStrike", "Underhanded Strike"},
+                {"anotherspirerework.cards.green.ToolsOfTheTrade", "Tools of the Trade"},
                 {"anotherspirerework.cards.purple.FlurryOfBlows", "FlurryOfBlows"},
                 {"anotherspirerework.cards.purple.Ragnarok", "Ragnarok"},
                 {"anotherspirerework.cards.colorless.SadisticNature", "Sadistic Nature"}

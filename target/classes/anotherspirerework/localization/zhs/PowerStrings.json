@@ -59,6 +59,10 @@
     "NAME": "印记",
     "DESCRIPTIONS": ["受到攻击时额外失去 #b ", " 点生命。"]
   },
+  "anotherspirerework:SlyTools": {
+    "NAME": "必备工具",
+    "DESCRIPTIONS": ["你打出的技能牌获得 #y奇巧 。"]
+  },
   "anotherspirerework:ShivMastery": {
     "NAME": "乾坤一掷",
     "DESCRIPTIONS": ["#y小刀 获得 #y保留 ，且你每回合打出的第一张 #y小刀 额外造成 #b ", " 点伤害。"]

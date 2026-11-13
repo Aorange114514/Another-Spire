@@ -59,6 +59,10 @@
     "NAME": "Mark",
     "DESCRIPTIONS": ["Loses #b ", " additional HP whenever it is attacked."]
   },
+  "anotherspirerework:SlyTools": {
+    "NAME": "Tools of the Trade",
+    "DESCRIPTIONS": ["Skill cards you play gain #ySly."]
+  },
   "anotherspirerework:ShivMastery": {
     "NAME": "Unload",
     "DESCRIPTIONS": ["#yShivs gain #yRetain, and the first #yShiv you play each turn deals #b ", " additional damage."]

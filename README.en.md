@@ -13,13 +13,11 @@ This file lists only the changes; for the replacement mechanism, card art / powe
 verification and maintenance rules, see
 [CHANGELOG.md — implementation & maintenance notes (Chinese)](CHANGELOG.md#maintenance).
 
-> Do not enable the old `AnotherSpire` at the same time. Both modify the same cards and methods; different package names/modIDs do not mean the mechanics can be stacked.
-
 ## Contents
 
 - [1. Card changes](#cards)
   - [Ironclad (24)](#ironclad)
-  - [Silent (33)](#silent)
+  - [Silent (37)](#silent)
   - [Defect (28)](#defect)
   - [Watcher (30)](#watcher)
   - [Colorless (17 replacements + Bite)](#colorless)
@@ -32,8 +30,8 @@ verification and maintenance rules, see
 
 ## 1. Card changes
 
-- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) replaces **132 cards** in total, all keeping their vanilla cardIDs and vanilla image paths.
-- Bite (`Bite`) does not go through the card pool; it is patched separately by [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) and is not counted among the 132.
+- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) replaces **136 cards** in total, all keeping their vanilla cardIDs and vanilla image paths.
+- Bite (`Bite`) does not go through the card pool; it is patched separately by [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) and is not counted among the 136.
 - Costs are written as "base (upgraded)"; numbers in parentheses in the effect column are the upgraded values. ⚠ marks a change of card type or rarity.
 
 <a id="ironclad" name="ironclad"></a>
@@ -69,14 +67,14 @@ verification and maintenance rules, see
 
 <a id="silent" name="silent"></a>
 
-### Silent (33)
+### Silent (37)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
 | Dagger Spray | `Dagger Spray` | 1 | Deal 2 damage to ALL enemies 5 (8) times; Exhaust |
 | Backflip | `Backflip` | 1 | Gain 5 (6) Block; draw 2 (3) cards |
 | Poisoned Stab | `Poisoned Stab` | 1 | Deal 4 (6) damage; apply 5 (6) Poison |
-| Quick Slash | `Quick Slash` | — (Unplayable) | If this card is discarded from your hand, deal 10 (14) damage to ALL enemies |
+| Quick Slash | `Quick Slash` | 3 | Sly; deal 8 (11) damage to ALL enemies |
 | Dagger Throw | `Dagger Throw` | 1 | Deal 9 (12) damage; draw 1 (2) cards; discard 1 (2) cards |
 | Outmaneuver | `Outmaneuver` | 0 | Next turn, gain [E] ([E][E]) |
 | Choke | `Choke` | 1 | Deal 6 damage; whenever you play a card this turn, the enemy loses 3 (5) HP |
@@ -89,8 +87,12 @@ verification and maintenance rules, see
 | Expertise | `Expertise` | 1 | Draw cards until you have 7 (8) cards in your hand; discard 1 card |
 | Storm of Steel | `Storm of Steel` | 2 (1) | Play a copy of every Shiv in your exhaust pile against an enemy |
 | After Image | `After Image` | 1 | Whenever you play a card, gain 1 (2) Block |
-| Dodge and Roll | `Dodge and Roll` | — (Unplayable) | If this card is discarded from your hand, gain 8 (11) Block |
-| Survivor | `Survivor` | 2 (1) | Gain 6 Block; discard 1 card, which then counts as played (random target; X reads the current energy and costs none; Powers leave combat after the animation, other cards resolve normally; no Beat of Death or Time Warp; with only 1 card in hand it is discarded without opening the picker) |
+| Dodge and Roll | `Dodge and Roll` | 3 | Sly; gain 4 (5) Block 2 times |
+| Survivor | `Survivor` | 1 (0) | Gain 6 Block; choose a card in your hand and make it Sly for this combat |
+| Reflex | `Reflex` | 3 | Sly; draw 2 (3) cards |
+| Tactician | `Tactician` | 3 | Sly; gain [E] ([E][E]) |
+| Sneaky Strike | `Underhanded Strike` | 3 | Sly; deal 16 (20) damage to the enemy with the lowest HP (uses the Watcher's Strike effect) |
+| Tools of the Trade | `Tools of the Trade` | 2 (1) | Skill cards you play gain Sly for this combat |
 | Slice ⚠Common→Uncommon | `Slice` | 1 | Deal 9 (12) damage; choose 2 cards in your hand and make them Ethereal |
 | Die Die Die ⚠Attack→Power | `Die Die Die` | 2 (1) | Shivs now hit ALL enemies at once; add 3 Shivs to your hand |
 | Envenom | `Envenom` | 1 | Your Shivs apply 1 (2) Poison; add 1 Shiv to your hand |
@@ -245,7 +247,7 @@ with those classes after `RelicLibrary.initialize()`, so everything not overridd
 | Blue Candle | When you draw a Curse card, Exhaust it; Curse cards can be played and Exhaust, and playing one costs 1 HP |
 | Strange Spoon | On pickup, choose up to 2 cards in your deck to remove Exhaust from (replaces the vanilla 50% no-Exhaust chance); the record persists across saves |
 | Orrery | On pickup, choose any number of cards from 10 Common/10 Uncommon/10 Rare to add to your deck (replaces the vanilla 4 card rewards) |
-| Frozen Eye | In combat, your starter Strikes and Defends gain Ethereal (combat copies only; the saved deck is untouched) |
+| Frozen Eye | In combat, your starter Strikes and Defends gain Ethereal; the deck view shows the keyword during a fight too (text only, never saved) |
 | Inserter | Every 2 turns, at the start of the turn gain 1 Orb slot and Channel 1 random Orb |
 | Matryoshka | Draw 1 card when you shuffle (replaces the vanilla extra relic from chests) |
 | Astrolabe | On pickup, choose any number of cards from 40 cards of any color to add to your deck (base, Special, Status and Curse excluded; HEALING cards are not excluded, since this adds to the deck rather than generating in combat) |
@@ -280,6 +282,7 @@ Peace Pipe, The Specimen, Wing Boots, Prayer Wheel, Shovel.
 - **Shuffle events**: triggered after `EmptyDeckShuffleAction` has finished resolving and the shuffle animation has finished playing; `ShuffleAllAction` (Reboot) also waits for the `PutOnDeckAction` it queues to move the hand onto the draw pile and for the following `ShuffleAction` to really shuffle it (otherwise a card picked by Metamorphosis would be swallowed by that hand move); Stack, Chrysalis, Metamorphosis and Matryoshka rely on it.
 - **UI protection**: while browsing piles / the map / the single-card view, shuffle triggers, the draw handling of Medical Kit and Blue Candle, and the Strange Spoon / Orrery card selection are deferred until the UI closes.
 - **Shop relic price cuts**: Uncommon relics −50, Rare relics −100 (vanilla 250 / 300 → 200 / 200); only affects shop shelves.
+- **Sly**: when this card is discarded from your hand, its effect triggers — for free, resolved as an auto-play (single-target Attacks pick a random enemy, ALL_ENEMY cards recalculate per-enemy modifiers, X reads the current energy, Powers leave combat, Exhaust cards are exhausted; no Beat of Death or Time Warp). The keyword line sits on the first line of the card text; Frozen Eye's Ethereal on basic Strikes/Defends moves to the first line too.
 - **Shiv card text**: while Unload is up, a Shiv gains a leading "Retain." line; while Die Die Die is up, its damage line reads "Deal n damage to ALL enemies."; both show when both are up, and the vanilla text returns without them.
 - **Die Die Die resolves at once**: a Shiv now deals its damage to ALL enemies in one simultaneous hit (the way Cleave does) while keeping the Shiv's own attack effect; Envenom and Glass Knife still pay out per enemy.
 - **Vanilla bug fix (Indignation + Mental Fortress)**: Indignation's Stance change into Wrath was originally ordered after card resolution, so the Corrupt Heart's Beat of Death resolved before Mental Fortress's Block; now the Stance change resolves immediately like Tantrum, gaining Block first and then resolving Beat of Death.

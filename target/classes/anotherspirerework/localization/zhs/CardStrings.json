@@ -96,8 +96,7 @@
   },
   "anotherspirerework:Quick Slash": {
     "NAME": "快斩",
-    "DESCRIPTION": "不能被打出 。 NL 如果这张牌从你的手牌中被丢弃，对所有敌人造成 !D! 点伤害。",
-    "EXTENDED_DESCRIPTION": ["不能被打出 。"]
+    "DESCRIPTION": "奇巧 。 NL 对所有敌人造成 !D! 点伤害。"
   },
   "anotherspirerework:Dagger Throw": {
     "NAME": "投掷匕首",
@@ -344,8 +343,7 @@
   },
   "anotherspirerework:Dodge and Roll": {
     "NAME": "闪躲翻滚",
-    "DESCRIPTION": "不能被打出 。 NL 如果这张牌从你的手牌中被丢弃，获得 !B! 点 格挡 。",
-    "EXTENDED_DESCRIPTION": ["不能被打出 。"]
+    "DESCRIPTION": "奇巧 。 NL 获得 !B! 点 格挡 2 次。"
   },
   "anotherspirerework:Sanctity": {
     "NAME": "圣洁",
@@ -378,7 +376,25 @@
   },
   "anotherspirerework:Survivor": {
     "NAME": "生存者",
-    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 丢弃 !M! 张牌。 NL 丢弃的牌视为打出。"
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 选择一张手牌，使其在本场战斗中获得 奇巧 。",
+    "EXTENDED_DESCRIPTION": ["使其获得奇巧。"]
+  },
+  "anotherspirerework:Reflex": {
+    "NAME": "本能反应",
+    "DESCRIPTION": "奇巧 。 NL 抽 !M! 张牌。"
+  },
+  "anotherspirerework:Tactician": {
+    "NAME": "战术大师",
+    "DESCRIPTION": "奇巧 。 NL 获得 [G] 。",
+    "UPGRADE_DESCRIPTION": "奇巧 。 NL 获得 [G] [G] 。"
+  },
+  "anotherspirerework:Underhanded Strike": {
+    "NAME": "隐秘打击",
+    "DESCRIPTION": "奇巧 。 NL 对生命值最低的敌人造成 !D! 点伤害。"
+  },
+  "anotherspirerework:Tools of the Trade": {
+    "NAME": "必备工具",
+    "DESCRIPTION": "你打出的技能牌获得 奇巧 。"
   },
   "anotherspirerework:Slice": {
     "NAME": "切割",

@@ -4,6 +4,7 @@ import anotherspirerework.AnotherSpireRework;
 import anotherspirerework.powers.ShivAllEnemiesPower;
 import anotherspirerework.powers.ShivMasteryPower;
 import anotherspirerework.util.EtherealMark;
+import anotherspirerework.util.SlyMark;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.megacrit.cardcrawl.cards.AbstractCard;
@@ -32,10 +33,17 @@ public class ShivDescriptionPatch {
     @SpirePrefixPatch
     public static void Prefix(AbstractCard __instance) {
         if (__instance instanceof Shiv) {
-            // The Shiv text is rebuilt from the variant table on every refresh, so a card that Slice
-            // made Ethereal has to ask for the keyword line here as well.
-            __instance.rawDescription = description()
-                    + (__instance.isEthereal ? EtherealMark.keywordLine() : "");
+            // The Shiv text is rebuilt from the variant table on every refresh, so the keywords a
+            // card picked up (Slice's Ethereal, Survivor's Sly) have to be asked for again here, on
+            // top of the description just like the base game writes keyword lines.
+            String text = description();
+            if (SlyMark.isSly(__instance)) {
+                text = SlyMark.keywordLine() + text;
+            }
+            if (__instance.isEthereal) {
+                text = EtherealMark.keywordLine() + text;
+            }
+            __instance.rawDescription = text;
         }
     }
 

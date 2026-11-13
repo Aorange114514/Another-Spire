@@ -41,6 +41,7 @@ import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.helpers.GameDictionary;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.powers.AbstractPower;
@@ -219,7 +220,14 @@ public class AnotherSpireRework implements
         }
         for (KeywordInfo keyword : keywords) {
             keyword.prep();
+            // BaseMod files the names under "<modID>:"; the base game's card-text parser looks up
+            // the plain word, so keep a copy and register that one as well.
+            String[] plainNames = keyword.NAMES.clone();
             BaseMod.addKeyword(modID, keyword.PROPER_NAME, keyword.NAMES, keyword.DESCRIPTION);
+            for (String name : plainNames) {
+                GameDictionary.keywords.put(name, keyword.DESCRIPTION);
+                GameDictionary.parentWord.put(name, plainNames[0]);
+            }
         }
     }
 
