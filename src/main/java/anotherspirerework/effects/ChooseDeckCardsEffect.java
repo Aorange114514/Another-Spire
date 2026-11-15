@@ -129,12 +129,28 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
     private CardGroup group() {
         switch (this.choice) {
             case REMOVE_EXHAUST:
-                return AbstractDungeon.player.masterDeck;
+                return exhaustChoices();
             case ADD_ANY_COLOR:
                 return anyColorChoices();
             default:
                 return orreryChoices();
         }
+    }
+
+    /**
+     * Only the cards that really carry Exhaust: the Spoon removes the keyword, so offering a card
+     * without it would spend one of the two picks on nothing. The flag, not the description, decides -
+     * cards such as Rip and Tear mention the keyword in their text without Exhausting themselves.
+     * The same card objects are listed, not copies, so the pick changes the master deck card.
+     */
+    private static CardGroup exhaustChoices() {
+        CardGroup group = new CardGroup(CardGroup.CardGroupType.UNSPECIFIED);
+        for (AbstractCard card : AbstractDungeon.player.masterDeck.group) {
+            if (StrangeSpoon.hasExhaust(card)) {
+                group.addToTop(card);
+            }
+        }
+        return group;
     }
 
     private void apply(AbstractCard card) {

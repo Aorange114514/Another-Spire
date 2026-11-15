@@ -47,8 +47,15 @@ public final class RelicChecks {
      * Removes the Exhaust keyword from a description. The keyword is written as its own word in
      * Chinese (" NL 消耗 。") and with the full stop attached in English (" NL Exhaust."), so both
      * spellings have to be handled or the card would keep advertising an effect it no longer has.
+     *
+     * <p>Only a keyword line is removed. Text such as " NL Exhaust all Status cards" or " NL 消耗
+     * 1 张牌" is an effect and must survive, so an unpunctuated keyword is only dropped when the
+     * whole line is the keyword, never when the line continues.
      */
     public static String withoutExhaustText(String description, String keyword) {
+        if (description == null) {
+            return null;
+        }
         String result = description;
         for (String suffix : new String[]{
                 " NL " + keyword + "。", " NL " + keyword + " 。",
@@ -56,7 +63,11 @@ public final class RelicChecks {
                 keyword + "。", keyword + " 。", keyword + ".", keyword + " ."}) {
             result = result.replace(suffix, "");
         }
-        return result.replace(" NL " + keyword, "");
+        String bare = " NL " + keyword;
+        if (result.endsWith(bare)) {
+            result = result.substring(0, result.length() - bare.length());
+        }
+        return result.replace(bare + " NL ", " NL ");
     }
 
     /** True only on the first three turns of a combat (Ring of the Serpent). */

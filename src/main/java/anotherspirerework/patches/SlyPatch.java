@@ -8,10 +8,12 @@ import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.ui.buttons.EndTurnButton;
 
 /**
  * Sly: the two hooks that make the keyword work. A manual discard resolves the card's effect, and a
- * text rebuild keeps the keyword line at the top of a marked card.
+ * text rebuild keeps the keyword line at the top of a marked card. Two more hooks let the end-turn
+ * key interrupt the resolutions that are still queued.
  */
 public class SlyPatch {
     /**
@@ -24,6 +26,11 @@ public class SlyPatch {
         @SpirePostfixPatch
         public static void after(AbstractCard __instance) {
             if (!SlyMark.isSly(__instance) || !AnotherSpireRework.inCombat()) {
+                return;
+            }
+            // The end-turn key already dropped the queue; a discard that is still resolving must
+            // not start it again. The next player turn re-arms it (SlyPatch$NewTurn).
+            if (SlyPlayAction.interrupted()) {
                 return;
             }
             if (__instance.type == AbstractCard.CardType.POWER) {
@@ -52,6 +59,29 @@ public class SlyPatch {
                     && __instance.rawDescription != null) {
                 __instance.rawDescription = SlyMark.keywordLine() + __instance.rawDescription;
             }
+        }
+    }
+
+    /**
+     * Pressing the end-turn key (the button click, the long press and the bound key all end in this
+     * overload) interrupts the Sly resolutions that are still in the action queue.
+     */
+    @SpirePatch(clz = EndTurnButton.class, method = "disable", paramtypez = {boolean.class})
+    public static class EndTurn {
+        @SpirePostfixPatch
+        public static void after(EndTurnButton __instance, boolean isEnemyTurn) {
+            if (isEnemyTurn && AnotherSpireRework.inCombat()) {
+                SlyPlayAction.interrupt();
+            }
+        }
+    }
+
+    /** The enable that starts the next player turn re-arms the Sly queue. */
+    @SpirePatch(clz = EndTurnButton.class, method = "enable")
+    public static class NewTurn {
+        @SpirePostfixPatch
+        public static void after(EndTurnButton __instance) {
+            SlyPlayAction.resume();
         }
     }
 }

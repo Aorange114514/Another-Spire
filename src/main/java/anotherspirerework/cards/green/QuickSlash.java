@@ -16,7 +16,7 @@ public class QuickSlash extends AbstractCard {
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
     public QuickSlash() {
-        super(ID, cardStrings.NAME, "green/attack/quick_slash", 3, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.COMMON, CardTarget.ALL_ENEMY);
+        super(ID, cardStrings.NAME, "green/attack/quick_slash", 1, cardStrings.DESCRIPTION, CardType.ATTACK, CardColor.GREEN, CardRarity.COMMON, CardTarget.ALL_ENEMY);
         this.baseDamage = 8;
         this.isMultiDamage = true;
         SlyMark.mark(this);

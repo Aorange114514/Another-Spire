@@ -4,6 +4,141 @@
 
 # AnotherSpire Rework
 
+## 修复：奇巧触发终结技及同类历史计数效果
+
+- 终结技的原版伤害动作默认当前牌已计入本回合出牌历史，会无条件少算一次攻击。奇巧只调用 `use()`，此前未计入自身，导致本回合打过一张攻击牌时零段伤害、更多时少一段。
+- 同类排查确认超光速的抽牌门槛也会少算一张；碎击和重做圣洁会把倒数第二张真实出牌当作「上一张牌」，漏发或误发易伤/能量。
+- 新增 `SlyHistoryAction`：仅包装本次奇巧 `use()` 新排入队列的四种已核实历史依赖动作。它们结算时读取临时历史副本（真实历史加当前牌），结束或异常时恢复原列表引用；保留原版动作、视觉效果和条件，不增加真实出牌次数，不触发额外出牌钩子。普通打牌与已有队列动作不经过此适配。
+- 飞镖直接按结算时手牌中的技能数计算，无须扣除自身（它是攻击牌）；匕首雨按已有 `multiDamage` 结算，均未发现同类问题。重做的追击、扇舞已改用伤害/姿态条件，不再使用原版「上一张牌」动作。
+
+验证：JDK 8 执行 `..\scripts\build.cmd` 通过（`mvn -B clean package` 与 `verify.ps1 -CheckJar`）。新增 `SlyHistoryRegression` 在无界面替身环境中运行真实四种动作与适配器字节码，覆盖终结技 0/1/多段、超光速普通/升级门槛、碎击/圣洁上一张牌条件、历史引用和内容的正常/异常恢复、已有与无关队列动作隔离；既有算术 30302 项及 141 个补丁目标检查通过，136 个唯一替换保持不变。
+
+未部署或启动游戏；仍需游戏内验收：四张牌获得奇巧后丢弃的效果、普通打出效果，以及奇巧不增加死亡律动/时间扭曲等实际出牌触发。
+
+## 结构整理：本地化职责与生命周期清理（2026-11-14）
+
+- 将字符串、关键词和语言回退流程移到 `util.Localization`，主类的两个 BaseMod 本地化钩子只负责委托；保持英语兜底、当前语言覆盖、普通关键词与命名空间关键词的注册顺序和行为。
+- 主类的开局与战后钩子共用 `resetCombatState()`，避免五项战斗标记清理重复维护；小屋子的营火状态仍只在开局重置。
+- 在维护参考中补充目录职责，修正替换表数量和新增关键词说明。保留原有卡牌、遗物机制及资源组织。
+- 经用户确认，删除 `sendToDevs/logs/SlayTheSpire.log` 空日志、与 BaseMod 依赖逐字节相同的根目录 `basemod/patches/com/megacrit/cardcrawl/core/CardCrawlGame/LoadPlayerSaves.class`，并移除这两项所属的空目录；不影响模组依赖或打包内容。
+
+验证：JDK 8 下执行 `mvn -B package` 通过（272 个源文件，141 个补丁目标；算术回归 30302 项，补丁契约检查通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换、本地化、资源与打包检查）。未执行 `clean`，未部署或启动游戏。Maven 增量编译自动移除了迁移前的关键词内部类产物，并生成新辅助类的产物。
+
+仍需游戏内验收：中英字符串和印记/奇巧提示、未支持语言的英语回退、战斗结束后与新开局的状态清理、小屋子营火流程。
+
+## 修复：勺子去消耗的牌升级后又显示消耗（2026-11-14）
+
+### 现象
+
+用奇怪的勺子去掉一张牌（如肾上腺素）的消耗后：点升级预览，升级版卡面重新出现「消耗」；在营地实际升级时卡面也会短暂恢复；升级后的卡组/单卡预览里一直显示消耗，但战斗中打出并不消耗。
+
+### 原因
+
+`StrangeSpoon.strip` 只改了卡牌当时的 `rawDescription` 一次。升级预览和营地升级都会调用卡牌自己的 `upgrade()`，把 `rawDescription` 换成 `CardStrings.UPGRADE_DESCRIPTION`（其中仍写着消耗）再 `initializeDescription()`；`exhaust` 标记仍是 false，所以战斗行为不变，只有卡面被重新写回了关键词。读档时 `restorePending` 会再 strip 一次，因此重读存档后显示又恢复正常。
+
+### 修复
+
+- 新增 `patches/SpoonFieldPatch`：用 `SpireField<Boolean>` 在 `AbstractCard` 上给被勺子去掉消耗的牌打标记（与 `util/SlyMark` + `patches/SlyFieldPatch` 同一做法）；`strip` 设置标记，`Copies` 让战斗牌组与效果复制继承。
+- `StrangeSpoon$Description` 给 `AbstractCard.initializeDescription` 加前缀：只要牌带标记，重建文本前再次去掉消耗关键词。升级预览、营地升级、牌堆/单卡查看重建文本时都会经过这里，卡面不会再被写回消耗。
+- `util.RelicChecks.withoutExhaustText` 收紧为只删「整行只有关键词」的那一行：重启/净化等牌的效果行（` NL 消耗 你所有的状态牌`、` NL Exhaust all Status cards`）不会被误删。
+- `PatchContractTest` 断言 `strip` 写入标记、`initializeDescription` 前缀读取标记并调用 `withoutExhaustText`。
+
+验证：`mvn -B clean package`（JDK 8）通过（271 个源文件，141 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换）。
+
+仍需游戏内验收：勺子去掉消耗的牌在升级预览、营地升级后卡面都不再出现消耗；升级后的卡组/单卡预览与战斗中行为一致；读档后仍保持；未被勺子选中的牌升级后照常显示消耗。
+
+## 生存者撤回重做，奇巧改由部署发放（2026-11-14）
+
+### 改动
+
+- 生存者（`Survivor`）撤回全部重做，恢复原版：1（0）费，获得 8（11）点格挡、丢弃 1 张手牌；不再出现在卡牌替换表里，卡面与结算都回到原版。
+- 部署（`Setup`）接过奇巧：1（0）费，将手牌中的一张牌放到抽牌堆顶部，并且那张牌在本场战斗中获得奇巧；原版「那张牌在被打出前耗能为 0」随之取消。
+- 奇巧的其余规则（丢弃时自动打出、关键词行、结束回合中断队列）不变。
+
+### 实现
+
+- 新增 `cards/green/Setup`，沿用原版 `Setup` 的 ID、罕见品级与 `green/skill/setup` 图片；`use()` 只排入 `actions/SetupSlyAction`。
+- 新增 `actions/SetupSlyAction`：沿用原版 `SetupAction` 的选牌流程（手牌只有 1 张时直接选中，不弹界面），选中的牌先 `SlyMark.apply` 加上奇巧，再用 `CardGroup.moveToDeck(card, false)` 放到抽牌堆顶部；不再设置 `freeToPlayOnce`。
+- 删除 `cards/green/Survivor` 与只服务于它的 `actions/ApplySlyAction`；`CardSwapPatch.replacements()` 的对应项换成 `Setup`，仍是 136 个唯一替换。
+- 同步中英 `CardStrings`（键改为 `anotherspirerework:Setup`）、README 两张表、`requirements.txt` 第 32 项；`PatchContractTest` 的替换项与行为断言改为 `Setup` 与 `SetupSlyAction`。
+
+验证：`mvn -B clean package`（JDK 8）通过（270 个源文件，140 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换）。
+
+仍需游戏内验收：部署选中的牌出现在抽牌堆顶部、卡面第一行带奇巧，抽回后再丢弃按奇巧结算；手牌只有 1 张时直接生效；升级后耗能为 0；生存者恢复原版格挡/弃牌与升级后 0 费；卡组、图鉴与旧存档里的 `Survivor` 显示原版内容，不再有奇巧相关文本。
+
+## 奇巧结算队列在按下结束回合时中断（2026-11-14）
+
+### 改动
+
+- 按下「结束回合」后，奇巧（`Sly`）还没开始结算的牌不再结算：按钮点击、长按和绑定的结束回合键最终都走 `EndTurnButton.disable(true)`，此时把动作队列里剩余的 `SlyPlayAction` 移除；随后仍在队列里的丢弃（例如排在结束回合之前的 `DiscardAction`）也不会再触发奇巧，直到下个回合开始。
+- 已经开始的结算不受影响：一张奇巧牌的 `use()` 会在一次调用里把整张牌的效果排进队列，所以中断丢掉的只是尚未开始的整张牌，不会把已排入的伤害/格挡/抽牌切一半。
+
+### 实现
+
+- `actions/SlyPlayAction`：新增静态标记与 `interrupt()`（置位并遍历 `AbstractDungeon.actionManager.actions` 删除 `SlyPlayAction`）、`resume()`（下个回合恢复）、`interrupted()`（供丢弃钩子判断）；`update()` 在真正结算前再读一次标记，覆盖「队列刚把这张牌交给 `currentAction`、玩家就在同一帧按下结束回合」的窗口。
+- `patches/SlyPatch`：新增 `$EndTurn`（`EndTurnButton.disable(boolean)` 后缀，`isEnemyTurn` 时中断）与 `$NewTurn`（`EndTurnButton.enable()` 后缀，恢复）；`$Discard` 在 `interrupted()` 为真时直接返回，能力牌的 `playNow()` 路径也一并跳过——否则那张牌已经被移出弃牌堆，却不会有 empower 动画。
+- `PatchContractTest` 增加断言：中断要遍历队列并删除、丢弃钩子要读 `interrupted()`、两个新补丁分别调用 `interrupt` / `resume`。
+
+验证：`mvn -B clean package`（JDK 8）通过（270 个源文件，140 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换）。
+
+仍需游戏内验收：奇巧牌连续触发时按「结束回合」，剩余奇巧牌不再结算、回合立刻进入敌方回合；中断后同回合里排在前面的丢弃不再把奇巧队列接起来；下一回合再丢弃奇巧牌仍正常结算；已经排入的伤害/格挡动画正常播完，不会出现卡牌停在半空或能力牌从弃牌堆消失。
+
+## 修复：奇怪的勺子选牌只列消耗牌、战斗内 SL 后战斗牌组仍消耗（2026-11-14）
+
+### 现象
+
+1. 拾起奇怪的勺子时，选牌界面列出整个牌组，不消耗的牌也能选中，等于白花一次选择。
+2. 战斗内保存并重新读取后，卡组界面里那两张牌确实已经没有消耗，但重新开始的战斗里它们依旧消耗。
+
+### 原因
+
+- **选牌界面**：`effects/ChooseDeckCardsEffect.group()` 的 `REMOVE_EXHAUST` 分支直接返回 `player.masterDeck`，没有按消耗关键词过滤。
+- **读档顺序**：BaseMod 在 `CardCrawlGame.loadPlayerSave` 返回后调用自定义存档字段的 `onLoad`，此时 `masterDeck` 刚重建、还没进入地牢；战斗牌组是稍后在地牢构造器里由 `player.preBattlePrep()` → `drawPile.initializeDeck(masterDeck)` 复制出来的。原实现把去消耗留到下一帧的 `receivePostDungeonUpdate`，复制已经完成；`Copies` 只在复制那一刻按源牌判定，复制品于是保留消耗，只有卡组界面里的永久牌组被改掉。
+
+### 修复
+
+- `effects/ChooseDeckCardsEffect` 的勺子分支改为 `exhaustChoices()`，只列出 `AbstractCard.exhaust` 为真的牌；列出的仍是永久牌组里的原对象，选中的就是那张牌。判定只看机制标记，不搜描述文本，所以狂乱撕扯这类文字里提到消耗、自己却不消耗的牌不会被列出。
+- `relics/StrangeSpoon.onLoad` 读完张数立刻调用 `restorePending()`，在地牢构造/战斗准备之前把永久牌组改好，战斗牌组复制时经 `Copies` 继承；`receivePostDungeonUpdate` 里的每帧调用保留为兜底。
+- `PatchContractTest` 新增 `onLoad → restorePending`、`group → exhaustChoices → hasExhaust` 以及 `hasExhaust` 读取 `exhaust` 字段的断言，防止以后又把过滤或恢复时机丢掉。
+
+验证：`mvn -B clean package`（JDK 8）通过（270 个源文件，138 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换）。
+
+仍需游戏内验收：选牌界面只显示带消耗的牌；确认过的两张牌在卡组界面与战斗内抽到时都不再消耗；战斗内保存并读取后，战斗内的这两张牌也不再消耗；已去消耗的牌不会再次出现在勺子选牌界面；牌组里没有带消耗的牌时不弹出空界面。
+
+## 必备工具触发时闪烁（2026-11-14）
+
+### 改动
+
+- 必备工具（`powers/SlyToolsPower`）：打出还没有奇巧的技能牌时让能力图标闪一下，作为「刚加上奇巧」的反馈；已经带奇巧的技能牌（快斩、闪躲翻滚等）打出时不闪。
+
+### 实现
+
+- 在 `onPlayCard` 里改用 `SlyMark.ensure(card)`，它返回这张牌是否真的变了（旗标或关键词行有改动才重建文本），闪烁和 `initializeDescription()` 都挂在这个返回值上，所以闪动只对应「本次新加奇巧」，不是每次出牌都给反馈。
+- 调用 `flashWithoutSound()`：原版 `flash()` 会额外播一次「获得能力」音效，而技能牌一回合可能打出多张，所以用静音版；闪烁本身与原版触发反馈一致（`FlashPowerEffect`），图标沿用原版 `tools` 区域（原版必备工具也是靠这个区域每回合闪烁）。
+- `PatchContractTest` 的 `SlyToolsPower` 断言改成 `ensure` + `initializeDescription` + `flashWithoutSound`，防止以后又变成无条件闪烁或彻底无反馈。
+
+验证：`mvn -B clean package`（JDK 8）通过（270 个源文件，138 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过（136 个唯一替换）。
+
+仍需游戏内验收：打出必备工具后，只有没有奇巧的技能牌会让图标闪一下；已经带奇巧的技能牌打出时没有任何闪烁；同一张技能牌第二圈再打出时也不再闪；一回合连打多张未标记技能牌时闪光不会显得杂乱。
+
+## 生存者选牌只提供没有奇巧的牌（2026-11-14）
+
+### 改动
+
+- 生存者（`actions/ApplySlyAction`）只让没有奇巧的手牌进入选牌界面：已有奇巧的牌在界面打开期间暂时移出手牌，选完后放回，界面不再显示选了也没有效果的牌。
+- 可选的牌只剩本次应加的张数（生存者为 1 张）时不再弹出界面，直接为其添加奇巧。
+- 手牌全部已有奇巧时不触发该效果，只结算格挡，也不会弹出一个无牌可选的界面。
+
+### 实现
+
+- 沿用原版 `ArmamentsAction` / `DualWieldAction` 的过滤方式：把不能选的牌从 `hand.group` 移除并记在 action 字段里，界面关闭后在 `returnCards()` 用 `addToTop()` 放回并 `refreshHandLayout()`。
+- 选牌界面只渲染 `AbstractDungeon.player.hand`，且界面打开期间 `AbstractRoom` 不更新动作队列（`!isScreenUp` 才 `actionManager.update()`），所以移除发生在界面打开前、放回发生在动作恢复后，两者不会和选中的牌互相覆盖；手牌为空或全部已有奇巧时都不会调用 `open()`。
+- `PatchContractTest` 的 `ApplySlyAction` 断言加入 `isSly`、`removeAll`，防止以后又把已有奇巧的牌塞进选牌界面。
+
+验证：`mvn -B clean package`（JDK 8）通过（270 个源文件，138 个补丁目标；`PatchContractTest`、`SaturatingMathTest` 全部通过）；`verify.ps1 -CheckJar` 通过。
+
+仍需游戏内验收：手牌里已有奇巧的牌（五张重做牌、必备工具打出过的技能牌、上回合生存者加过的牌）不出现在选牌界面；只剩 1 张没有奇巧时直接加关键词、不弹界面；全部已有奇巧时只获得格挡；选中的牌留在手里且关键词在第一行。
+
 ## 修复：隐秘打击打出时仍要求选择目标（2026-11-13 深夜）
 
 ### 现象
@@ -1024,7 +1159,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 ### 替换机制
 
-`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 130 个条目换成
+`patches/CardSwapPatch` 在 `CardLibrary.initialize()` 之后重写 `CardLibrary.cards`：把 136 个条目换成
 `anotherspirerework.cards.<color>.<Name>`，**保留原版 cardID 与原版图片路径**，并带过 `isSeen`。
 游戏所有取卡路径（`CardLibrary.getCardList`、`AbstractDungeon.getCardFromPool`、`initializeStarterDeck`…）
 都读这张表，所以替换一处即全局生效。事件里 `new Bite()` 这类**绕过卡库的直接构造**由 `patches.BitePatch` 单独补丁。
@@ -1051,7 +1186,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 ### 本地化
 
 中英 `CardStrings` / `PowerStrings` / `RelicStrings` 都按 `anotherspirerework:<原版ID>` 建键，不覆盖原版字符串。
-新增关键词只有 `Mark`（印记）；其余关键词沿用原版写法，保证高亮与提示正常。
+新增关键词为 `Mark`（印记）与 `Sly`（奇巧）；其余关键词沿用原版写法，保证高亮与提示正常。
 中文的 ` NL ` 空格、`#`/`*` 标注与关键词边界不要机械删除；JSON 能解析不等于卡面渲染正确。
 
 ### 遗物机制
@@ -1108,7 +1243,27 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 ### 主类与辅助类
 
-主类 `AnotherSpireRework`（`@SpireInitializer`）：
+工程按运行职责组织：
+
+| 目录 | 职责 |
+|---|---|
+| `src/main/java/anotherspirerework/cards/<color>/` | 按颜色组织的卡牌实现 |
+| `src/main/java/anotherspirerework/relics/` | 每件重做遗物的实现与所属补丁 |
+| `src/main/java/anotherspirerework/patches/` | 原版方法补丁、替换注册和注入字段 |
+| `src/main/java/anotherspirerework/actions/` / `effects/` | 战斗动作 / 跨房间或界面效果 |
+| `src/main/java/anotherspirerework/powers/` | 能力及洗牌监听接口 |
+| `src/main/java/anotherspirerework/util/` | 可复用的本地化、标记、存档和计算助手 |
+| `src/main/resources/` | 模组元数据、本地化与图片 |
+| `src/test/java/` | 无图形环境回归检查 |
+| `scripts/` | 仓库内静态验证；构建入口仍在仓库外部 |
+| `target/` | 仓库刻意跟踪的编译与交付产物，不作为清理目录 |
+
+主类 `AnotherSpireRework`（`@SpireInitializer`）负责订阅、生命周期分发、元数据和对外资源查询。
+`receiveStartGame` 与 `receivePostBattle` 共用 `resetCombatState()` 清理战斗标记；小屋子的重置仍只在开局执行。
+`util.Localization` 负责字符串与关键词加载，共用英语兜底后覆盖当前语言的流程；保留 BaseMod 命名空间注册和
+`GameDictionary` 普通词注册，以支持原版卡牌文本中的关键词提示。
+
+主类提供的查询助手：
 
 | 方法 | 用途 |
 |---|---|
@@ -1130,9 +1285,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | `tick()` | 每帧兜底（由 `receivePostDungeonUpdate` 调用），处理"抽牌先结束、动画还没播完"的路径 |
 | `flush(AbstractGameAction)` | 包级；三步洗牌流程结束、动画结束且无界面时触发，并把被中断抽牌的剩余张数放回队首 |
 
-选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、
+选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、`exhaustChoices()`、
 `enum Choice { REMOVE_EXHAUST, ADD_TO_DECK, ADD_ANY_COLOR }`。它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：
-`GameActionManager.addToBottom` 只在战斗房间接收动作，商店/宝箱拾取时会被直接丢弃。
+`GameActionManager.addToBottom` 只在战斗房间接收动作，商店/宝箱拾取时会被直接丢弃。勺子分支只列带消耗的牌，且列出的
+是永久牌组里的原对象而不是副本。
 
 饱和算术 `util.SaturatingMath`：`fromLong(long)`、`add(int,int)`、`subtract(int,int)`、`multiply(int,int)`。
 
@@ -1149,8 +1305,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 |---|---|
 | `ExhaustTracker` | `onCardExhausted()`、`exhaustedThisTurn()`、`reset()`（燃愿判断本回合是否消耗过牌） |
 | `util.RelicChecks` | `owned(id)`、`inActFour()`、`ignoreHasRelic(id)`（生成 `ExprEditor` 关掉指定遗物的原版 `hasRelic` 分支）、`loseEnergy()`、`isCjk(language)`、`keywordSuffix(language)`、`withoutExhaustText(desc, keyword)`、`serpentTurnActive(turn)`、`blackStarActive(kills)`、`sozuLocked(combat, sozu, discarded)` |
-| `util.SlyMark` / `patches.SlyPatch` | `keywordLine()`、`isSly(card)`、`mark(card)`、`apply(card)`、`ensure(card)`：奇巧标记与第一行关键词；`SlyPatch$Discard` 在手动丢弃后排队 `SlyPlayAction`，`SlyPatch$Description` 在文本重建时补关键词行 |
+| `util.SlyMark` / `patches.SlyPatch` | `keywordLine()`、`isSly(card)`、`mark(card)`、`apply(card)`、`ensure(card)`：奇巧标记与第一行关键词；`SlyPatch$Discard` 在手动丢弃后排队 `SlyPlayAction`（`SlyPlayAction.interrupted()` 为真时不排队），`SlyPatch$EndTurn` 在结束回合时调用 `SlyPlayAction.interrupt()` 移除队列里尚未开始的奇巧，`SlyPatch$NewTurn` 在下一回合 `enable()` 时 `resume()`，`SlyPatch$Description` 在文本重建时补关键词行 |
+| `actions.SlyHistoryAction` | `wrapNewActions(card, before)`：仅适配奇巧新生成的终结技、超光速、碎击、重做圣洁的历史依赖动作；`update()` 临时提供含源牌的历史副本，`finally` 恢复真实列表，不增加实际出牌次数 |
 | `util.RelicSave` | `formatCounts(Map)`、`parseCounts(String)`：勺子「去消耗」的存档格式（纯逻辑，便于无图形环境测试） |
+| `patches.SpoonFieldPatch` | `REMOVED`：勺子「已去掉消耗」的每张牌标记（`SpireField<Boolean>` 注入 `AbstractCard`），升级/预览重建文本时据此重新去掉消耗关键词 |
 | `patches.RelicSwapPatch` | `replacements()`：45 件遗物的替换表；在 `RelicLibrary.initialize()` 后替换原型/品级列表/颜色列表并带过 `isSeen` |
 | `patches.RelicTierPatch` | `poolFor(id)`、`normalizePools(...)`、`normalizeRelicPools()`：旧存档里棱镜碎片/小屋子的池位置修复 |
 | `patches.ActFourRelicBlockPatch` | `BLOCKED`（27 件清单）、`blocked(id)`：第四幕屏蔽；自己声明 `canSpawn` 的 21 件逐个前缀 |
@@ -1161,7 +1319,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | `SadisticNaturePower` | `active()`：玩家是否持有残虐天性，供两处伤害补丁判定 |
 | `BlurDrawPower` | `onCardDrawn(AbstractCard)`：残影的抽牌结算，由主类 `receivePostDraw` 调用 |
 | `relics.MedicalKit` / `relics.BlueCandle` | `onCardDrawn(AbstractCard)`、`processPendingDraws()`：抽到状态/诅咒的延迟处理，由主类 `receivePostDraw` / `receivePostDungeonUpdate` 调用 |
-| `relics.StrangeSpoon` | `mark`、`strip`、`removed`、`onSave`/`onLoad`、`restorePending()`：去消耗的拾取/复制/存档恢复；`SaveData` 是注册的存档字段 |
+| `relics.StrangeSpoon` | `mark`、`strip`、`removed`、`hasExhaust`、`onSave`/`onLoad`、`restorePending()`：去消耗的拾取/复制/存档恢复；`onLoad` 在战斗准备前就恢复；`$Description` 在每次重建文本时按标记补删消耗关键词；`SaveData` 是注册的存档字段 |
 | `relics.Matryoshka` | `drawOnShuffle()`：洗牌事件触发，由 `ShuffleTriggerPatch.fire()` 调用 |
 | `relics.BlackBlood` | `reset()`：战斗开始/结束时清空"本次已触发"标记 |
 | `relics.BlackStar` | `onVictory(room)`、`resetRun()`、`sync(relic)`、`currentElites()`、`vanillaElites()`；`SaveData` 是注册的存档字段 |
@@ -1180,7 +1338,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 `PlayShivsFromExhaustAction`（含 `reset()`）、`ExhaustAllStatusAction`、`ExhaustAllHandAction`、`IncreaseCostAction`、
 `SanctityEnergyAction`、`ShivDamageAction`、`ShivDamageAllAction`、`BouncingFlaskXAction`、`RagnarokXAction`、
 `ReturnCardToHandAction`、`PercentJudgementAction`、`ReachHeavenAction`、`PlayRandomAttackFromDrawPileAction`、
-`SlyPlayAction`、`AddEtherealToHandAction`、`ApplySlyAction`、`TypeFromDeckToHandAction`。
+`SlyPlayAction`、`AddEtherealToHandAction`、`SetupSlyAction`、`TypeFromDeckToHandAction`。
 
 Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域，不需要额外美术；
 `Entrench` 刻意复用原版 `NextTurnBlockPower`。
@@ -1196,7 +1354,7 @@ Power 一律用 `anotherspirerework:` 命名空间 ID，图标复用原版区域
 |---|---|
 | `EliteKills` | `relics.BlackStar.SaveData`：黑星的全局精英击杀数；旧存档以原版前三幕击杀数兜底 |
 | `TurnRelicStatsV1` | `relics.PrismaticShard.StatMigration`：一次性迁移，给已持有的棱镜碎片补基础能量/抽牌量，迁完打标记不再重复 |
-| `SpoonNoExhaust` | `relics.StrangeSpoon.SaveData`：勺子"已去掉消耗"的牌，按"卡牌 ID + 升级次数 + misc"记张数，读档后按张数重新应用 |
+| `SpoonNoExhaust` | `relics.StrangeSpoon.SaveData`：勺子"已去掉消耗"的牌，按"卡牌 ID + 升级次数 + misc"记张数；`onLoad` 读完立即按张数重新应用（早于战斗牌组复制），`receivePostDungeonUpdate` 仅兜底 |
 | `SneckoHandV1` | `relics.SneckoEye.Migration`：给旧存档的异蛇之眼补上第 3 个手牌位 |
 
 字段键（`makeID(...)`）与数据格式都没变，旧存档可继续读。
@@ -1268,8 +1426,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 - 浏览牌堆、地图或单卡界面期间，洗牌触发、医药箱·蓝蜡烛的抽牌处理、勺子·星系仪选牌都**推迟到界面关闭后**；
   被推迟的牌若在此之前已离开手牌（例如被打出），本次处理会跳过。效果本身不取消。
-- 勺子的"继承去消耗"按源卡牌对象判定，读档按"ID + 升级 + misc 张数"恢复；
-  战斗牌组复制、多利之镜等**等价复制**会一并继承。
+- 勺子的"继承去消耗"按源卡牌对象判定，读档在自定义字段 `onLoad` 里、战斗准备之前按"ID + 升级 + misc 张数"恢复，
+  这样战斗牌组复制时才能继承；战斗牌组复制、多利之镜等**等价复制**会一并继承。
 - 数值上限放宽只到 int 上限：这些值存在 `int` 字段里（`AbstractCreature.currentBlock`、`AbstractPower.amount`、
   `EnergyPanel.totalCount`），改成 `long` 意味着替换字段、所有读取公式和存档格式。
 - **小屋子的自由营火**：每个营火选项用它自己的原版结算，本模组只做两件事——把刚用过的选项置灰

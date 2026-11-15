@@ -2,11 +2,13 @@ package anotherspirerework.relics;
 
 import anotherspirerework.AnotherSpireRework;
 import anotherspirerework.effects.ChooseDeckCardsEffect;
+import anotherspirerework.patches.SpoonFieldPatch;
 import anotherspirerework.util.RelicChecks;
 import basemod.abstracts.CustomSavable;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInstrumentPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.megacrit.cardcrawl.actions.utility.UseCardAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.CardGroup;
@@ -28,11 +30,14 @@ import java.util.Map;
  * ID, upgrade count and {@code misc} value, and the combat deck is built from fresh copies. So:
  *
  * <ul>
- *   <li>Copies inherit the change, because a card that no longer Exhausts while its base game
- *       version does is recognised whenever a copy is made (nested {@link Copies}).</li>
+ *   <li>Copies inherit the change, because a marked card is recognised whenever a copy is made
+ *       (nested {@link Copies}).</li>
+ *   <li>The mark also keeps the keyword out of every rebuilt description: an upgrade reads the
+ *       card strings again, and those still say Exhaust (nested {@link Description}).</li>
  *   <li>On save, the deck is scanned and how many cards of each identity lost their Exhaust is
  *       written down - the only thing a save file can carry.</li>
- *   <li>After loading, that count is applied to the rebuilt deck, so exactly as many copies of the
+ *   <li>After loading, that count is applied to the rebuilt deck as soon as the save field is read,
+ *       which is still before combat prep builds the combat deck, so exactly as many copies of the
  *       same card lose Exhaust again.</li>
  * </ul>
  *
@@ -81,6 +86,11 @@ public class StrangeSpoon extends com.megacrit.cardcrawl.relics.StrangeSpoon {
         return prototype != null && prototype.exhaust;
     }
 
+    /** True for the cards the pickup screen offers: only those that actually carry Exhaust. */
+    public static boolean hasExhaust(AbstractCard card) {
+        return card != null && card.exhaust;
+    }
+
     /** Called for every card the player picks in the Spoon screen. */
     public static void mark(AbstractCard card) {
         strip(card);
@@ -88,6 +98,7 @@ public class StrangeSpoon extends com.megacrit.cardcrawl.relics.StrangeSpoon {
 
     /** Drops Exhaust from a card, text included, so the card reads correctly right away. */
     public static void strip(AbstractCard card) {
+        SpoonFieldPatch.REMOVED.set(card, true);
         card.exhaust = false;
         card.rawDescription = RelicChecks.withoutExhaustText(card.rawDescription, GameDictionary.EXHAUST.NAMES[0]);
         card.initializeDescription();
@@ -108,13 +119,25 @@ public class StrangeSpoon extends com.megacrit.cardcrawl.relics.StrangeSpoon {
         return anotherspirerework.util.RelicSave.formatCounts(counts);
     }
 
-    /** Loads the counts; they are applied to the deck later, once it exists. */
+    /**
+     * Loads the counts and applies them right away. BaseMod calls a save field after
+     * {@code CardCrawlGame.loadPlayerSave} has rebuilt the master deck but before the dungeon
+     * constructor runs combat prep, so the deck is already the card copies get made from: restoring
+     * here is what lets {@link Copies} hand the removal to the combat deck. Waiting for a later
+     * frame would leave those copies Exhausting for the rest of the fight, because a copy inherits
+     * the flag at the moment it is made.
+     */
     public static void onLoad(String value) {
         PENDING.clear();
         PENDING.putAll(anotherspirerework.util.RelicSave.parseCounts(value));
+        restorePending();
     }
 
-    /** Applies the saved counts to the deck once it exists; cheap while nothing is pending. */
+    /**
+     * Applies the saved counts to the deck if it exists. {@link #onLoad} already calls this before
+     * combat prep; the per-frame call from {@code AnotherSpireRework} stays as a fallback for a
+     * deck that was not there yet, and costs nothing once the counts are used up.
+     */
     public static void restorePending() {
         if (PENDING.isEmpty() || AbstractDungeon.player == null) {
             return;
@@ -136,6 +159,24 @@ public class StrangeSpoon extends com.megacrit.cardcrawl.relics.StrangeSpoon {
             }
         }
         PENDING.clear();
+    }
+
+    /**
+     * The text of a marked card is rebuilt from a string that still says Exhaust whenever the game
+     * upgrades it (the upgrade preview and the real upgrade at a campfire both replace
+     * {@code rawDescription} with the upgrade text) or copies it for a view. The mark survives on
+     * the card instance, so the keyword is stripped out again on every rebuild, which keeps the
+     * card face in step with the Exhaust flag.
+     */
+    @SpirePatch(clz = AbstractCard.class, method = "initializeDescription")
+    public static class Description {
+        @SpirePrefixPatch
+        public static void before(AbstractCard __instance) {
+            if (__instance.rawDescription != null && SpoonFieldPatch.REMOVED.get(__instance)) {
+                __instance.rawDescription = RelicChecks.withoutExhaustText(
+                        __instance.rawDescription, GameDictionary.EXHAUST.NAMES[0]);
+            }
+        }
     }
 
     /** Copies made for combat and by card effects inherit the change. */

@@ -374,10 +374,10 @@
     "NAME": "Cloak and Dagger",
     "DESCRIPTION": "Gain !B! Block. NL Exhaust 1 card. NL Add 1 *Shiv into your hand."
   },
-  "anotherspirerework:Survivor": {
-    "NAME": "Survivor",
-    "DESCRIPTION": "Gain !B! Block. NL Choose a card in your hand; it gains Sly for this combat.",
-    "EXTENDED_DESCRIPTION": ["make it Sly."]
+  "anotherspirerework:Setup": {
+    "NAME": "Setup",
+    "DESCRIPTION": "Put a card from your hand on top of your draw pile. NL It gains Sly.",
+    "EXTENDED_DESCRIPTION": ["put it on top of your draw pile and make it Sly."]
   },
   "anotherspirerework:Reflex": {
     "NAME": "Reflex",

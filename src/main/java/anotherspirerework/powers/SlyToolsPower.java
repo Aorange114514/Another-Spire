@@ -37,11 +37,14 @@ public class SlyToolsPower extends AbstractPower {
     /**
      * The played card is already the instance that will cycle back through the draw and discard
      * piles later, so marking it here is enough; it is discarded from the hand on a later draw.
+     * Only a card that gains the keyword flashes, and silently: it can happen several times a
+     * turn, and the cue marks the change rather than the play.
      */
     @Override
     public void onPlayCard(AbstractCard card, AbstractMonster m) {
-        if (card != null && card.type == AbstractCard.CardType.SKILL) {
-            SlyMark.apply(card);
+        if (card != null && card.type == AbstractCard.CardType.SKILL && SlyMark.ensure(card)) {
+            card.initializeDescription();
+            flashWithoutSound();
         }
     }
 }

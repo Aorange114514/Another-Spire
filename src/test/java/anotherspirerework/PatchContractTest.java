@@ -79,6 +79,7 @@ public class PatchContractTest {
         relicPoolRegression();
         powerTitleAndReprogramRegression(pool);
         postfixBindingRegression();
+        SlyHistoryRegression.run();
         System.out.println("PASS: " + count + " patch targets, instrumented bytecode, insertion locators and injected fields");
     }
 
@@ -108,6 +109,7 @@ public class PatchContractTest {
                 "anotherspirerework.patches.MarkAttackPatch",
                 "anotherspirerework.patches.SlyPatch",
                 "anotherspirerework.patches.SlyFieldPatch",
+                "anotherspirerework.patches.SpoonFieldPatch",
                 "anotherspirerework.patches.NoBlockCapPatch",
                 "anotherspirerework.patches.NoEnergyCapPatch",
                 "anotherspirerework.patches.NoPowerCapPatch",
@@ -179,7 +181,7 @@ public class PatchContractTest {
                 .getDeclaredConstructor(new CtClass[]{pool.get("com.megacrit.cardcrawl.cards.AbstractCard$CardType"), CtClass.intType}) != null,
                 "Typed Discovery constructor");
         for (String name : new String[]{"red.InfernalBlade", "green.Distraction", "green.Concentrate",
-                "green.CloakAndDagger", "green.Survivor", "green.Slice", "green.Envenom", "green.StormOfSteel", "blue.Stack",
+                "green.CloakAndDagger", "green.Setup", "green.Slice", "green.Envenom", "green.StormOfSteel", "blue.Stack",
                 "green.Reflex", "green.Tactician", "green.SneakyStrike", "green.ToolsOfTheTrade"}) {
             CtClass card = pool.get("anotherspirerework.cards." + name);
             require(card.getSuperclass().getName().equals("com.megacrit.cardcrawl.cards.AbstractCard"), "Card superclass: " + name);
@@ -216,11 +218,12 @@ public class PatchContractTest {
         require(shivAt > exhaustAt, "Cloak and Dagger must add the Shiv after the exhaust");
         cloak.toBytecode();
         requireCalls(pool, "anotherspirerework.cards.green.CloakAndDagger", "upgrade", "upgradeBaseCost");
-        // Survivor hands out Sly; the picker is skipped when the hand has nothing to offer.
-        requireCalls(pool, "anotherspirerework.cards.green.Survivor", "use",
-                "com.megacrit.cardcrawl.actions.common.GainBlockAction", "anotherspirerework.actions.ApplySlyAction");
-        requireCalls(pool, "anotherspirerework.actions.ApplySlyAction", "update",
-                "open", "apply", "addToTop");
+        // Setup puts a chosen card on top of the draw pile and marks it Sly; the picker is skipped
+        // when the hand holds a single card, like the vanilla SetupAction.
+        requireCalls(pool, "anotherspirerework.cards.green.Setup", "use",
+                "anotherspirerework.actions.SetupSlyAction");
+        requireCalls(pool, "anotherspirerework.actions.SetupSlyAction", "update",
+                "open", "apply", "moveToDeck", "getTopCard", "refreshHandLayout");
         // Sly resolves the card's own effect after the discard, through use() rather than a real
         // play, so Beat of Death and Time Warp never see it. A Power cannot wait: its discard flight
         // is cancelled and the empower animation is started in the same hook.
@@ -228,8 +231,17 @@ public class PatchContractTest {
                 "isSly", "inCombat", "addToBottom", "playNow", "remove", "lighten");
         requireCalls(pool, "anotherspirerework.actions.SlyPlayAction", "playNow", "update");
         requireCalls(pool, "anotherspirerework.actions.SlyPlayAction", "play",
-                "getRandomMonster", "applyPowers", "calculateCardDamage", "use",
+                "getRandomMonster", "applyPowers", "calculateCardDamage", "use", "wrapNewActions",
                 "moveToExhaustPile", "empower");
+        // The end-turn key interrupts the rest of the chain: the plays that have not started leave
+        // the action manager, a discard that is still queued does not start a new one, and the
+        // next player turn re-arms it. Dropping a play is atomic (use() queues the whole effect),
+        // and update() re-reads the flag for the play the queue just handed out.
+        requireCalls(pool, "anotherspirerework.actions.SlyPlayAction", "interrupt", "iterator", "remove");
+        requireFieldRead(pool, "anotherspirerework.actions.SlyPlayAction", "update", "interrupted");
+        requireCalls(pool, "anotherspirerework.patches.SlyPatch$Discard", "after", "interrupted");
+        requireCalls(pool, "anotherspirerework.patches.SlyPatch$EndTurn", "after", "interrupt");
+        requireCalls(pool, "anotherspirerework.patches.SlyPatch$NewTurn", "after", "resume");
         // An Unplayable card (cost -2) has no play channel, so a Sly mark on one does nothing.
         // A discarded X-cost card auto-plays like Distilled Chaos or Havoc: X reads the current
         // energy, no energy is spent, and Chemical X's +2 still comes from the card itself.
@@ -281,7 +293,11 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.util.SlyMark", "apply", "ensure", "initializeDescription");
         requireCalls(pool, "anotherspirerework.patches.SlyPatch$Description", "before",
                 "isSly", "showsKeyword", "keywordLine");
-        requireCalls(pool, "anotherspirerework.powers.SlyToolsPower", "onPlayCard", "apply");
+        // Only a card that gains the keyword flashes (a Skill that is already Sly stays quiet), so
+        // the mark has to report the change and the cue hangs off that same branch. It is the silent
+        // flash because a Skill can be played many times in a turn.
+        requireCalls(pool, "anotherspirerework.powers.SlyToolsPower", "onPlayCard",
+                "ensure", "initializeDescription", "flashWithoutSound");
         requireCalls(pool, "anotherspirerework.cards.green.Slice", "use",
                 "com.megacrit.cardcrawl.actions.common.DamageAction", "anotherspirerework.actions.AddEtherealToHandAction");
         requireCalls(pool, "anotherspirerework.actions.AddEtherealToHandAction", "update", "apply", "addToTop");
@@ -399,8 +415,18 @@ public class PatchContractTest {
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "update", "open", "size");
         requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "orreryChoices", "getCard", "makeCopy");
         // Removing Exhaust has to survive copies and save loading, and the vanilla roll is off.
-        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "strip", "initializeDescription");
+        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "strip", "set", "initializeDescription");
         requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "restorePending", "strip");
+        // The upgrade preview and the campfire upgrade read the card strings again, so the mark has
+        // to take the keyword out of every rebuilt description, not just out of the first one.
+        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon$Description", "before",
+                "get", "withoutExhaustText");
+        // The saved counts must be applied while the save field is being read: that is still before
+        // combat prep, which is the only moment the combat deck copies can inherit the removal.
+        requireCalls(pool, "anotherspirerework.relics.StrangeSpoon", "onLoad", "restorePending");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "exhaustChoices", "hasExhaust");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "group", "exhaustChoices");
+        requireFieldRead(pool, "anotherspirerework.relics.StrangeSpoon", "hasExhaust", "exhaust");
         // The copy hook's shape and ModTheSpire's argument order are checked by
         // postfixBindingRegression() below; a body level check cannot see static calls.
         java.util.Map<String, Integer> spoonCounts = new java.util.HashMap<>();
@@ -441,6 +467,17 @@ public class PatchContractTest {
         require(anotherspirerework.util.RelicChecks
                 .withoutExhaustText("Deal 8 damage. NL Exhaust.", "Exhaust").equals("Deal 8 damage."),
                 "English Exhaust keyword must be removed");
+        // An effect line that merely starts with the keyword has to survive (Reboot, Purity).
+        require(anotherspirerework.util.RelicChecks
+                        .withoutExhaustText("Remove debuffs. NL Exhaust all Status cards. NL Exhaust.", "Exhaust")
+                        .equals("Remove debuffs. NL Exhaust all Status cards."),
+                "Effect lines starting with Exhaust must not be removed");
+        require(anotherspirerework.util.RelicChecks
+                        .withoutExhaustText("移除负面。 NL 消耗 你所有的状态牌。 NL 消耗 。", "消耗")
+                        .equals("移除负面。 NL 消耗 你所有的状态牌。"),
+                "Effect lines starting with 消耗 must not be removed");
+        require(anotherspirerework.util.RelicChecks.withoutExhaustText(null, "Exhaust") == null,
+                "A null description stays null");
 
         // The Chinese Ethereal keyword needs a space before the full stop to be parsed at all.
         require(anotherspirerework.util.RelicChecks.keywordSuffix("ZHS").equals(" 。"),
@@ -1123,6 +1160,23 @@ public class PatchContractTest {
         require(!calls.contains(unexpected), "Forbidden call still present: " + name + "." + method + " -> " + unexpected);
         type.toBytecode();
     }
+    /** The named method must read the named field: a flag check that has to stay a flag check. */
+    private static void requireFieldRead(ClassPool pool, String name, String method, String field) throws Exception {
+        CtClass type = pool.get(name);
+        if (type.isFrozen()) type.defrost();
+        final boolean[] read = {false};
+        for (CtMethod declared : type.getDeclaredMethods()) {
+            if (!declared.getName().equals(method)) continue;
+            declared.instrument(new ExprEditor() {
+                public void edit(javassist.expr.FieldAccess access) {
+                    if (access.isReader() && access.getFieldName().equals(field)) read[0] = true;
+                }
+            });
+        }
+        type.toBytecode();
+        require(read[0], "Missing field read: " + name + "." + method + " -> " + field);
+    }
+
     private static void requireCalls(ClassPool pool, String name, String method, String... expected) throws Exception {
         CtClass type = pool.get(name);
         if (type.isFrozen()) type.defrost();

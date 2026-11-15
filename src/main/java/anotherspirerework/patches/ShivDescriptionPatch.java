@@ -34,7 +34,7 @@ public class ShivDescriptionPatch {
     public static void Prefix(AbstractCard __instance) {
         if (__instance instanceof Shiv) {
             // The Shiv text is rebuilt from the variant table on every refresh, so the keywords a
-            // card picked up (Slice's Ethereal, Survivor's Sly) have to be asked for again here, on
+            // card picked up (Slice's Ethereal, Setup's Sly) have to be asked for again here, on
             // top of the description just like the base game writes keyword lines.
             String text = description();
             if (SlyMark.isSly(__instance)) {

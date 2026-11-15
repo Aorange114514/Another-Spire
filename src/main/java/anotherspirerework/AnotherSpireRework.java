@@ -1,8 +1,10 @@
 package anotherspirerework;
 
-import anotherspirerework.patches.ExhaustTracker;
+import anotherspirerework.actions.PlayShivsFromExhaustAction;
 import anotherspirerework.patches.BitePatch;
+import anotherspirerework.patches.ExhaustTracker;
 import anotherspirerework.patches.OrbTrackerPatch;
+import anotherspirerework.patches.ShuffleTriggerPatch;
 import anotherspirerework.powers.DevotionDrawPower;
 import anotherspirerework.relics.BlackBlood;
 import anotherspirerework.relics.BlackStar;
@@ -13,6 +15,7 @@ import anotherspirerework.relics.SneckoEye;
 import anotherspirerework.relics.Sozu;
 import anotherspirerework.relics.StrangeSpoon;
 import anotherspirerework.relics.TinyHouse;
+import anotherspirerework.util.Localization;
 import basemod.BaseMod;
 import basemod.interfaces.EditKeywordsSubscriber;
 import basemod.interfaces.EditStringsSubscriber;
@@ -29,19 +32,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFileHandle;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.evacipated.cardcrawl.modthespire.Loader;
 import com.evacipated.cardcrawl.modthespire.ModInfo;
 import com.evacipated.cardcrawl.modthespire.Patcher;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
-import com.google.gson.Gson;
 import com.megacrit.cardcrawl.actions.common.DrawCardAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
-import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
-import com.megacrit.cardcrawl.helpers.GameDictionary;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.powers.AbstractPower;
@@ -51,12 +50,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.scannotation.AnnotationDB;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Locale;
 
 @SpireInitializer
 public class AnotherSpireRework implements
@@ -76,7 +73,6 @@ public class AnotherSpireRework implements
     static { loadModInfo(); }
 
     private static final String resourcesFolder = checkResourcesPath();
-    private static final String defaultLanguage = "eng";
     public static final Logger logger = LogManager.getLogger(modID);
 
     public static String makeID(String id) {
@@ -106,19 +102,19 @@ public class AnotherSpireRework implements
     @Override
     public void receivePostBattle(AbstractRoom room) {
         BlackStar.onVictory(room);
-        BlackBlood.reset();
-        anotherspirerework.actions.PlayShivsFromExhaustAction.reset();
-        anotherspirerework.patches.ShuffleTriggerPatch.reset();
-        OrbTrackerPatch.lastOrb = null;
-        ExhaustTracker.reset();
+        resetCombatState();
     }
 
     @Override
     public void receiveStartGame() {
-        BlackBlood.reset();
-        anotherspirerework.actions.PlayShivsFromExhaustAction.reset();
-        anotherspirerework.patches.ShuffleTriggerPatch.reset();
+        resetCombatState();
         TinyHouse.reset();
+    }
+
+    private static void resetCombatState() {
+        BlackBlood.reset();
+        PlayShivsFromExhaustAction.reset();
+        ShuffleTriggerPatch.reset();
         OrbTrackerPatch.lastOrb = null;
         ExhaustTracker.reset();
     }
@@ -139,10 +135,10 @@ public class AnotherSpireRework implements
     }
 
     /**
-     * The Strange Spoon effect that was saved is applied to the deck as soon as it exists, so it
-     * does not matter whether BaseMod loads custom save fields before or after the deck rebuild.
-     * The same pass also finishes the on-draw relic effects that were held back while the player
-     * was looking at a pile.
+     * The Strange Spoon save field already applies itself when it is read (before combat prep builds
+     * the combat deck); this per-frame pass is only the fallback for a load where the deck did not
+     * exist yet. The same pass also finishes the on-draw relic effects that were held back while the
+     * player was looking at a pile.
      */
     @Override
     public void receivePostDungeonUpdate() {
@@ -175,72 +171,14 @@ public class AnotherSpireRework implements
 
     /*----------Localization----------*/
 
-    private static String getLangString() {
-        return Settings.language.name().toLowerCase(Locale.ROOT);
-    }
-
     @Override
     public void receiveEditStrings() {
-        loadLocalization(defaultLanguage);
-        if (!defaultLanguage.equals(getLangString())) {
-            try {
-                loadLocalization(getLangString());
-            } catch (GdxRuntimeException e) {
-                logger.warn(modID + " does not support " + getLangString() + " strings.");
-            }
-        }
-    }
-
-    private static void loadLocalization(String lang) {
-        BaseMod.loadCustomStringsFile(CardStrings.class, localizationPath(lang, "CardStrings.json"));
-        BaseMod.loadCustomStringsFile(PowerStrings.class, localizationPath(lang, "PowerStrings.json"));
-        BaseMod.loadCustomStringsFile(com.megacrit.cardcrawl.localization.RelicStrings.class, localizationPath(lang, "RelicStrings.json"));
-        BaseMod.loadCustomStringsFile(com.megacrit.cardcrawl.localization.UIStrings.class, localizationPath(lang, "UIStrings.json"));
+        Localization.loadStrings();
     }
 
     @Override
     public void receiveEditKeywords() {
-        loadKeywords(defaultLanguage);
-        if (!defaultLanguage.equals(getLangString())) {
-            try {
-                loadKeywords(getLangString());
-            } catch (GdxRuntimeException e) {
-                logger.warn(modID + " does not support " + getLangString() + " keywords.");
-            }
-        }
-    }
-
-    private static void loadKeywords(String lang) {
-        Gson gson = new Gson();
-        String json = Gdx.files.internal(localizationPath(lang, "Keywords.json"))
-                .readString(String.valueOf(StandardCharsets.UTF_8));
-        KeywordInfo[] keywords = gson.fromJson(json, KeywordInfo[].class);
-        if (keywords == null) {
-            return;
-        }
-        for (KeywordInfo keyword : keywords) {
-            keyword.prep();
-            // BaseMod files the names under "<modID>:"; the base game's card-text parser looks up
-            // the plain word, so keep a copy and register that one as well.
-            String[] plainNames = keyword.NAMES.clone();
-            BaseMod.addKeyword(modID, keyword.PROPER_NAME, keyword.NAMES, keyword.DESCRIPTION);
-            for (String name : plainNames) {
-                GameDictionary.keywords.put(name, keyword.DESCRIPTION);
-                GameDictionary.parentWord.put(name, plainNames[0]);
-            }
-        }
-    }
-
-    private static class KeywordInfo {
-        public String PROPER_NAME;
-        public String[] NAMES;
-        public String DESCRIPTION;
-
-        public void prep() {
-            for (int i = 0; i < NAMES.length; i++) {
-                NAMES[i] = NAMES[i].toLowerCase(Locale.ROOT).replace('_', ' ');
-            }
-        }
+        Localization.loadKeywords();
     }
 
     /*----------Helpers----------*/

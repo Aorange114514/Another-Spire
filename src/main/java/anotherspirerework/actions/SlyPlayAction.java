@@ -8,18 +8,26 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.ui.panels.EnergyPanel;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * Sly: a card that was discarded from the hand resolves its own effect.
  *
  * <p>The effect runs through {@code use()} instead of a real play, so the card costs nothing and
  * Beat of Death / Time Warp never see it; a single-target card picks a random enemy, an ALL_ENEMY
  * card recalculates against every enemy, X reads the current energy (Chemical X still adds its +2),
- * a Power leaves combat and an Exhaust card is exhausted. This is the same channel Survivor used
- * for "the discarded card counts as played"; it moved here when Survivor started handing out Sly
- * instead of discarding.
+ * a Power leaves combat and an Exhaust card is exhausted. The mark comes from the reworked Sly
+ * cards, Setup and Tools of the Trade.
+ *
+ * <p>The end-turn key cuts the chain short: {@link #interrupt()} drops the plays that have not
+ * started yet, and the next player turn re-arms the queue with {@link #resume()}.
  */
 public class SlyPlayAction extends AbstractGameAction {
     private static final float DURATION = Settings.ACTION_DUR_XFAST;
+
+    /** Set by the end-turn key, cleared when the next player turn starts. */
+    private static boolean interrupted;
 
     private final AbstractCard card;
     private boolean resolved;
@@ -34,7 +42,11 @@ public class SlyPlayAction extends AbstractGameAction {
     public void update() {
         if (!this.resolved) {
             this.resolved = true;
-            play();
+            // The end-turn key can also land between the queue handing this action out as the
+            // current action and this update, so the flag has to be read here as well.
+            if (!interrupted) {
+                play();
+            }
         }
         this.isDone = true;
     }
@@ -43,10 +55,36 @@ public class SlyPlayAction extends AbstractGameAction {
      * Resolves a discarded card immediately. A Power cannot wait for the action queue: the discard
      * already started its flight to the discard pile, and the Power has to leave combat instead. The
      * caller cancels that flight and calls this from the discard hook, so the empower animation starts
-     * from the hand position exactly like the old Survivor action did.
+     * from the hand position.
      */
     public static void playNow(AbstractCard card) {
         new SlyPlayAction(card).update();
+    }
+
+    /**
+     * The end-turn key ends the resolution chain. The plays that have not started leave the action
+     * queue, and a discard that is still queued (the queue can hold a DiscardAction that was
+     * ordered before the end turn) does not start a new one. Each play is atomic: {@code use()}
+     * queues a card's whole effect at once, so dropping a play never cuts half an effect in two,
+     * and a card whose play already started finishes normally.
+     */
+    public static void interrupt() {
+        interrupted = true;
+        for (Iterator<AbstractGameAction> i = AbstractDungeon.actionManager.actions.iterator(); i.hasNext(); ) {
+            if (i.next() instanceof SlyPlayAction) {
+                i.remove();
+            }
+        }
+    }
+
+    /** The player has control again, so a discarded Sly card resolves normally. */
+    public static void resume() {
+        interrupted = false;
+    }
+
+    /** True between the end-turn key and the next player turn. */
+    public static boolean interrupted() {
+        return interrupted;
     }
 
     private void play() {
@@ -80,7 +118,9 @@ public class SlyPlayAction extends AbstractGameAction {
             // Vulnerable/Slow into multiDamage.
             this.card.calculateCardDamage(null);
         }
+        ArrayList<AbstractGameAction> queuedBefore = new ArrayList<>(AbstractDungeon.actionManager.actions);
         this.card.use(player, monster);
+        SlyHistoryAction.wrapNewActions(this.card, queuedBefore);
         this.card.freeToPlayOnce = false;
         this.card.isInAutoplay = false;
         if (this.card.type == AbstractCard.CardType.POWER) {

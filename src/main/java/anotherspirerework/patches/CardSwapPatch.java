@@ -80,7 +80,7 @@ import anotherspirerework.cards.green.RiddleWithHoles;
 import anotherspirerework.cards.green.Skewer;
 import anotherspirerework.cards.green.Slice;
 import anotherspirerework.cards.green.SneakyStrike;
-import anotherspirerework.cards.green.Survivor;
+import anotherspirerework.cards.green.Setup;
 import anotherspirerework.cards.green.Tactician;
 import anotherspirerework.cards.green.ToolsOfTheTrade;
 import anotherspirerework.cards.green.Unload;
@@ -171,7 +171,7 @@ public class CardSwapPatch {
                 new Outmaneuver(), new Choke(), new RiddleWithHoles(), new GlassKnife(), new AThousandCuts(),
                 new Unload(), new MasterfulStab(), new CripplingPoison(), new Expertise(), new DieDieDie(),
                 new AfterImage(), new DodgeAndRoll(), new StormOfSteel(), new Envenom(),
-                new Distraction(), new CloakAndDagger(), new Concentrate(), new Survivor(), new Slice(),
+                new Distraction(), new CloakAndDagger(), new Concentrate(), new Setup(), new Slice(),
                 new Reflex(), new Tactician(), new SneakyStrike(), new ToolsOfTheTrade(),
                 new DeadlyPoison(), new Bane(), new FlyingKnee(), new Catalyst(),
                 new Predator(), new SuckerPunch(), new Blur(), new BouncingFlask(), new Skewer(),

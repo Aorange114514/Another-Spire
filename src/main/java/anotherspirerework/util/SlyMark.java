@@ -9,7 +9,7 @@ import com.megacrit.cardcrawl.core.Settings;
  * the card's effect is triggered when it is discarded from the hand.
  *
  * <p>The mark is a property of the fight, not of the saved deck, so nothing is stored. The five
- * reworked cards carry it from their constructor, Survivor and Tools of the Trade add it to other
+ * reworked cards carry it from their constructor, Setup and Tools of the Trade add it to other
  * cards; every operation is idempotent because a card's text is built more than once.
  */
 public final class SlyMark {

@@ -74,7 +74,7 @@ verification and maintenance rules, see
 | Dagger Spray | `Dagger Spray` | 1 | Deal 2 damage to ALL enemies 5 (8) times; Exhaust |
 | Backflip | `Backflip` | 1 | Gain 5 (6) Block; draw 2 (3) cards |
 | Poisoned Stab | `Poisoned Stab` | 1 | Deal 4 (6) damage; apply 5 (6) Poison |
-| Quick Slash | `Quick Slash` | 3 | Sly; deal 8 (11) damage to ALL enemies |
+| Quick Slash | `Quick Slash` | 1 | Sly; deal 8 (11) damage to ALL enemies |
 | Dagger Throw | `Dagger Throw` | 1 | Deal 9 (12) damage; draw 1 (2) cards; discard 1 (2) cards |
 | Outmaneuver | `Outmaneuver` | 0 | Next turn, gain [E] ([E][E]) |
 | Choke | `Choke` | 1 | Deal 6 damage; whenever you play a card this turn, the enemy loses 3 (5) HP |
@@ -88,7 +88,7 @@ verification and maintenance rules, see
 | Storm of Steel | `Storm of Steel` | 2 (1) | Play a copy of every Shiv in your exhaust pile against an enemy |
 | After Image | `After Image` | 1 | Whenever you play a card, gain 1 (2) Block |
 | Dodge and Roll | `Dodge and Roll` | 3 | Sly; gain 4 (5) Block 2 times |
-| Survivor | `Survivor` | 1 (0) | Gain 6 Block; choose a card in your hand and make it Sly for this combat |
+| Setup | `Setup` | 1 (0) | Put a card from your hand on top of your draw pile; it gains Sly for this combat |
 | Reflex | `Reflex` | 3 | Sly; draw 2 (3) cards |
 | Tactician | `Tactician` | 3 | Sly; gain [E] ([E][E]) |
 | Sneaky Strike | `Underhanded Strike` | 3 | Sly; deal 16 (20) damage to the enemy with the lowest HP (uses the Watcher's Strike effect) |
@@ -245,7 +245,7 @@ with those classes after `RelicLibrary.initialize()`, so everything not overridd
 | Enchiridion | At the start of combat, choose 1 of 3 random Power cards to add to your hand; it costs 0 this turn; can be skipped |
 | Medical Kit | When you draw a Status card, Exhaust it and draw 1 card; Status cards can be played and Exhaust |
 | Blue Candle | When you draw a Curse card, Exhaust it; Curse cards can be played and Exhaust, and playing one costs 1 HP |
-| Strange Spoon | On pickup, choose up to 2 cards in your deck to remove Exhaust from (replaces the vanilla 50% no-Exhaust chance); the record persists across saves |
+| Strange Spoon | On pickup, choose up to 2 cards with Exhaust in your deck and remove it (replaces the vanilla 50% no-Exhaust chance); the record persists across saves |
 | Orrery | On pickup, choose any number of cards from 10 Common/10 Uncommon/10 Rare to add to your deck (replaces the vanilla 4 card rewards) |
 | Frozen Eye | In combat, your starter Strikes and Defends gain Ethereal; the deck view shows the keyword during a fight too (text only, never saved) |
 | Inserter | Every 2 turns, at the start of the turn gain 1 Orb slot and Channel 1 random Orb |
@@ -282,7 +282,7 @@ Peace Pipe, The Specimen, Wing Boots, Prayer Wheel, Shovel.
 - **Shuffle events**: triggered after `EmptyDeckShuffleAction` has finished resolving and the shuffle animation has finished playing; `ShuffleAllAction` (Reboot) also waits for the `PutOnDeckAction` it queues to move the hand onto the draw pile and for the following `ShuffleAction` to really shuffle it (otherwise a card picked by Metamorphosis would be swallowed by that hand move); Stack, Chrysalis, Metamorphosis and Matryoshka rely on it.
 - **UI protection**: while browsing piles / the map / the single-card view, shuffle triggers, the draw handling of Medical Kit and Blue Candle, and the Strange Spoon / Orrery card selection are deferred until the UI closes.
 - **Shop relic price cuts**: Uncommon relics −50, Rare relics −100 (vanilla 250 / 300 → 200 / 200); only affects shop shelves.
-- **Sly**: when this card is discarded from your hand, its effect triggers — for free, resolved as an auto-play (single-target Attacks pick a random enemy, ALL_ENEMY cards recalculate per-enemy modifiers, X reads the current energy, Powers leave combat, Exhaust cards are exhausted; no Beat of Death or Time Warp). The keyword line sits on the first line of the card text; Frozen Eye's Ethereal on basic Strikes/Defends moves to the first line too.
+- **Sly**: when this card is discarded from your hand, its effect triggers — for free, resolved as an auto-play (single-target Attacks pick a random enemy, ALL_ENEMY cards recalculate per-enemy modifiers, X reads the current energy, Powers leave combat, Exhaust cards are exhausted; no Beat of Death or Time Warp). The keyword line sits on the first line of the card text; Frozen Eye's Ethereal on basic Strikes/Defends moves to the first line too. Pressing End Turn interrupts the Sly queue: Sly cards that have not started resolving do not resolve, and a discard that only resolves afterwards no longer triggers Sly until the next turn.
 - **Shiv card text**: while Unload is up, a Shiv gains a leading "Retain." line; while Die Die Die is up, its damage line reads "Deal n damage to ALL enemies."; both show when both are up, and the vanilla text returns without them.
 - **Die Die Die resolves at once**: a Shiv now deals its damage to ALL enemies in one simultaneous hit (the way Cleave does) while keeping the Shiv's own attack effect; Envenom and Glass Knife still pay out per enemy.
 - **Vanilla bug fix (Indignation + Mental Fortress)**: Indignation's Stance change into Wrath was originally ordered after card resolution, so the Corrupt Heart's Beat of Death resolved before Mental Fortress's Block; now the Stance change resolves immediately like Tantrum, gaining Block first and then resolving Beat of Death.

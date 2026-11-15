@@ -374,10 +374,10 @@
     "NAME": "斗篷与匕首",
     "DESCRIPTION": "获得 !B! 点 格挡 。 NL 消耗 1 张牌。 NL 将 1 张 *小刀 加入你的手牌。"
   },
-  "${modID}:Survivor": {
-    "NAME": "生存者",
-    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 选择一张手牌，使其在本场战斗中获得 奇巧 。",
-    "EXTENDED_DESCRIPTION": ["使其获得奇巧。"]
+  "${modID}:Setup": {
+    "NAME": "部署",
+    "DESCRIPTION": "将手牌中的一张牌放到抽牌堆的顶部。 NL 并且其获得 奇巧 。",
+    "EXTENDED_DESCRIPTION": ["放到抽牌堆顶部并使其获得奇巧。"]
   },
   "${modID}:Reflex": {
     "NAME": "本能反应",
