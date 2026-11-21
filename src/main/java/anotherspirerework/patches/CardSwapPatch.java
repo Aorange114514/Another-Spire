@@ -3,6 +3,9 @@ package anotherspirerework.patches;
 import anotherspirerework.AnotherSpireRework;
 import anotherspirerework.cards.blue.Stack;
 import anotherspirerework.cards.blue.ThunderStrike;
+import anotherspirerework.cards.blue.DoomAndGloom;
+import anotherspirerework.cards.blue.FTL;
+import anotherspirerework.cards.colorless.Beta;
 import anotherspirerework.cards.colorless.Chrysalis;
 import anotherspirerework.cards.colorless.Mayhem;
 import anotherspirerework.cards.colorless.Metamorphosis;
@@ -50,11 +53,13 @@ import anotherspirerework.cards.colorless.FlashOfSteel;
 import anotherspirerework.cards.colorless.GoodInstincts;
 import anotherspirerework.cards.colorless.JackOfAllTrades;
 import anotherspirerework.cards.colorless.MindBlast;
+import anotherspirerework.cards.colorless.Omega;
 import anotherspirerework.cards.colorless.SadisticNature;
 import anotherspirerework.cards.colorless.SwiftStrike;
 import anotherspirerework.cards.green.AThousandCuts;
 import anotherspirerework.cards.green.AfterImage;
 import anotherspirerework.cards.green.Backflip;
+import anotherspirerework.cards.green.Caltrops;
 import anotherspirerework.cards.green.Choke;
 import anotherspirerework.cards.green.CripplingPoison;
 import anotherspirerework.cards.green.DaggerSpray;
@@ -84,14 +89,18 @@ import anotherspirerework.cards.green.Setup;
 import anotherspirerework.cards.green.Tactician;
 import anotherspirerework.cards.green.ToolsOfTheTrade;
 import anotherspirerework.cards.green.Unload;
+import anotherspirerework.cards.purple.Alpha;
 import anotherspirerework.cards.purple.BattleHymn;
 import anotherspirerework.cards.purple.CarveReality;
+import anotherspirerework.cards.purple.CutThroughFate;
 import anotherspirerework.cards.purple.Consecrate;
 import anotherspirerework.cards.purple.DeceiveReality;
 import anotherspirerework.cards.purple.Devotion;
 import anotherspirerework.cards.purple.EmptyBody;
+import anotherspirerework.cards.purple.EmptyFist;
 import anotherspirerework.cards.purple.EmptyMind;
 import anotherspirerework.cards.purple.FlurryOfBlows;
+import anotherspirerework.cards.purple.Halt;
 import anotherspirerework.cards.purple.Ragnarok;
 import anotherspirerework.cards.purple.Evaluate;
 import anotherspirerework.cards.purple.FlyingSleeves;
@@ -101,6 +110,7 @@ import anotherspirerework.cards.purple.SpiritShield;
 import anotherspirerework.cards.purple.FollowUp;
 import anotherspirerework.cards.purple.Judgement;
 import anotherspirerework.cards.purple.JustLucky;
+import anotherspirerework.cards.purple.Protect;
 import anotherspirerework.cards.purple.LikeWater;
 import anotherspirerework.cards.purple.PathToVictory;
 import anotherspirerework.cards.purple.ReachHeaven;
@@ -119,6 +129,7 @@ import anotherspirerework.cards.red.DemonForm;
 import anotherspirerework.cards.red.Bloodletting;
 import anotherspirerework.cards.red.BurningPact;
 import anotherspirerework.cards.red.Clash;
+import anotherspirerework.cards.red.Combust;
 import anotherspirerework.cards.red.Cleave;
 import anotherspirerework.cards.red.Clothesline;
 import anotherspirerework.cards.red.Entrench;
@@ -165,9 +176,9 @@ public class CardSwapPatch {
                 new Clash(), new WildStrike(), new HeavyBlade(), new Clothesline(), new IronWave(),
                 new Flex(), new ThunderClap(), new Cleave(), new SwordBoomerang(), new Uppercut(),
                 new Sentinel(), new Entrench(), new Bloodletting(), new SeverSoul(), new Whirlwind(),
-                new Rampage(), new SearingBlow(), new Berserk(), new Metallicize(), new ExpectAFight(),
+                new Rampage(), new SearingBlow(), new Berserk(), new Combust(), new Metallicize(), new ExpectAFight(),
                 new BurningPact(), new SeeingRed(), new InfernalBlade(), new DemonForm(),
-                new DaggerSpray(), new Backflip(), new PoisonedStab(), new QuickSlash(), new DaggerThrow(),
+                new DaggerSpray(), new Backflip(), new Caltrops(), new PoisonedStab(), new QuickSlash(), new DaggerThrow(),
                 new Outmaneuver(), new Choke(), new RiddleWithHoles(), new GlassKnife(), new AThousandCuts(),
                 new Unload(), new MasterfulStab(), new CripplingPoison(), new Expertise(), new DieDieDie(),
                 new AfterImage(), new DodgeAndRoll(), new StormOfSteel(), new Envenom(),
@@ -175,11 +186,12 @@ public class CardSwapPatch {
                 new Reflex(), new Tactician(), new SneakyStrike(), new ToolsOfTheTrade(),
                 new DeadlyPoison(), new Bane(), new FlyingKnee(), new Catalyst(),
                 new Predator(), new SuckerPunch(), new Blur(), new BouncingFlask(), new Skewer(),
-                new Dualcast(), new Rebound(), new Barrage(), new SweepingBeam(), new Claw(), new Streamline(),
+                new Dualcast(), new DoomAndGloom(), new FTL(), new Rebound(), new Barrage(), new SweepingBeam(), new Claw(), new Streamline(),
                 new SteamBarrier(), new Leap(), new HelloWorld(), new Chill(), new ForceField(), new Blizzard(),
                 new RipAndTear(), new Melter(), new Fusion(), new Reprogram(), new MultiCast(), new Hyperbeam(),
                 new Rainbow(), new Heatsinks(), new CoreSurge(), new Reboot(), new CreativeAI(), new MeteorStrike(), new Stack(),
                 new ThunderStrike(), new Tempest(), new Overclock(),
+                new Alpha(), new CutThroughFate(), new EmptyFist(), new Halt(), new Protect(),
                 new PathToVictory(), new Consecrate(), new FollowUp(), new Perseverance(), new ThirdEye(),
                 new BattleHymn(), new LikeWater(), new Vengeance(), new Swivel(), new WindmillStrike(),
                 new DeceiveReality(), new Study(), new Weave(), new Devotion(), new Sanctity(), new CarveReality(),
@@ -187,7 +199,7 @@ public class CardSwapPatch {
                 new FlyingSleeves(), new SashWhip(), new Evaluate(), new Nirvana(),
                 new SpiritShield(), new EmptyBody(), new EmptyMind(),
                 new FlurryOfBlows(), new Ragnarok(), new Judgement(), new ReachHeaven(), new WaveOfTheHand(),
-                new Mayhem(), new ThinkingAhead(), new SecretTechnique(), new SecretWeapon(),
+                new Beta(), new Omega(), new Mayhem(), new ThinkingAhead(), new SecretTechnique(), new SecretWeapon(),
                 new Chrysalis(), new Metamorphosis(), new Violence(), new Transmutation(),
                 new JackOfAllTrades(), new FlashOfSteel(), new Finesse(), new SwiftStrike(),
                 new GoodInstincts(), new MindBlast(), new DramaticEntrance(), new SadisticNature());

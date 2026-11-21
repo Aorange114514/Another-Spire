@@ -10,7 +10,9 @@
   "anotherspirerework:BattleHymnSmite": {
     "NAME": "战歌",
     "DESCRIPTIONS": [
-      "在每回合开始时，消耗一张手牌，并将 #b ",
+      "在每回合开始时，消耗 #b ",
+      " 张手牌，并将 #b ",
+      " 张手牌，并将 #b ",
       " 张 #y惩恶 加入你的手牌。",
       " 张 #y惩恶 加入你的手牌。"
     ]
@@ -111,7 +113,7 @@
   },
   "anotherspirerework:SpiritShield": {
     "NAME": "精神护盾",
-    "DESCRIPTIONS": ["当你处于 #y平静 时，你受到的攻击伤害减半 #b ", " 次。"]
+    "DESCRIPTIONS": ["当你处于 #y平静 时，你受到的攻击伤害减半 #b ", " 次。", " 次。"]
   },
   "anotherspirerework:EmptyBody": {
     "NAME": "化体为空",
@@ -132,5 +134,37 @@
   "anotherspirerework:WaveOfTheHandPower": {
     "NAME": "摆手",
     "DESCRIPTIONS": ["在本回合，你每次切换 #y姿态 时，给予所有敌人 #b", " 层 #y虚弱 。"]
+  },
+  "anotherspirerework:Alpha": {
+    "NAME": "阿尔法",
+    "DESCRIPTIONS": [
+      "在你的回合结束时，从弃牌堆中选择 #b ",
+      " 张牌放入你的手牌，并将其 #y保留 。",
+      " 张牌放入你的手牌，并将其 #y保留 。"
+    ]
+  },
+  "anotherspirerework:Beta": {
+    "NAME": "贝塔",
+    "DESCRIPTIONS": [
+      "你每打出一张 #y无色 牌，抽 #b ",
+      " 张牌。",
+      " 张牌。"
+    ]
+  },
+  "anotherspirerework:Combust": {
+    "NAME": "自燃",
+    "DESCRIPTIONS": [
+      "在你的回合结束时，失去 #b ",
+      " 点生命。 NL 每当你失去生命时，对所有敌人造成 #b ",
+      " 点伤害。"
+    ]
+  },
+  "anotherspirerework:OmegaRemoval": {
+    "NAME": "欧米伽",
+    "DESCRIPTIONS": [
+      "本场战斗结束后，你可以从牌组中移除 #b ",
+      " 张牌。",
+      " 张牌。"
+    ]
   }
 }

@@ -4,5 +4,11 @@
   },
   "anotherspirerework:DeckToHand": {
     "TEXT": ["选择", "张牌。"]
+  },
+  "anotherspirerework:OmegaRemoval": {
+    "TEXT": ["选择一张牌移除", "选择一张牌移除"]
+  },
+  "anotherspirerework:AlphaDiscard": {
+    "TEXT": ["选择一张牌放入手牌并保留。", "选择 ", " 张牌放入手牌并保留。"]
   }
 }

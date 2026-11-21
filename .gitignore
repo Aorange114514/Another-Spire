@@ -6,3 +6,7 @@
 
 # Local agent guidance: keep it out of the public repository.
 /AGENTS.md
+
+# Project-local DSH Skills.
+/.dsh/skills/
+/target/

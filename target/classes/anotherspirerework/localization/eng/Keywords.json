@@ -7,6 +7,6 @@
   {
     "PROPER_NAME": "Sly",
     "NAMES": ["sly"],
-    "DESCRIPTION": "When this card is discarded from your hand, trigger this card's effect."
+    "DESCRIPTION": "When this card is discarded from your hand, its effect triggers."
   }
 ]

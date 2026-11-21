@@ -8,7 +8,11 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.PowerTip;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
+import com.megacrit.cardcrawl.saveAndContinue.SaveAndContinue;
+import com.megacrit.cardcrawl.saveAndContinue.SaveFile;
 import com.megacrit.cardcrawl.screens.CombatRewardScreen;
+
+import java.util.ArrayList;
 
 /**
  * Busted Crown: the extra energy is gone entirely; instead every card reward is replaced by a
@@ -20,6 +24,9 @@ import com.megacrit.cardcrawl.screens.CombatRewardScreen;
  * class rewrites its own description on a class change, so both string hooks are overridden.
  */
 public class BustedCrown extends com.megacrit.cardcrawl.relics.BustedCrown {
+    /** The current reward screen's relic roll, kept until the post-combat save is written. */
+    static Roll roll;
+
     public BustedCrown() {
         super();
     }
@@ -78,12 +85,73 @@ public class BustedCrown extends com.megacrit.cardcrawl.relics.BustedCrown {
                 if (old.type != RewardItem.RewardType.CARD) {
                     continue;
                 }
+                if (roll == null || !roll.shown()) {
+                    roll = new Roll();
+                }
                 RewardItem replacement = new RewardItem(
                         AbstractDungeon.returnRandomRelic(AbstractDungeon.returnRandomRelicTier()));
                 replacement.isDone = old.isDone;
                 replacement.ignoreReward = old.ignoreReward;
+                roll.rewards.add(replacement);
                 __instance.rewards.set(i, replacement);
             }
+        }
+    }
+
+    /**
+     * The post-combat save is written immediately after the screen was laid out, so it would record
+     * the relic RNG and pools after this roll. The base game rewinds {@code card_seed_count} for the
+     * same reason, because it regenerates the card reward from the save; a load would otherwise roll
+     * the relic again and show a different one (the save/load reroll). Putting back only what the
+     * roll consumed keeps the screen reproducible while every later roll still advances normally.
+     */
+    @SpirePatch(clz = SaveAndContinue.class, method = "save")
+    public static class PostCombatSave {
+        @SpirePrefixPatch
+        public static void before(SaveFile save) {
+            if (save.post_combat && roll != null && roll.shown()) {
+                roll.rewind(save);
+            }
+        }
+    }
+
+    /** The relic RNG counter and pools from just before a reward screen rolled its relic. */
+    static final class Roll {
+        private final int relicCounter;
+        private final ArrayList<String> common;
+        private final ArrayList<String> uncommon;
+        private final ArrayList<String> rare;
+        private final ArrayList<String> shop;
+        private final ArrayList<String> boss;
+        private final ArrayList<RewardItem> rewards = new ArrayList<>();
+
+        Roll() {
+            relicCounter = AbstractDungeon.relicRng.counter;
+            common = new ArrayList<>(AbstractDungeon.commonRelicPool);
+            uncommon = new ArrayList<>(AbstractDungeon.uncommonRelicPool);
+            rare = new ArrayList<>(AbstractDungeon.rareRelicPool);
+            shop = new ArrayList<>(AbstractDungeon.shopRelicPool);
+            boss = new ArrayList<>(AbstractDungeon.bossRelicPool);
+        }
+
+        /** True while a reward of this roll is still shown: the screen it belongs to is up. */
+        boolean shown() {
+            for (RewardItem reward : rewards) {
+                if (AbstractDungeon.combatRewardScreen.rewards.contains(reward)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /** Puts back what the roll consumed, so a load replays the same relic reward. */
+        void rewind(SaveFile save) {
+            save.relic_seed_count = relicCounter;
+            save.common_relics = new ArrayList<>(common);
+            save.uncommon_relics = new ArrayList<>(uncommon);
+            save.rare_relics = new ArrayList<>(rare);
+            save.shop_relics = new ArrayList<>(shop);
+            save.boss_relics = new ArrayList<>(boss);
         }
     }
 }

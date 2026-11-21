@@ -42,6 +42,7 @@ public class SpiritShieldPower extends AbstractPower {
 
     @Override
     public void updateDescription() {
-        this.description = powerStrings.DESCRIPTIONS[0] + this.amount + powerStrings.DESCRIPTIONS[1];
+        this.description = powerStrings.DESCRIPTIONS[0] + this.amount
+                + (this.amount == 1 ? powerStrings.DESCRIPTIONS[2] : powerStrings.DESCRIPTIONS[1]);
     }
 }

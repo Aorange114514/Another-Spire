@@ -4,6 +4,114 @@
 
 # AnotherSpire Rework
 
+## 修复：勺子选牌被商店删牌服务吞掉（选中的牌被删除）
+
+- 现象：在「奇怪的勺子」选牌界面点选卡牌后，若没有用界面自己的确认按钮结束选牌（按 ESC / 点商店的「离开」按钮、设置里退出、用重开本层的 mod 切层），这两张牌会被**直接从牌组删除**（扣金币、删牌价 +25、播 `PurgeCardEffect`），而不是去掉「消耗」；读档后商店重开时也会对残留的选牌再播一次删牌动画。星系仪/星盘选牌走同一路径也会被同样吞掉。
+- 根因：`GridCardSelectScreen.selectedCards` 是**全游戏共享**的列表，商店房间每帧 `ShopRoom.update()` → `updatePurge()` 都读它。模组的选牌用原版「任意张数」模式：**点一张牌就写进 `selectedCards`**，要等界面关闭后由 `AbstractDungeon.effectList` 里的 effect 消费并清空。问题在于关界面的时机有两条路：
+  1. 界面自己的确认按钮 → `GridCardSelectScreen.update()` 里调用 `closeCurrentScreen()`，仍在 `AbstractDungeon.update()` 的 screen 分支内；同一帧稍后就会更新 effectList，选牌来得及结算。
+  2. 覆盖层的取消/离开按钮（商店「离开」、ESC）→ 在 `overlayMenu.update()` 里调用 `closeCurrentScreen()`，**已经在 effectList 更新之后**。下一帧 `AbstractDungeon.update()` 先按 `screen == NONE` 更新房间（`ShopRoom.update()` → `updatePurge()`），再更新 effectList —— 商店把这份选牌当成自己的删牌服务：`ShopScreen.purgeCard()` 扣金币、删牌价 +25，并对每张选中的牌 `masterDeck.removeCard()` + `PurgeCardEffect`。`masterDeck.removeCard()` 拿到的是牌组里的同一批对象，所以牌是真被删掉。
+  3. 另一个入口：选牌界面可能开在已经打开的网格之上（0.4s 延迟内买了商店删牌服务），并继承它的 `previousScreen = SHOP`；确认后商店界面重开，`ShopScreen.updatePurge()`（同样读 `selectedCards`）也会吞掉选牌。
+- 修复：
+  - `effects.ChooseDeckCardsEffect$SettleOnClose`：给 `AbstractDungeon.closeCurrentScreen()` 加前缀补丁，在网格真正关闭**之前**结算并清空选牌（只认自己打开的 `targetGroup`，别的界面接管了网格就不碰）。任何读者都不会再看到这份选牌。
+  - `ChooseDeckCardsEffect.busyScreen()`：已有网格/设置/手牌选牌界面时不抢占界面，不再覆盖商店删牌网格（也就不会继承它的 `previousScreen`），两个模组选牌也不会互相覆盖。
+  - 打开选牌界面时隐藏覆盖层取消按钮：商店的「离开」按钮不会架在选牌界面上把它关掉（「最多 N 张」包含 0 张，点确认即可跳过，无需取消）。
+  - 保留 `patches.AbandonedPickPatch`：`AbstractDungeon.reset()` 后清空 `selectedCards` 并调用 `ChooseDeckCardsEffect.forget()`，兜住不带 `closeCurrentScreen` 的整局清理（重开本层 mod、保存并退出、死亡回主菜单）。
+- 测试：`PatchContractTest.abandonedPickRegression` 断言 `AbandonedPickPatch` 挂在 `AbstractDungeon.reset` 上并清理/`forget`，`SettleOnClose` 挂在 `AbstractDungeon.closeCurrentScreen` 上、`settle()` 结算并清空，`update()` 用 `busyScreen()` 延后并隐藏取消按钮。
+
+验证：JDK 8 执行 `..\scripts\build.cmd` 通过（`mvn -B clean package`：297 个源文件、148 个补丁目标；`PatchContractTest` 与 30302 项算术检查全绿；`verify.ps1 -CheckJar` 通过，147 唯一替换）。
+
+仍需游戏内验收：商店买下勺子后选 2 张牌——(1) 点界面确认：两张牌去掉「消耗」，金币与删牌价不变；(2) 选中后按 ESC 或点商店「离开」（修复后取消按钮已隐藏，应点不动，确认仍可结算）；(3) 选中后直接「保存并退出」再继续 / 用重开本层的 mod：读档后不出现删牌动画、金币与删牌价不变；(4) 同一商店先买删牌服务再买勺子：勺子选牌正常去掉消耗，商店删牌不受影响；星系仪、星盘选牌走同一路径同样不被吞掉。
+
+## 修复：破碎金冠奖励读档重掷遗物
+
+- 根因：`positionRewards` 把卡牌奖励换成遗物奖励时调用了 `AbstractDungeon.returnRandomRelic`，而战后存档（`SaveFile(POST_COMBAT)`）紧跟在奖励界面 `open()` 之后写入，记录的是掷完之后的状态——遗物 RNG 计数和五个遗物池都已变化。读档时 `setupItemReward` 会重新生成卡牌奖励（原版为此把 `card_seed_count` 回卷到掷卡之前），但遗物 RNG 没有回卷，于是会重新掷一次；之后每次读档都从同一个存档重放同一初始状态，所以只在第一次读档时变一次。
+- 修复：`BustedCrown.Roll` 在掷遗物之前快照遗物 RNG 计数与五个遗物池；新增 `BustedCrown$PostCombatSave`（`SaveAndContinue.save` 前缀），只把这两样写回存档（`relic_seed_count` 与 `common/uncommon/rare/shop/boss_relics`），奖励列表和已掷出的遗物不动。读档重放得到同一件遗物，之后的正常遗物掉落仍照常推进 RNG 与池；同一界面内 `positionRewards` 的重复调用（领完金币后的重排）也不会再掷骰，因为卡牌奖励在首次布局时已被替换。
+- 测试：`PatchContractTest.reportedRelicRegression` 新增「快照必须早于 `returnRandomRelic`」「存档补丁挂在 `SaveAndContinue.save` 上并按 `post_combat` 生效」「`rewind` 回写六个字段」的契约检查。
+
+验证：JDK 8 执行 `..\scripts\build.cmd` 通过（`mvn -B clean package`：296 个源文件、146 个补丁目标，`PatchContractTest` 与 30302 项算术检查全绿；`verify.ps1 -CheckJar` 通过，147 唯一替换，jar 3.95 MB）。
+
+仍需游戏内验收：战斗结算后带破碎金冠的奖励界面反复读档（菜单读档与退出游戏再进）遗物不变；领取金币/药水后该遗物不变；祈祷轮等多份卡牌奖励与事件奖励界面不出现重复、错位或缺失遗物。
+
+## 英文本地化润色：原版语气、Alpha 类短语修正、Battle Hymn 与 Spirit Shield 层数文本
+
+- 英文卡牌/能力/遗物/关键字/UI 文案按原版句式统一：`Shuffle … into your draw pile`（随机位置）、`Draw !M! cards`、`ALL enemies`、`exit #yCalm`、`Whenever …`、`Gain 1 Orb slot`、`and Retain it/them` 等；删去非原版的 `Every time`、`randomly Upgraded`、`an enemy's` 等说法。
+- 阿尔法：`It gains Retain.` 改为与「冥想」一致的 `put a card from your discard pile into your hand and Retain it.`；Alpha 能力文案同步为 `put #b N card(s) … and Retain it/them`。Beta、Evaluate、Vengeance、Steam Barrier 的 *Beta/*Omega/*Insight/*Dazed 由 `Add/put` 改为原版 `Shuffle … into your draw pile`（代码本就是随机位置）。
+- `PathToVictory` 英文名改回 `Pressure Points`（与中文「点穴」及原版一致），描述改为 `ALL enemies with *Mark …`。
+- 句意修正：Bane（`convert … into Poison` → `apply Poison equal to the unblocked damage`，伤害并未被转化）、Flying Knee（`Weakened` → `Weak`）、Blur（删去多余的 `After you play this card`）、Judgement（its/their 统一）、Rip and Tear（`hand and piles` → `hand, draw pile and discard pile`）、Bouncing Flask（`random enemies` → `a random enemy`）。
+- Battle Hymn：`BattleHymnSmitePower` 的 `DESCRIPTIONS` 由 3 项扩为 5 项，层数同时用于消耗手牌数与惩恶数；原来叠加到 2 层以上时描述与代码不符（只说 1 张手牌）。中英文条目同步。
+- Spirit Shield：`DESCRIPTIONS` 增加单数项，能力描述按层数显示 `time/times`（原来 1 层显示 `1 times`）。中文条目同步。
+- 遗物：Sozu、Busted Crown、Medical Kit、Blue Candle、Girya、Violet Lotus、Strange Spoon、Mark of Pain、Black Blood、Ninja Scroll、Enchiridion、Orrery、Astrolabe、Twisted Funnel 的英文句式修正；Nloth's Gift 名称补回原版撇号 `N'loth's Gift`。
+- `verify.ps1`：卡图尺寸检查跳过 `images/omega_reward.png`（64×64，`ART_ASSETS.md` 已注明非卡面），否则 `-CheckJar` 在本机持续失败；该缺口与本次文案改动无关。
+
+验证：JDK 8 执行 `..\scripts\build.cmd` 通过：`mvn -B clean package` 编译 296 个源文件、`PatchContractTest` 全绿；`verify.ps1 -CheckJar` 通过（147 唯一替换），jar 为 3.96 MB。
+
+仍需游戏内验收：英文长文本的卡面换行、Battle Hymn/Spirit Shield 叠加后的能力描述、Alpha 回合结束选牌界面与各遗物提示。
+
+## 修复：灼伤虚无、欧米伽奖励横幅、改动收尾检查
+
+- 灼伤：退回原版效果，**不再默认带虚无**。删除 `BurnEtherealPatch$Ethereal`（`AbstractCard.initializeDescription` 前缀），卡面文案与结算都恢复原版。
+- 灼伤 + 虚无：被「切割」等效果加上虚无的灼伤仍按原版在回合结束自动打出并先结算自身伤害；改变的是打出结算：`BurnEtherealPatch$ExhaustInsteadOfDiscard` 在 `UseCardAction` 构造器后缀里为「灼伤且带虚无」的牌写入 `exhaustCard`，于是这次打出把它送进消耗堆而不是弃牌堆。删除原 `DamageBeforeExhaust`：该后缀挂在 `triggerOnEndOfPlayerTurn` 上，而被自动打出的灼伤此时已离开手牌，钩子不会执行，留着只会误导。
+- 欧米伽奖励：点开删牌界面时隐藏奖励界面横幅（`CombatRewardScreen` 的随机横幅，例如「好好搜刮！」）。原版在网格界面之上仍绘制该横幅、会盖住删牌界面；取消或确认后奖励界面重开时，原版 `reopen()` 会重新显示横幅。
+- 规范：`AGENTS.md` 新增每次改动收尾要求——检查 `ART_ASSETS.md`，新增/改名/删除卡牌、能力或可替换图标时同步对应表格。
+- 测试：`PatchContractTest.omegaBurnStrikeRegression` 改为校验灼伤补丁挂在 `UseCardAction` 构造器上且写入 `exhaustCard`，并校验欧米伽奖励 `claimReward` 调用 `hide`。
+
+验证：JDK 8 执行 `..\scripts\build.cmd` 通过（`mvn -B clean package`：296 个源文件、145 个补丁目标；`PatchContractTest` 与 `verify.ps1 -CheckJar` 均通过，147 唯一替换）。
+
+仍需游戏内验收：灼伤本身无虚无、被「切割」加上虚无后先伤害再消耗（不进弃牌堆）；点开欧米伽奖励时横幅消失、取消后奖励界面横幅恢复。
+
+## 反馈修复：护身动画、灼伤虚无、欧米伽奖励、贝塔时序、超光速动画与图标缩放
+
+- 护身：新增 `patches/SmoothReturnToHandPatch`，`CardGroup.moveToHand(AbstractCard)` 前后置补丁保留打出动画结束时卡牌的位置与缩放，回手变为从出牌位置直接滑回手牌，不再瞬移到抽牌堆角落再折返。
+- 灼伤：补全上一轮遗漏——灼伤现在**带有虚无**。`BurnEtherealPatch$Ethereal` 在 `AbstractCard.initializeDescription` 前缀为每张灼伤打上 `EtherealMark`（升级后重建文本也不会丢词条）；原有 `DamageBeforeExhaust` 保持先伤害后消耗。
+- 欧米伽奖励：拾起后奖励**不消失**，仅当真正选择移除一张牌后才从奖励界面消失（取消返回时仍可再次点击）。奖励图标改为 `anotherspirerework/images/omega_reward.png`（64×64，由你提供；缺失时回退欧米伽卡图）。奖励文案与删牌界面横幅统一为「选择一张牌移除 / Choose a Card to Remove」。
+- 贝塔：`BetaPower` 从 `onPlayCard` 改为 `onAfterUseCard`，抽牌结算在打出的无色牌结算之后，与黑暗之拥/猛虎下山同类时机。
+- 超越光速：`ExhaustHandStatusesAction` 改为逐张 `ExhaustSpecificCardAction`（重振精神式动画），全部消耗完后再获得能量与抽牌。
+- 能力图标缩放：`PowerArtLoaderPatch` 支持只提供 `<名字>_128.png`，自动缩放生成 48px 状态栏图标；仍可分别提供两档。
+- 新增 `ART_ASSETS.md`：列出全部 147 张可替换卡图与 28 个能力图标的文件名、尺寸与目录，以及欧米伽奖励图标路径。
+
+验证：JDK 8 执行 `../scripts/build.cmd` 通过（`mvn -B clean package`：146 个补丁目标；`PatchContractTest` 新增灼伤虚无词条、护身回手补丁、贝塔 `onAfterUseCard` 契约检查；`verify.ps1 -CheckJar` 通过，147 唯一替换）。
+
+仍需游戏内验收：护身回手动画、灼伤带虚无先伤害后消耗、欧米伽奖励取消后保留/确认后消失、贝塔抽牌时机、超光速逐张消耗动画、128 图自动缩放效果。
+
+## 观者/无色/蓝/红/绿 卡牌扩充与灼伤、完美打击机制
+
+### 新增替换卡牌（替换表 136 → 147）
+
+- 观者：护身（`Protect`，普通→罕见，2 费，12（16）格挡，打出后回到手牌）；斩破命运（`CutThroughFate`，1 费，9（10）伤害、预见 3（4）、抽 1）；停顿（`Halt`，0 费，5（8）格挡，愤怒：抽 1）；化拳为空（`EmptyFist`，1 费，12（16）伤害并退出姿态）；阿尔法（`Alpha`，技能→能力，1（0）费，将贝塔放入抽牌堆；回合结束从弃牌堆选牌入手并保留）。
+- 无色：贝塔（`Beta`，技能→能力，2（1）费，将欧米伽放入抽牌堆；每打出一张无色牌抽 1）；欧米伽（`Omega`，3（2）费，本场战斗结束时可从牌组移除一张牌）。
+- 蓝：愁云惨淡（`Doom and Gloom`，攻击→技能，2 费，12（15）格挡并生成黑暗充能球）；超越光速（`FTL`，攻击→技能，1 费，消耗手中所有状态牌，每消耗一张获得 [E] 并抽 1（2）张）。
+- 红：自燃（`Combust`，1 费能力，回合结束失去 1 点生命；每当你失去生命时对所有敌人造成 5（7）点伤害；图标显示总伤害，描述显示叠加后的生命损失与总伤害）。
+- 绿：铁蒺藜（`Caltrops`，罕见→稀有，3 费奇巧能力，获得 1（2）点敏捷；每当你被攻击时对攻击者造成 4（6）点伤害）。
+
+### 修改已有替换卡牌
+
+- 狂野打击：1 费 12（17）+ 伤口 → 2 费 18（22），改为消耗一张随机手牌。
+- 评估：8（11）格挡 + 洞见 → 预见 3（4）+ 洞见。
+- 致残毒云：稀有回调为罕见；3 费奇巧，给予所有敌人 4（6）层中毒，不再虚弱与消耗。
+
+### 稀有度单独调整
+
+- 结末（`Conclude`）：罕见 → 普通，`CardRarityPatch` 新增补丁，不占替换数。
+
+### 机制补丁
+
+- 灼伤·虚无顺序：新增 `patches/BurnEtherealPatch`，`AbstractCard.triggerOnEndOfPlayerTurn` 后置补丁在虚无消耗动作之上插入灼伤伤害动作，保证先伤害后消耗。
+- 完美打击：新增 `patches/PerfectedStrikePatch`，`PerfectedStrike.countCards` 后置补丁把消耗堆中的「打击」计入伤害；卡面文案不变，不占替换数。
+
+### 欧米伽奖励界面
+
+- 新增 `patches/OmegaRewardTypePatch`（`@SpireEnum` 奖励类型）与 `rewards/OmegaRemovalReward`（`CustomReward`）：每打出一张欧米伽，`powers/OmegaRemovalPower` 计数，主类 `receivePostBattle` 在战后奖励界面加入对应数量的欧米伽奖励；拾起后打开与商店相同的删牌界面（可取消），确认后经 `receivePostDungeonUpdate` 逐帧应用移除（`PurgeCardEffect` + `masterDeck.removeCard`）。
+- `receivePostInitialize` 注册 `BaseMod.registerCustomReward` 以支持读档。
+
+### 实现与验证
+
+- 新增 3 个动作（`ExhaustHandStatusesAction`、`ExhaustRandomHandCardAction`、`AlphaDiscardToHandAction`）与 4 个能力（`CombustPower`、`AlphaPower`、`BetaPower`、`OmegaRemovalPower`）；阿尔法弃牌选牌沿用原版弃牌选牌流程并加保留。
+- 同步中英 CardStrings/PowerStrings/UIStrings、README 中英表格与数量、`verify.ps1` 断言（147 唯一替换）。
+- `PatchContractTest` 增加 `omegaBurnStrikeRegression`：灼伤补丁目标、完美打击补丁目标、欧米伽奖励接线。
+- JDK 8 执行 `../scripts/build.cmd` 通过（`mvn -B clean package`：295 个源文件，144 个补丁目标；两个 antrun 测试入口与 `verify.ps1 -CheckJar` 全部通过，147 唯一替换）。
+
+仍需游戏内验收：灼伤带虚无时先伤害后消耗；完美打击计入消耗堆「打击」；欧米伽奖励出现、拾起、取消与读档；阿尔法回合结束选牌与保留；奇巧铁蒺藜/致残毒云丢弃触发；自燃多叠加的伤害与描述；护身回手；超越光速状态牌计数。
+
 ## 修复：奇巧触发终结技及同类历史计数效果
 
 - 终结技的原版伤害动作默认当前牌已计入本回合出牌历史，会无条件少算一次攻击。奇巧只调用 `use()`，此前未计入自身，导致本回合打过一张攻击牌时零段伤害、更多时少一段。
@@ -1180,8 +1288,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 - 位置：`src/main/resources/anotherspirerework/images/powers/`。
 - 尺寸：`<名字>_48.png`（48×48，buff 栏小图标）、`<名字>_128.png`（128×128，获得/触发时的放大闪光）；
-  两者互不影响，可只给一个。尺寸必须与后缀一致（游戏按固定倍率绘制）。
-- 文件名：能力 ID 去掉 `anotherspirerework:` 前缀（如 `Nirvana_48.png`），或能力类名（`NirvanaCounterPower_48.png`）。
+  **只给 128 即可**，48 由 128 自动缩放生成；也可分别提供两档。
+- 文件名：能力 ID 去掉 `anotherspirerework:` 前缀（如 `Nirvana_128.png`），或能力类名（`NirvanaCounterPower_128.png`）。
+- 完整清单见根目录 `ART_ASSETS.md`（含全部卡图可替换文件名）。
 
 ### 本地化
 
@@ -1238,8 +1347,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
   普通 `ShuffleAction`（深呼吸）不接，避免同一次洗牌触发两次；`ShuffleAction` 只在上面的尾段流程里被认。
 - **界面保护（只改时机，不取消效果）**：浏览牌堆/地图/单卡界面期间，洗牌触发、医药箱·蓝蜡烛的抽牌处理、
   勺子·星系仪选牌都推迟到界面关闭后执行。
+- **选牌界面清理**：共享的 `GridCardSelectScreen.selectedCards` 由两个钩子看住。`ChooseDeckCardsEffect$SettleOnClose`
+  给 `AbstractDungeon.closeCurrentScreen()` 加前缀：网格关闭**之前**就结算并清空选牌，覆盖层的取消/离开按钮、
+  设置退出、重启 mod 都不会把这份选牌留给下一帧的房间更新（商店 `updatePurge()` 会把它当删牌服务）。
+  `patches.AbandonedPickPatch` 在 `AbstractDungeon.reset()`（退出本局时执行，含「保存并退出」）后置清空该列表并
+  `ChooseDeckCardsEffect.forget()`，兜住不经过 `closeCurrentScreen` 的整局清理。选牌打开时还会隐藏覆盖层取消按钮，
+  并且不会开在已打开的网格/设置/手牌选牌界面之上（`busyScreen()`）。
 - **商店遗物降价**：`ShopPricePatch` 在 `StoreRelic` 构造完成后按遗物自身品级改写价格——罕见 −50、稀有 −100
   （原版 250 / 300 → 200 / 200）。只动商店货架，不影响宝箱与奖励。
+- **灼伤·虚无**：`cards/status/Burn` 本身不改，保持原版（无虚无、回合结束受伤后进弃牌堆）。被 `util.EtherealMark`
+  加上虚无后，回合结束仍走原版自动打出（`Burn.triggerOnEndOfTurnForPlayingCard` 入队 → `use()` 结算伤害），
+  只是 `patches.BurnEtherealPatch$ExhaustInsteadOfDiscard` 在 `UseCardAction` 构造器后缀里把这张牌标成消耗，
+  于是这次打出把它送进消耗堆而不是弃牌堆。不要在 `triggerOnEndOfPlayerTurn` 上补伤害：自动打出发生在
+  `callEndOfTurnActions`，早于 `DiscardAtEndOfTurnAction`，那时牌已不在手牌，钩子不会执行。
+- **欧米伽奖励**：`rewards.OmegaRemovalReward` 拾起后打开与商店相同的删牌网格，打开时调用
+  `AbstractDungeon.dynamicBanner.hide()`——奖励界面的随机横幅（「好好搜刮！」等）原版会画在网格之上；
+  取消或确认后奖励界面 `reopen()` 会重新显示横幅。
 
 ### 主类与辅助类
 
@@ -1285,9 +1408,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 | `tick()` | 每帧兜底（由 `receivePostDungeonUpdate` 调用），处理"抽牌先结束、动画还没播完"的路径 |
 | `flush(AbstractGameAction)` | 包级；三步洗牌流程结束、动画结束且无界面时触发，并把被中断抽牌的剩余张数放回队首 |
 
-选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、`exhaustChoices()`、
-`enum Choice { REMOVE_EXHAUST, ADD_TO_DECK, ADD_ANY_COLOR }`。它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：
-`GameActionManager.addToBottom` 只在战斗房间接收动作，商店/宝箱拾取时会被直接丢弃。勺子分支只列带消耗的牌，且列出的
+选牌界面 `effects.ChooseDeckCardsEffect`：`start(Choice, String message, int maxCards)`、`browsingCards()`、
+`busyScreen()`、`settle()`、`exhaustChoices()`、`forget()`、`enum Choice { REMOVE_EXHAUST, ADD_TO_DECK, ADD_ANY_COLOR }`。
+它挂在 `AbstractDungeon.effectList` 而**不是**战斗 Action：`GameActionManager.addToBottom` 只在战斗房间接收动作，
+商店/宝箱拾取时会被直接丢弃。选牌一关闭就由 `SettleOnClose`（`AbstractDungeon.closeCurrentScreen` 前缀）结算并清空
+共享的 `selectedCards`，不把这份选牌留给下一帧的 `ShopRoom.updatePurge()`/`ShopScreen.updatePurge()`；`busyScreen()`
+让它不覆盖已打开的网格/设置/手牌选牌界面，打开时还会隐藏覆盖层取消按钮。勺子分支只列带消耗的牌，且列出的
 是永久牌组里的原对象而不是副本。
 
 饱和算术 `util.SaturatingMath`：`fromLong(long)`、`add(int,int)`、`subtract(int,int)`、`multiply(int,int)`。
@@ -1297,7 +1423,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
 
 能力图标 `patches.PowerArtLoaderPatch`：`fileId(String powerId)`（去掉 `anotherspirerework:` 前缀）、
 `candidateNames(String powerId, String className)`、`owns(String className)`（只认 `anotherspirerework.powers.*`）、
-`load(String name, int size)`：按 `<名字>_48` / `_128` 找图。
+`load(String name, int size)`：按 `<名字>_48` / `_128` 找图；48 缺失时由 128 经 `scaledDown48` 缩放生成。
 
 供其它补丁复用的静态助手：
 
@@ -1400,10 +1526,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -CheckJar
    缺了就取不到本地化文本。
 3. **新增/修改卡牌必须同步双语**：`localization/eng|zhs/CardStrings.json` 用 `anotherspirerework:<原版ID>` 键；
    中英键集合必须一一对应，`!D!`/`!M!`/`[E]` 等词元序列必须完全一致（大小写敏感）。遗物同理走 `RelicStrings.json`。
-4. **替换表必须仍是 136 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
+4. **替换表必须仍是 147 个唯一卡牌实例**（`CardSwapPatch.replacements()`）与 **45 个唯一遗物实例**
    （`RelicSwapPatch.replacements()`）；增删后同步更新 `verify.ps1` 的断言和本文数量。
 5. **卡图只能是 250×190 或 500×380**，文件名用卡 ID 去空格或原版图片名；能力图标放 `images/powers/`，
-   必须是 48×48（`_48`）或 128×128（`_128`）的正方形；拼错目录/文件名会被 `verify.ps1` 警告。
+   只给 128×128（`_128`）会自动生成 48×48，也可两档都放；拼错目录/文件名会被 `verify.ps1` 警告。
+   完整可替换清单见根目录 `ART_ASSETS.md`。
 6. **遗物与卡牌同一范式：一件遗物一个类。** 在 `relics/<名称>.java` 继承原版遗物类，只覆写要改的钩子；
    **未覆写的原版钩子就是继承的**，所以不要再写包装类。原版类自己覆写 `updateDescription()` 的遗物，
    子类必须一并覆写，否则读档时会被原版文案覆盖。

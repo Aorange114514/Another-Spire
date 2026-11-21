@@ -16,11 +16,11 @@ verification and maintenance rules, see
 ## Contents
 
 - [1. Card changes](#cards)
-  - [Ironclad (24)](#ironclad)
-  - [Silent (37)](#silent)
-  - [Defect (28)](#defect)
-  - [Watcher (30)](#watcher)
-  - [Colorless (17 replacements + Bite)](#colorless)
+  - [Ironclad (26)](#ironclad)
+  - [Silent (38)](#silent)
+  - [Defect (30)](#defect)
+  - [Watcher (35)](#watcher)
+  - [Colorless (19 replacements + Bite)](#colorless)
 - [2. Relic changes](#relics)
   - [The 27 relics that do not go to Act 4 (the Heart floor)](#no-act4)
 - [3. Other mechanics changes](#mechanics)
@@ -30,18 +30,18 @@ verification and maintenance rules, see
 
 ## 1. Card changes
 
-- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) replaces **136 cards** in total, all keeping their vanilla cardIDs and vanilla image paths.
-- Bite (`Bite`) does not go through the card pool; it is patched separately by [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) and is not counted among the 136.
+- [CardSwapPatch.replacements()](src/main/java/anotherspirerework/patches/CardSwapPatch.java) replaces **147 cards** in total, all keeping their vanilla cardIDs and vanilla image paths.
+- Bite (`Bite`) does not go through the card pool; it is patched separately by [BitePatch](src/main/java/anotherspirerework/patches/BitePatch.java) and is not counted among the 147.
 - Costs are written as "base (upgraded)"; numbers in parentheses in the effect column are the upgraded values. ⚠ marks a change of card type or rarity.
 
 <a id="ironclad" name="ironclad"></a>
 
-### Ironclad (24)
+### Ironclad (26)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
 | Clash | `Clash` | 0 | Deal 10 (14) damage; damage is lowered by 2 for each non-Attack card in your hand |
-| Wild Strike | `Wild Strike` | 1 | Deal 12 (17) damage; put a Wound into your discard pile |
+| Wild Strike | `Wild Strike` | 2 | Deal 18 (22) damage; Exhaust a random card in your hand |
 | Heavy Blade ⚠Common→Uncommon | `Heavy Blade` | 2 | Deal 15 (20) damage; Strength counts 5 (7) times on Heavy Blade |
 | Clothesline | `Clothesline` | 2 | Deal 14 (18) damage; apply 3 Weak |
 | Iron Wave ⚠Common→Uncommon | `Iron Wave` | 0 | Deal 3 (5) damage; gain Block equal to the damage dealt |
@@ -64,10 +64,14 @@ verification and maintenance rules, see
 | Seeing Red | `Seeing Red` | 1 (0) | If you have Exhausted a card this turn, gain [E][E][E] |
 | Infernal Blade | `Infernal Blade` | 1 (0) | Choose 1 of 3 random Attack cards to add to your hand; it costs 0 this turn; Exhaust |
 | Demon Form | `Demon Form` | 3 | Ethereal; deal 1 additional damage to enemies for each card in your exhaust pile (Ethereal removed when upgraded) |
+| Combust | `Combust` | 1 | At the end of your turn, lose 1 HP; whenever you lose HP, deal 5 (7) damage to ALL enemies; the buff icon shows the total damage |
+| Perfected Strike | `Perfected Strike` | 2 | Deal 6 damage; deal +2 (3) additional damage for each card named Strike you have; Strikes in your exhaust pile also count |
+
+> Perfected Strike's exhaust-pile count is implemented by a patch and does not count toward the replacement total.
 
 <a id="silent" name="silent"></a>
 
-### Silent (37)
+### Silent (38)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
@@ -83,7 +87,7 @@ verification and maintenance rules, see
 | A Thousand Cuts | `A Thousand Cuts` | 1 | Whenever you play a card, deal 1 (2) damage to ALL enemies |
 | Unload ⚠Rare→Uncommon, Attack→Power | `Unload` | 1 | Shivs gain Retain; the first Shiv you play each turn deals +9 (12) damage |
 | Masterful Stab ⚠Attack→Skill | `Masterful Stab` | 0 | Discard up to 3 cards; for each card discarded, add a Shiv+ to your hand |
-| Crippling Cloud ⚠Uncommon→Rare | `Crippling Poison` | 3 (2) | Apply 12 Poison and 3 Weak to ALL enemies; Exhaust |
+| Crippling Cloud ⚠Rare→Uncommon | `Crippling Poison` | 3 | Sly; apply 4 (6) Poison to ALL enemies |
 | Expertise | `Expertise` | 1 | Draw cards until you have 7 (8) cards in your hand; discard 1 card |
 | Storm of Steel | `Storm of Steel` | 2 (1) | Play a copy of every Shiv in your exhaust pile against an enemy |
 | After Image | `After Image` | 1 | Whenever you play a card, gain 1 (2) Block |
@@ -108,16 +112,19 @@ verification and maintenance rules, see
 | Blur | `Blur` | 1 (0) | After you play this card, gain 1 Block whenever you draw 1 card this turn |
 | Bouncing Flask | `Bouncing Flask` | X | Apply 6 Poison to random enemies X (X+1) times |
 | Skewer | `Skewer` | X | Deal 9 (12) damage X times |
+| Caltrops ⚠Uncommon→Rare | `Caltrops` | 3 | Sly; gain 1 (2) Dexterity; whenever you are attacked, deal 4 (6) damage to the attacker |
 
 Rarity-only changes (effect and text untouched, so they are not card replacements): All-Out Attack (`All Out Attack`), Dash (`Dash`) and Endless Agony (`Endless Agony`) are now Common.
 
 <a id="defect" name="defect"></a>
 
-### Defect (28)
+### Defect (30)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
 | Quadcast (reworked from Dualcast) | `Dualcast` | 1 (0) | Evoke your rightmost Orb 4 times |
+| Doom and Gloom ⚠Attack→Skill | `Doom and Gloom` | 2 | Gain 12 (15) Block; Channel 1 Dark |
+| FTL ⚠Attack→Skill | `FTL` | 1 | Exhaust all Status cards in your hand; for each card Exhausted, gain [E] and draw 1 (2) cards |
 | Rebound | `Rebound` | 1 | Deal 3 (5) damage; Channel a copy of the last Orb you Channeled this combat |
 | Barrage | `Barrage` | 1 | Deal 5 (8) damage for each Orb you have |
 | Sweeping Beam | `Sweeping Beam` | 1 | Deal 10 (14) damage to ALL enemies; draw 1 (2) cards; put a Slimed into your discard pile |
@@ -148,7 +155,7 @@ Rarity-only changes (effect and text untouched, so they are not card replacement
 
 <a id="watcher" name="watcher"></a>
 
-### Watcher (30)
+### Watcher (35)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
@@ -171,8 +178,13 @@ Rarity-only changes (effect and text untouched, so they are not card replacement
 | Wheel Kick | `WheelKick` | 2 | Deal 15 (20) damage; draw 2 cards; the next Skill you play costs 0 |
 | Just Lucky | `JustLucky` | 0 | Scry 1; gain 2 Block; deal 3 damage (draw 1 card) |
 | Flying Sleeves | `FlyingSleeves` | 1 | Retain; deal 2 damage 4 (5) times |
+| Protect ⚠Common→Uncommon | `Protect` | 2 | Gain 12 (16) Block; return this card to your hand |
+| Cut Through Fate | `CutThroughFate` | 1 | Deal 9 (10) damage; Scry 3 (4); draw 1 card |
+| Halt | `Halt` | 0 | Gain 5 (8) Block; Wrath: draw 1 card |
+| Empty Fist | `EmptyFist` | 1 | Deal 12 (16) damage; exit your current Stance |
+| Alpha ⚠Skill→Power | `Alpha` | 1 (0) | Put a Beta into your draw pile; at the end of your turn, choose a card from your discard pile, put it into your hand and it gains Retain |
 | Sash Whip | `SashWhip` | 0 | Deal 4 (5) damage; Calm: apply 1 (2) Weak |
-| Evaluate | `Evaluate` | 1 | Gain 8 (11) Block; add an Insight to your draw pile |
+| Evaluate | `Evaluate` | 1 | Scry 3 (4); add an Insight to your draw pile |
 | Nirvana | `Nirvana` | 1 | When the number of cards played this turn reaches 5, draw 2 cards per stack at the start of the next turn (Innate when upgraded). |
 | Spirit Shield ⚠Skill→Power | `SpiritShield` | 2 (1) | While in Calm, attack damage you take from monsters is halved (multiple stacks combine as 1/2ⁿ) |
 | Empty Body ⚠Common→Uncommon, Skill→Power | `EmptyBody` | 1 | At the end of your turn, leave your current Stance and gain 7 (9) Block |
@@ -183,12 +195,16 @@ Rarity-only changes (effect and text untouched, so they are not card replacement
 | Reach Heaven | `ReachHeaven` | 3 | Deal 15 (20) damage; if this card kills the enemy, enter Divinity |
 | Wave of the Hand | `WaveOfTheHand` | 1 (0) | This turn, whenever you change Stance, apply 2 Weak to ALL enemies; Exhaust |
 
+Rarity-only changes (effect and text untouched, so they are not card replacements): Conclude (`Conclude`) is now Common.
+
 <a id="colorless" name="colorless"></a>
 
-### Colorless (17 replacements + Bite)
+### Colorless (19 replacements + Bite)
 
 | Card | Vanilla ID | Cost | Effect (upgraded) |
 |---|---|---|---|
+| Beta ⚠Skill→Power | `Beta` | 2 (1) | Put an Omega into your draw pile; whenever you play a Colorless card, draw 1 card |
+| Omega | `Omega` | 3 (2) | At the end of this combat, you may remove a card from your deck |
 | Purity | `Purity` | 0 | Retain; Exhaust up to 3 (5) cards from your hand; this card still Exhausts when played |
 | Mayhem | `Mayhem` | 1 (0) | Every time you draw 10 cards, gain [E] |
 | Thinking Ahead | `Thinking Ahead` | 0 | Draw 2 (3) cards, then put a card from your hand on top of your draw pile; Exhaust |
@@ -286,6 +302,9 @@ Peace Pipe, The Specimen, Wing Boots, Prayer Wheel, Shovel.
 - **Shiv card text**: while Unload is up, a Shiv gains a leading "Retain." line; while Die Die Die is up, its damage line reads "Deal n damage to ALL enemies."; both show when both are up, and the vanilla text returns without them.
 - **Die Die Die resolves at once**: a Shiv now deals its damage to ALL enemies in one simultaneous hit (the way Cleave does) while keeping the Shiv's own attack effect; Envenom and Glass Knife still pay out per enemy.
 - **Vanilla bug fix (Indignation + Mental Fortress)**: Indignation's Stance change into Wrath was originally ordered after card resolution, so the Corrupt Heart's Beat of Death resolved before Mental Fortress's Block; now the Stance change resolves immediately like Tantrum, gaining Block first and then resolving Beat of Death.
+- **Burn + Ethereal**: Burn itself stays vanilla and carries no Ethereal. Once Slice or another effect makes it Ethereal, it still deals its damage first at the end of the turn and is then Exhausted instead of going to the discard pile.
+- **Omega reward**: each Omega played adds one Omega reward to the reward screen after combat (icon `images/omega_reward.png`, 64x64, supplied by you); claiming it opens the shop's card removal screen (cancellable), and the reward disappears only after a card is really removed.
+- **Replaceable art**: see [ART_ASSETS.md](ART_ASSETS.md) for every replaceable card image and power icon.
 
 ---
 

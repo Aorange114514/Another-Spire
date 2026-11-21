@@ -20,8 +20,8 @@ foreach ($type in @('CardStrings', 'PowerStrings', 'RelicStrings', 'UIStrings'))
 }
 $patch = Get-Content (Join-Path $project 'src\main\java\anotherspirerework\patches\CardSwapPatch.java') -Raw
 $list = @([regex]::Matches($patch, 'new (\w+)\(\)') | ForEach-Object {$_.Groups[1].Value})
-Assert ($list.Count -eq 136) 'Expected 136 replacements'
-Assert (@($list | Select-Object -Unique).Count -eq 136) 'Duplicate replacement'
+Assert ($list.Count -eq 147) 'Expected 147 replacements'
+Assert (@($list | Select-Object -Unique).Count -eq 147) 'Duplicate replacement'
 $cards = Json (Join-Path $root 'eng\CardStrings.json')
 $zhCards = Json (Join-Path $root 'zhs\CardStrings.json')
 foreach ($langCards in @($cards, $zhCards)) {
@@ -156,7 +156,8 @@ foreach ($cardSource in Get-ChildItem (Join-Path $project 'src\main\java\another
     }
 }
 foreach ($image in Get-ChildItem $artRoot -Recurse -Filter '*.png') {
-    if ($image.BaseName -in @('badge', 'missing')) { continue }
+    # Not card faces: the badge/missing fallbacks and the 64x64 Omega reward icon (ART_ASSETS.md).
+    if ($image.BaseName -in @('badge', 'missing', 'omega_reward')) { continue }
     # Power icons live in their own sub folder and have their own size rules below.
     if ($image.DirectoryName -like '*\powers') { continue }
     $bitmap = [System.Drawing.Image]::FromFile($image.FullName)
@@ -215,4 +216,4 @@ if ($CheckJar) {
         }
     } finally { $jar.Dispose() }
 }
-Write-Output 'PASS: JSON, bilingual fields/tokens, 136 unique replacements, localization coverage, source references and requested JAR checks.'
+Write-Output 'PASS: JSON, bilingual fields/tokens, 147 unique replacements, localization coverage, source references and requested JAR checks.'

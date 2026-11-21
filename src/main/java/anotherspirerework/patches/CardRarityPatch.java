@@ -6,9 +6,10 @@ import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.green.AllOutAttack;
 import com.megacrit.cardcrawl.cards.green.Dash;
 import com.megacrit.cardcrawl.cards.green.EndlessAgony;
+import com.megacrit.cardcrawl.cards.purple.Conclude;
 
 /**
- * Rarity-only reworks: these three keep their vanilla effect and only move to Common. Every pool,
+ * Rarity-only reworks: these keep their vanilla effect and only move rarity. Every pool,
  * shop price and compendium entry reads the prototype's rarity field, so setting it when the card
  * is constructed is the whole change; they are not in CardSwapPatch because nothing else moves.
  */
@@ -37,6 +38,14 @@ public class CardRarityPatch {
     public static class EndlessAgonyRarity {
         @SpirePostfixPatch
         public static void after(EndlessAgony __instance) {
+            makeCommon(__instance);
+        }
+    }
+
+    @SpirePatch(clz = Conclude.class, method = SpirePatch.CONSTRUCTOR)
+    public static class ConcludeRarity {
+        @SpirePostfixPatch
+        public static void after(Conclude __instance) {
             makeCommon(__instance);
         }
     }

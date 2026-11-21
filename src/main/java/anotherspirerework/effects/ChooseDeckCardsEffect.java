@@ -4,6 +4,8 @@ import anotherspirerework.relics.Astrolabe;
 import anotherspirerework.relics.StrangeSpoon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.CardGroup;
 import com.megacrit.cardcrawl.core.Settings;
@@ -25,7 +27,12 @@ import java.util.Set;
  * {@code AbstractDungeon.effectList} update in every room.
  *
  * <p>The grid select is opened in the base game's "any number" mode, so confirming with nothing
- * selected just closes it. The choice is applied only once the screen is really gone.
+ * selected just closes it. The choice is applied the moment the screen goes, not a frame later:
+ * {@code GridCardSelectScreen.selectedCards} is shared with everything else that reads the grid,
+ * and the shop's own card removal reads it at the start of the next frame. The main game closes a
+ * grid from two places - the grid's confirm button (inside the GRID update) and the cancel/leave
+ * button on the overlay (after the effect list has already run) - and only the first one happens
+ * before the picker would get to see the closed screen.
  */
 public class ChooseDeckCardsEffect extends AbstractGameEffect {
 
@@ -41,11 +48,17 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
 
     private static final float OPEN_DELAY = 0.4F;
 
+    /** The picker whose grid is on screen, so the close hook can apply that one. */
+    private static ChooseDeckCardsEffect showing;
+
     private final Choice choice;
     private final String message;
     private final int maxCards;
     private float delay = OPEN_DELAY;
     private boolean opened;
+
+    /** The group this picker put on the grid; the close hook uses it to tell its own grid apart. */
+    private CardGroup shownGroup;
 
     public ChooseDeckCardsEffect(Choice choice, String message, int maxCards) {
         this.choice = choice;
@@ -57,6 +70,11 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
     /** Queues the picker; it opens once the relic's own feedback has played. */
     public static void start(Choice choice, String message, int maxCards) {
         AbstractDungeon.effectList.add(new ChooseDeckCardsEffect(choice, message, maxCards));
+    }
+
+    /** Forgets a picker whose run is gone. Called by {@code AbandonedPickPatch}. */
+    public static void forget() {
+        showing = null;
     }
 
     @Override
@@ -72,6 +90,13 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
             return;
         }
         if (!this.opened) {
+            // Never take over a grid that is already open (the shop's card removal, a campfire
+            // upgrade, another picker): that grid's own reader is still waiting for it. Its
+            // previousScreen would also be inherited, and closing this grid would reopen that
+            // screen while the pick is still in the shared list.
+            if (busyScreen()) {
+                return;
+            }
             this.delay -= Gdx.graphics.getDeltaTime();
             if (this.delay > 0.0F) {
                 return;
@@ -82,22 +107,22 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
                 return;
             }
             this.opened = true;
+            this.shownGroup = group;
+            showing = this;
             AbstractDungeon.gridSelectScreen.open(group, this.maxCards, true, this.message);
+            // The overlay keeps whatever cancel button the previous screen had: in a shop that is
+            // its "leave" button, which would close the grid (and the shop's removal service would
+            // then read this pick as its own). "Up to N" includes N = 0, so there is nothing to
+            // cancel here.
+            if (AbstractDungeon.overlayMenu != null) {
+                AbstractDungeon.overlayMenu.cancelButton.hide();
+            }
             return;
         }
-        // The pick is over only once the screen is really gone. The map and the deck view can be
-        // opened on top of the grid select - the base game sets previousScreen and restores the
-        // grid afterwards - so a check that only looks for GRID ends the pick during that detour:
-        // the cards picked so far are added to the deck right away and the still open screen is
-        // left without anything to apply when the player finally confirms.
         if (AbstractDungeon.isScreenUp) {
             return;
         }
-        for (AbstractCard card : new ArrayList<>(AbstractDungeon.gridSelectScreen.selectedCards)) {
-            apply(card);
-        }
-        AbstractDungeon.gridSelectScreen.selectedCards.clear();
-        this.isDone = true;
+        settle();
     }
 
     /**
@@ -119,6 +144,22 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
             case DISCARD_VIEW:
             case EXHAUST_VIEW:
             case MAP:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Screens this picker must not open on top of. The reward, shop and boss relic screens are not
+     * in here on purpose: the relic is picked up there, so that is exactly where it has to show.
+     */
+    private static boolean busyScreen() {
+        switch (AbstractDungeon.screen) {
+            case GRID:
+            case SETTINGS:
+            case INPUT_SETTINGS:
+            case HAND_SELECT:
                 return true;
             default:
                 return false;
@@ -153,6 +194,34 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
         return group;
     }
 
+    /**
+     * Applies the pick and clears the shared selection. Runs the moment the grid closes - the close
+     * hook calls it for every way the grid can go away, and {@link #update()} calls it as well for
+     * a close that never passed through {@code AbstractDungeon.closeCurrentScreen}.
+     */
+    void settle() {
+        if (this.isDone) {
+            return;
+        }
+        // Another screen took the grid over; its selection is not this pick.
+        if (AbstractDungeon.gridSelectScreen.targetGroup != this.shownGroup) {
+            finish();
+            return;
+        }
+        for (AbstractCard card : new ArrayList<>(AbstractDungeon.gridSelectScreen.selectedCards)) {
+            apply(card);
+        }
+        AbstractDungeon.gridSelectScreen.selectedCards.clear();
+        finish();
+    }
+
+    private void finish() {
+        this.isDone = true;
+        if (showing == this) {
+            showing = null;
+        }
+    }
+
     private void apply(AbstractCard card) {
         // Selected cards are left glowing by the grid select - one of the base game's own branches
         // stops it, the "any number" one this picker uses does not - and a card that keeps that
@@ -166,6 +235,25 @@ public class ChooseDeckCardsEffect extends AbstractGameEffect {
                     card, Settings.WIDTH / 2.0F, Settings.HEIGHT / 2.0F));
         } else {
             StrangeSpoon.mark(card);
+        }
+    }
+
+    /**
+     * The grid can also be closed from outside itself: the overlay's cancel/leave button, the
+     * settings exit, a room restart mod. Those close it after the effect list has already run, so
+     * waiting for the next frame leaves the pick in the shared selection for the room's own update -
+     * a shop reads it there as its card removal and deletes the picked cards. Applying the pick
+     * before the original close runs means no reader can ever see it.
+     */
+    @SpirePatch(clz = AbstractDungeon.class, method = "closeCurrentScreen")
+    public static class SettleOnClose {
+        @SpirePrefixPatch
+        public static void before() {
+            ChooseDeckCardsEffect pick = showing;
+            if (pick == null || AbstractDungeon.screen != AbstractDungeon.CurrentScreen.GRID) {
+                return;
+            }
+            pick.settle();
         }
     }
 

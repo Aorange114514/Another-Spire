@@ -1,8 +1,14 @@
 {
   "${modID}:Lift Option": {
-    "TEXT": ["Start battles with +1 Strength and +1 Dexterity. (Up to 5)"]
+    "TEXT": ["Start battles with +1 Strength and +1 Dexterity. (Up to 5 times)"]
   },
   "${modID}:DeckToHand": {
-    "TEXT": ["Choose ", " cards.", " card."]
+    "TEXT": ["Choose ", " Cards from Your Draw Pile to Add to Your Hand.", " Card from Your Draw Pile to Add to Your Hand."]
+  },
+  "${modID}:OmegaRemoval": {
+    "TEXT": ["Choose a Card to Remove", "Choose a Card to Remove."]
+  },
+  "${modID}:AlphaDiscard": {
+    "TEXT": ["Choose a Card to Put into Your Hand and Retain.", "Choose ", " Cards to Put into Your Hand and Retain."]
   }
 }

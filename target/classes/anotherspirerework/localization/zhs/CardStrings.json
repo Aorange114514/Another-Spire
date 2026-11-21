@@ -9,7 +9,7 @@
   },
   "anotherspirerework:Wild Strike": {
     "NAME": "狂野打击",
-    "DESCRIPTION": "造成 !D! 点伤害。 NL 将一张 *伤口 放入你的弃牌堆中。"
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 消耗 一张随机手牌。"
   },
   "anotherspirerework:Heavy Blade": {
     "NAME": "重刃",
@@ -313,7 +313,7 @@
   },
   "anotherspirerework:Crippling Poison": {
     "NAME": "致残毒云",
-    "DESCRIPTION": "给予所有敌人 !M! 层 中毒 和 5 层 虚弱 。 NL 消耗 。"
+    "DESCRIPTION": "奇巧 。 NL 给予所有敌人 !M! 层 中毒 。"
   },
   "anotherspirerework:Expertise": {
     "NAME": "独门技术",
@@ -492,7 +492,7 @@
   },
   "anotherspirerework:Evaluate": {
     "NAME": "评估",
-    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 在你的抽牌堆中加入一张 *洞见 。"
+    "DESCRIPTION": "预见 !M! 。 NL 在你的抽牌堆中加入一张 *洞见 。"
   },
   "anotherspirerework:Nirvana": {
     "NAME": "涅槃",
@@ -593,5 +593,50 @@
   "anotherspirerework:Transmutation": {
     "NAME": "转化",
     "DESCRIPTION": "消耗 所有手牌。 NL 每 消耗 一张牌，将一张随机牌加入你的手牌。"
+  },
+  "anotherspirerework:Protect": {
+    "NAME": "护身",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 将这张牌放回你的手牌。"
+  },
+  "anotherspirerework:CutThroughFate": {
+    "NAME": "斩破命运",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 预见 !M! 。 NL 抽一张牌。"
+  },
+  "anotherspirerework:Halt": {
+    "NAME": "停顿",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 愤怒 ：抽一张牌。"
+  },
+  "anotherspirerework:EmptyFist": {
+    "NAME": "化拳为空",
+    "DESCRIPTION": "造成 !D! 点伤害。 NL 退出当前 姿态 。"
+  },
+  "anotherspirerework:Alpha": {
+    "NAME": "阿尔法",
+    "DESCRIPTION": "将一张 *贝塔 放入你的抽牌堆中。 NL 在你的回合结束时，从弃牌堆选择一张牌放入你的手牌，并将其 保留 。"
+  },
+  "anotherspirerework:Beta": {
+    "NAME": "贝塔",
+    "DESCRIPTION": "将一张 *欧米伽 放入你的抽牌堆中。 NL 你每打出一张 无色 牌，抽一张牌。"
+  },
+  "anotherspirerework:Omega": {
+    "NAME": "欧米伽",
+    "DESCRIPTION": "在本场战斗结束时，你可以从你的牌组中选择一张牌移除。"
+  },
+  "anotherspirerework:Doom and Gloom": {
+    "NAME": "愁云惨淡",
+    "DESCRIPTION": "获得 !B! 点 格挡 。 NL 生成一个 黑暗 充能球。"
+  },
+  "anotherspirerework:FTL": {
+    "NAME": "超越光速",
+    "DESCRIPTION": "消耗 你手中的所有 状态 牌。 NL 每消耗一张牌，获得 [E] 并抽 !M! 张牌。"
+  },
+  "anotherspirerework:Combust": {
+    "NAME": "自燃",
+    "DESCRIPTION": "在你的回合结束时，失去 1 点生命。 NL 每当你失去生命时，对所有敌人造成 !M! 点伤害。"
+  },
+  "anotherspirerework:Caltrops": {
+    "NAME": "铁蒺藜",
+    "DESCRIPTION": "奇巧 。 NL 获得 1 点 敏捷 。 NL 每当你被攻击时，对攻击者造成 !M! 点伤害。",
+    "UPGRADE_DESCRIPTION": "奇巧 。 NL 获得 2 点 敏捷 。 NL 每当你被攻击时，对攻击者造成 !M! 点伤害。"
   }
 }

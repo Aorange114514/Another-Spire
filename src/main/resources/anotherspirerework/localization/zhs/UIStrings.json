@@ -4,5 +4,11 @@
   },
   "${modID}:DeckToHand": {
     "TEXT": ["选择", "张牌。"]
+  },
+  "${modID}:OmegaRemoval": {
+    "TEXT": ["选择一张牌移除", "选择一张牌移除"]
+  },
+  "${modID}:AlphaDiscard": {
+    "TEXT": ["选择一张牌放入手牌并保留。", "选择 ", " 张牌放入手牌并保留。"]
   }
 }

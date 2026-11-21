@@ -75,10 +75,12 @@ public class PatchContractTest {
         thirdRoundRegression(pool);
         fourthRoundRegression(pool);
         fifthRoundRegression(pool);
+        omegaBurnStrikeRegression(pool);
         rebootShuffleOrderRegression(pool);
         relicPoolRegression();
         powerTitleAndReprogramRegression(pool);
         postfixBindingRegression();
+        abandonedPickRegression(pool);
         SlyHistoryRegression.run();
         System.out.println("PASS: " + count + " patch targets, instrumented bytecode, insertion locators and injected fields");
     }
@@ -105,11 +107,16 @@ public class PatchContractTest {
                 "anotherspirerework.patches.CardSwapPatch",
                 "anotherspirerework.patches.CardRarityPatch",
                 "anotherspirerework.patches.ExhaustTracker",
+                "anotherspirerework.patches.BurnEtherealPatch",
+                "anotherspirerework.patches.SmoothReturnToHandPatch",
+                "anotherspirerework.patches.PerfectedStrikePatch",
+                "anotherspirerework.patches.OmegaRewardTypePatch",
                 "anotherspirerework.patches.FreeSkillCardPatch",
                 "anotherspirerework.patches.MarkAttackPatch",
                 "anotherspirerework.patches.SlyPatch",
                 "anotherspirerework.patches.SlyFieldPatch",
                 "anotherspirerework.patches.SpoonFieldPatch",
+                "anotherspirerework.patches.AbandonedPickPatch",
                 "anotherspirerework.patches.NoBlockCapPatch",
                 "anotherspirerework.patches.NoEnergyCapPatch",
                 "anotherspirerework.patches.NoPowerCapPatch",
@@ -604,6 +611,33 @@ public class PatchContractTest {
         System.out.println("PASS: postfix binding (result first, instance second) and copy hook shape");
     }
 
+    /**
+     * A picker that is still open when the run is abandoned leaves its cards in the shared grid
+     * screen. The shop room reads that list on the next frame - after a reload as well - as its own
+     * card removal, so the leftovers have to be dropped together with the dungeon.
+     */
+    private static void abandonedPickRegression(ClassPool pool) throws Exception {
+        require(patchTarget("anotherspirerework.patches.AbandonedPickPatch")
+                        == com.megacrit.cardcrawl.dungeons.AbstractDungeon.class,
+                "An abandoned pick must be dropped by AbstractDungeon.reset");
+        requireFieldRead(pool, "anotherspirerework.patches.AbandonedPickPatch", "Postfix", "gridSelectScreen");
+        requireCalls(pool, "anotherspirerework.patches.AbandonedPickPatch", "Postfix",
+                "forget", "clear", "stopGlowing", "unhover", "untip");
+        // The pick is applied the moment the grid goes away. The overlay's cancel/leave button
+        // closes the grid after the effect list has run, and the shop room then reads the shared
+        // selection as its own card removal at the start of the next frame - which is exactly how
+        // the picked cards ended up deleted instead of stripped.
+        require(patchTarget("anotherspirerework.effects.ChooseDeckCardsEffect$SettleOnClose")
+                        == com.megacrit.cardcrawl.dungeons.AbstractDungeon.class,
+                "A closed grid must settle its pick in AbstractDungeon.closeCurrentScreen");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect$SettleOnClose", "before", "settle");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "update", "busyScreen", "hide");
+        requireCalls(pool, "anotherspirerework.effects.ChooseDeckCardsEffect", "settle",
+                "apply", "clear", "finish");
+        System.out.println("PASS: a pick abandoned with the run is dropped from the shared grid screen"
+                + " and a closed pick is settled before any other reader");
+    }
+
     /** Relics, cards and powers added in the second round of reworks. */
     private static void secondRoundRegression(ClassPool pool) throws Exception {
         requireConstant(pool, "anotherspirerework.relics.Inserter", "TURNS", 2);
@@ -964,6 +998,39 @@ public class PatchContractTest {
         requireCalls(pool, "com.megacrit.cardcrawl.actions.watcher.IndignationAction", "update", "addToTop");
         System.out.println("PASS: fifth round (Consecrate, Third Eye, Deceive Reality, Stack, Judgement,"
                 + " Reach Heaven, Wave of the Hand, Violence, Indignation stance order)");
+    }
+
+    /** Burn + Ethereal, Perfected Strike exhaust counting, Omega reward and hand-return wiring. */
+    private static void omegaBurnStrikeRegression(ClassPool pool) throws Exception {
+        // Burn itself stays vanilla; only an Ethereal Burn changes where the end-of-turn auto-play
+        // puts the card, and that is decided in the UseCardAction that resolves the play.
+        require(patchTarget("anotherspirerework.patches.BurnEtherealPatch$ExhaustInsteadOfDiscard")
+                        == com.megacrit.cardcrawl.actions.utility.UseCardAction.class,
+                "BurnEtherealPatch must decide the exhaust in UseCardAction");
+        require(fieldsWritten(pool, "anotherspirerework.patches.BurnEtherealPatch$ExhaustInsteadOfDiscard",
+                        "after").contains("exhaustCard"),
+                "An Ethereal Burn must be exhausted by the play that resolves it");
+
+        require(patchTarget("anotherspirerework.patches.SmoothReturnToHandPatch$MoveToHand")
+                == com.megacrit.cardcrawl.cards.CardGroup.class,
+                "SmoothReturnToHandPatch must patch CardGroup.moveToHand");
+
+        require(patchTarget("anotherspirerework.patches.PerfectedStrikePatch$CountExhaustedStrikes")
+                == com.megacrit.cardcrawl.cards.red.PerfectedStrike.class,
+                "PerfectedStrikePatch must patch PerfectedStrike");
+        requireCalls(pool, "anotherspirerework.patches.PerfectedStrikePatch$CountExhaustedStrikes", "after", "isStrike");
+
+        requireCalls(pool, "anotherspirerework.powers.BetaPower", "onAfterUseCard",
+                "com.megacrit.cardcrawl.actions.common.DrawCardAction");
+
+        requireCalls(pool, "anotherspirerework.rewards.OmegaRemovalReward", "claimReward",
+                "getPurgeableCards", "open", "hide");
+        requireCalls(pool, "anotherspirerework.powers.OmegaRemovalPower", "addRewardsIfPending",
+                "anotherspirerework.rewards.OmegaRemovalReward", "add");
+        requireCalls(pool, "anotherspirerework.AnotherSpireRework", "receivePostBattle", "addRewardsIfPending");
+        requireCalls(pool, "anotherspirerework.AnotherSpireRework", "receivePostDungeonUpdate", "tick");
+        System.out.println("PASS: Burn exhaust order, Perfected Strike exhaust count, Omega reward wiring,"
+                + " Protect hand-return and Beta after-card timing");
     }
 
     /**
@@ -1347,8 +1414,36 @@ public class PatchContractTest {
         });
         crown.toBytecode();
         require(vanillaReward[0], "Crown must construct a complete vanilla relic reward");
+        // The screen is rebuilt from the post-combat save and rebuilds its card reward, so the relic
+        // is rolled again on every load. The roll therefore has to be snapshotted before it happens
+        // (so the save holds the pre-roll relic RNG and pools), and the save hook must put exactly
+        // that state back: otherwise the first load after a fight rerolls the relic once.
+        final java.util.List<String> crownOrder = new java.util.ArrayList<>();
+        CtClass crownHook = pool.get("anotherspirerework.relics.BustedCrown$CrownRewards");
+        if (crownHook.isFrozen()) crownHook.defrost();
+        crownHook.getDeclaredMethod("before").instrument(new ExprEditor() {
+            public void edit(javassist.expr.NewExpr expr) { crownOrder.add(expr.getClassName()); }
+            public void edit(javassist.expr.MethodCall call) { crownOrder.add(call.getMethodName()); }
+        });
+        crownHook.toBytecode();
+        int snapshotAt = crownOrder.indexOf("anotherspirerework.relics.BustedCrown$Roll");
+        int rollAt = crownOrder.indexOf("returnRandomRelic");
+        require(snapshotAt >= 0 && rollAt > snapshotAt,
+                "Crown must snapshot the relic RNG before rolling the reward");
+        require(patchTarget("anotherspirerework.relics.BustedCrown$PostCombatSave")
+                        .getName().equals("com.megacrit.cardcrawl.saveAndContinue.SaveAndContinue"),
+                "Crown must rewind the relic state when the post-combat save is written");
+        requireFieldRead(pool, "anotherspirerework.relics.BustedCrown$PostCombatSave", "before", "post_combat");
+        requireCalls(pool, "anotherspirerework.relics.BustedCrown$PostCombatSave", "before", "shown", "rewind");
+        for (String field : new String[]{"relicCounter", "common", "uncommon", "rare", "shop", "boss"}) {
+            pool.get("anotherspirerework.relics.BustedCrown$Roll").getDeclaredField(field);
+        }
+        for (String field : new String[]{"relic_seed_count", "common_relics", "uncommon_relics",
+                "rare_relics", "shop_relics", "boss_relics"}) {
+            requireWrites(pool, "anotherspirerework.relics.BustedCrown$Roll", "rewind", field);
+        }
         System.out.println("PASS: Choker/Bark thresholds; Mark action destination, Cauldron slot "
                 + "constructors, Velvet Choker inherited counter cleanup, Crown safe construction path "
-                + "(headless structural checks)");
+                + "and pre-roll save snapshot (headless structural checks)");
     }
 }

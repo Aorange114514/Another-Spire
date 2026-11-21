@@ -1,6 +1,7 @@
 package anotherspirerework.cards.green;
 
 import anotherspirerework.AnotherSpireRework;
+import anotherspirerework.util.SlyMark;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -8,21 +9,19 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.powers.PoisonPower;
-import com.megacrit.cardcrawl.powers.WeakPower;
 
-/** Crippling Cloud (vanilla id: Crippling Poison): a big Poison + Weak burst, now Rare. */
+/** Crippling Cloud: back to Uncommon, and now a Sly poison burst. */
 public class CripplingPoison extends AbstractCard {
     public static final String ID = "Crippling Poison";
 
     private static final CardStrings cardStrings = AnotherSpireRework.getCardStrings(ID);
 
-    private static final int WEAK_AMOUNT = 5;
-
     public CripplingPoison() {
-        super(ID, cardStrings.NAME, "green/skill/crippling_poison", 3, cardStrings.DESCRIPTION, CardType.SKILL, CardColor.GREEN, CardRarity.RARE, CardTarget.ALL_ENEMY);
-        this.baseMagicNumber = 15;
+        super(ID, cardStrings.NAME, "green/skill/crippling_poison", 3, cardStrings.DESCRIPTION,
+                CardType.SKILL, CardColor.GREEN, CardRarity.UNCOMMON, CardTarget.ALL_ENEMY);
+        this.baseMagicNumber = 4;
         this.magicNumber = this.baseMagicNumber;
-        this.exhaust = true;
+        SlyMark.mark(this);
     }
 
     public void use(AbstractPlayer p, AbstractMonster m) {
@@ -33,7 +32,6 @@ public class CripplingPoison extends AbstractCard {
         for (AbstractMonster monster : AbstractDungeon.getMonsters().monsters) {
             if (!monster.isDead && !monster.isDying) {
                 addToBot(new ApplyPowerAction(monster, p, new PoisonPower(monster, p, this.magicNumber), this.magicNumber));
-                addToBot(new ApplyPowerAction(monster, p, new WeakPower(monster, WEAK_AMOUNT, false), WEAK_AMOUNT));
             }
         }
     }
@@ -41,7 +39,7 @@ public class CripplingPoison extends AbstractCard {
     public void upgrade() {
         if (!this.upgraded) {
             upgradeName();
-            upgradeBaseCost(2);
+            upgradeMagicNumber(2);
         }
     }
 

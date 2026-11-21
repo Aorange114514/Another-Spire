@@ -26,11 +26,11 @@ public class BattleHymnSmitePower extends AbstractPower {
 
     @Override
     public void updateDescription() {
-        if (this.amount > 1) {
-            this.description = powerStrings.DESCRIPTIONS[0] + this.amount + powerStrings.DESCRIPTIONS[1];
-        } else {
-            this.description = powerStrings.DESCRIPTIONS[0] + this.amount + powerStrings.DESCRIPTIONS[2];
-        }
+        boolean many = this.amount > 1;
+        this.description = powerStrings.DESCRIPTIONS[0] + this.amount
+                + (many ? powerStrings.DESCRIPTIONS[1] : powerStrings.DESCRIPTIONS[2])
+                + this.amount
+                + (many ? powerStrings.DESCRIPTIONS[3] : powerStrings.DESCRIPTIONS[4]);
     }
 
     @Override

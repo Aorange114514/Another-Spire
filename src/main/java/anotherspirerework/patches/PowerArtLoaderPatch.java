@@ -27,10 +27,9 @@ import java.util.Map;
  * </pre>
  *
  * {@code <name>} is the power's ID (the string the mod passes to {@code makeID}, e.g. {@code Nirvana})
- * or the power class' simple name ({@code NirvanaCounterPower}). The two sizes are independent: with
- * only the 48 supplied the flash keeps the base game's icon, and the other way round the bar keeps
- * it. {@code loadRegion} draws its two icons at fixed scales, so a file of the wrong size would not
- * be scaled into place - which is why each size has to be supplied as its own file.
+ * or the power class' simple name ({@code NirvanaCounterPower}). Supplying only the 128 file is
+ * enough: the 48 for the buff bar is scaled down from it automatically. A 48 supplied on its own
+ * replaces the bar icon while the flash keeps the base game's icon.
  *
  * <p>Only this mod's own powers are touched. A vanilla power keeps the base game's icon even when a
  * file happens to be named after it.
@@ -75,9 +74,31 @@ public class PowerArtLoaderPatch {
             return CACHE.get(path);
         }
         FileHandle file = Gdx.files.internal(AnotherSpireRework.imagePath(path + ".png"));
-        Texture loaded = file.exists() ? new Texture(file) : null;
+        Texture loaded = null;
+        if (file.exists()) {
+            loaded = new Texture(file);
+        } else if (size == 48) {
+            loaded = scaledDown48(name);
+        }
         CACHE.put(path, loaded);
         return loaded;
+    }
+
+    /** The 48 icon generated from the supplied 128 file when no 48 file was dropped in. */
+    private static Texture scaledDown48(String name) {
+        FileHandle largeFile = Gdx.files.internal(AnotherSpireRework.imagePath(FOLDER + name + "_128.png"));
+        if (!largeFile.exists()) {
+            return null;
+        }
+        com.badlogic.gdx.graphics.Pixmap source = new com.badlogic.gdx.graphics.Pixmap(largeFile);
+        com.badlogic.gdx.graphics.Pixmap scaled = new com.badlogic.gdx.graphics.Pixmap(48, 48, source.getFormat());
+        scaled.drawPixmap(source,
+                0, 0, source.getWidth(), source.getHeight(),
+                0, 0, scaled.getWidth(), scaled.getHeight());
+        Texture texture = new Texture(scaled);
+        scaled.dispose();
+        source.dispose();
+        return texture;
     }
 
     /** Wraps a plain texture so the base game's power rendering can draw it. */

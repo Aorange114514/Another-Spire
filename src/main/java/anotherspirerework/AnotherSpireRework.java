@@ -3,9 +3,11 @@ package anotherspirerework;
 import anotherspirerework.actions.PlayShivsFromExhaustAction;
 import anotherspirerework.patches.BitePatch;
 import anotherspirerework.patches.ExhaustTracker;
+import anotherspirerework.patches.OmegaRewardTypePatch;
 import anotherspirerework.patches.OrbTrackerPatch;
 import anotherspirerework.patches.ShuffleTriggerPatch;
 import anotherspirerework.powers.DevotionDrawPower;
+import anotherspirerework.powers.OmegaRemovalPower;
 import anotherspirerework.relics.BlackBlood;
 import anotherspirerework.relics.BlackStar;
 import anotherspirerework.relics.BlueCandle;
@@ -15,6 +17,7 @@ import anotherspirerework.relics.SneckoEye;
 import anotherspirerework.relics.Sozu;
 import anotherspirerework.relics.StrangeSpoon;
 import anotherspirerework.relics.TinyHouse;
+import anotherspirerework.rewards.OmegaRemovalReward;
 import anotherspirerework.util.Localization;
 import basemod.BaseMod;
 import basemod.interfaces.EditKeywordsSubscriber;
@@ -94,6 +97,10 @@ public class AnotherSpireRework implements
 
     @Override
     public void receivePostInitialize() {
+        BaseMod.registerCustomReward(
+                OmegaRewardTypePatch.OMEGA_REMOVAL,
+                rewardSave -> new OmegaRemovalReward(),
+                customReward -> new com.megacrit.cardcrawl.rewards.RewardSave(customReward.type.toString(), null));
         BitePatch.applyStrings();
         Texture badgeTexture = new Texture(Gdx.files.internal(imagePath("badge.png")));
         BaseMod.registerModBadge(badgeTexture, info.Name, String.join(", ", info.Authors), info.Description, null);
@@ -101,6 +108,7 @@ public class AnotherSpireRework implements
 
     @Override
     public void receivePostBattle(AbstractRoom room) {
+        OmegaRemovalPower.addRewardsIfPending(room);
         BlackStar.onVictory(room);
         resetCombatState();
     }
@@ -117,6 +125,7 @@ public class AnotherSpireRework implements
         ShuffleTriggerPatch.reset();
         OrbTrackerPatch.lastOrb = null;
         ExhaustTracker.reset();
+        OmegaRemovalReward.reset();
     }
 
     @Override
@@ -147,6 +156,7 @@ public class AnotherSpireRework implements
         BlueCandle.processPendingDraws();
         anotherspirerework.patches.ShuffleTriggerPatch.tick();
         TinyHouse.tick();
+        OmegaRemovalReward.tick();
     }
 
     /** Seeing Red needs to know whether a card was exhausted on the turn it is played. */

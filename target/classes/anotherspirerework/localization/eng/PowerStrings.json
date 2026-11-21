@@ -10,7 +10,9 @@
   "anotherspirerework:BattleHymnSmite": {
     "NAME": "Battle Hymn",
     "DESCRIPTIONS": [
-      "At the start of each turn, exhaust a card in your hand and add #b ",
+      "At the start of each turn, #yExhaust #b ",
+      " cards in your hand and add #b ",
+      " card in your hand and add #b ",
       " #ySmites into your hand.",
       " #ySmite into your hand."
     ]
@@ -79,14 +81,14 @@
     "NAME": "Creative AI",
     "DESCRIPTIONS": [
       "At the start of your turn, add #b ",
-      " randomly Upgraded Power cards into your hand.",
-      " randomly Upgraded Power card into your hand."
+      " random Upgraded Power cards into your hand.",
+      " random Upgraded Power card into your hand."
     ]
   },
   "anotherspirerework:Scuffle": {
     "NAME": "Mayhem",
     "DESCRIPTIONS": [
-      "Every time you draw 10 cards, gain ",
+      "Whenever you draw #b10 cards, gain #b",
       " [E] ."
     ]
   },
@@ -100,26 +102,26 @@
   },
   "anotherspirerework:DemonFormExhaust": {
     "NAME": "Demon Form",
-    "DESCRIPTIONS": ["Deal #b ", " additional damage to enemies for each card in your #yexhaust pile."]
+    "DESCRIPTIONS": ["Deal #b ", " additional damage to enemies for each card in your exhaust pile."]
   },
   "anotherspirerework:Nirvana": {
     "NAME": "Nirvana",
     "DESCRIPTIONS": [
-      "When you play your fifth card in a turn, draw #b ",
+      "When you play your 5th card in a turn, draw #b ",
       " cards at the start of your next turn."
     ]
   },
   "anotherspirerework:SpiritShield": {
     "NAME": "Spirit Shield",
-    "DESCRIPTIONS": ["While in #yCalm, attack damage you take is halved #b ", " times."]
+    "DESCRIPTIONS": ["While in #yCalm, attack damage you take is halved #b ", " times.", " time."]
   },
   "anotherspirerework:EmptyBody": {
     "NAME": "Empty Body",
-    "DESCRIPTIONS": ["At the end of your turn, leave your #yStance and gain #b ", " #yBlock."]
+    "DESCRIPTIONS": ["At the end of your turn, exit your #yStance and gain #b ", " #yBlock."]
   },
   "anotherspirerework:JackOfAllTrades": {
     "NAME": "Jack Of All Trades",
-    "DESCRIPTIONS": ["Every time you spend #b4 [E] , gain [E] ."]
+    "DESCRIPTIONS": ["Whenever you spend #b4 [E] , gain [E] ."]
   },
   "anotherspirerework:Blur": {
     "NAME": "Blur",
@@ -132,5 +134,37 @@
   "anotherspirerework:WaveOfTheHandPower": {
     "NAME": "Wave of the Hand",
     "DESCRIPTIONS": ["Whenever you change #yStances this turn, apply #b", " #yWeak to ALL enemies."]
+  },
+  "anotherspirerework:Alpha": {
+    "NAME": "Alpha",
+    "DESCRIPTIONS": [
+      "At the end of your turn, put #b ",
+      " card from your discard pile into your hand and #yRetain it.",
+      " cards from your discard pile into your hand and #yRetain them."
+    ]
+  },
+  "anotherspirerework:Beta": {
+    "NAME": "Beta",
+    "DESCRIPTIONS": [
+      "Whenever you play a #yColorless card, draw #b ",
+      " card.",
+      " cards."
+    ]
+  },
+  "anotherspirerework:Combust": {
+    "NAME": "Combust",
+    "DESCRIPTIONS": [
+      "At the end of your turn, lose #b ",
+      " HP. NL Whenever you lose HP, deal #b ",
+      " damage to ALL enemies."
+    ]
+  },
+  "anotherspirerework:OmegaRemoval": {
+    "NAME": "Omega",
+    "DESCRIPTIONS": [
+      "After this combat, you can remove #b ",
+      " card from your deck.",
+      " cards from your deck."
+    ]
   }
 }
